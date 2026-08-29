@@ -22,6 +22,7 @@ int dbgShotCount = 0;
 const char *dbgOutDir = "shots";
 int dbgFixedStep = 0;
 static int dbgTrace = 0;
+static int startTx = 2, startTy = 17, startLoad = 0;
 static int dbgShotsDone = 0;
 static float acc = 0.0f;
 
@@ -79,51 +80,78 @@ void InputPoll(void) {
     prevJump = jump;
 }
 
-// ---------------------------------------------------------------- test room
-// Phase 1 has exactly one room. It is a movement gym, not a design: flat ground,
-// gaps at 2/3/4 tiles to calibrate jump distance, a ledge stack to test coyote
-// time and one-way platforms, a water column, and a black shelf.
-static void BuildGymRoom(void) {
+// ---------------------------------------------------------------- sandbox room
+// Phase 2 has one room and it is a place to play with weight, not a design.
+// Left: a crust shelf over a drop, so light walks where heavy falls through.
+// Middle: the rim of a shallow pan you can fill and empty at.
+// Right: a deep pan whose floor you can only reach heavy -- and whose rim sits over
+// the deep end, which is where filling starts fighting itself.
+static void BuildSandbox(void) {
     ArenaReset(&roomArena);
     Room *r = RoomAt(2, 2);
     memset(r->tiles, 0, sizeof r->tiles);
+    memset(&scratch, 0, sizeof scratch);
+    FxReset();
     r->exists = 1;
     world.cx = 2; world.cy = 2;
 
-    for (int x = 0; x < RW; x++) { r->tiles[RH - 1][x] = T_ROCK; r->tiles[RH - 2][x] = T_ROCK; }
+    for (int x = 0; x < RW; x++) { r->tiles[0][x] = T_ROCK; r->tiles[RH - 1][x] = T_ROCK; }
     for (int y = 0; y < RH; y++) { r->tiles[y][0] = T_ROCK; r->tiles[y][RW - 1] = T_ROCK; }
-    for (int x = 0; x < RW; x++) r->tiles[0][x] = T_ROCK;
+    for (int x = 1; x < RW - 1; x++) { r->tiles[19][x] = T_ROCK; r->tiles[20][x] = T_ROCK; }
 
-    // gaps of 2, 3 and 4 tiles in the floor
-    for (int x = 6;  x < 8;  x++) { r->tiles[RH - 1][x] = T_EMPTY; r->tiles[RH - 2][x] = T_EMPTY; }
-    for (int x = 13; x < 16; x++) { r->tiles[RH - 1][x] = T_EMPTY; r->tiles[RH - 2][x] = T_EMPTY; }
-    for (int x = 22; x < 26; x++) { r->tiles[RH - 1][x] = T_EMPTY; r->tiles[RH - 2][x] = T_EMPTY; }
+    // --- LEFT: a crust bridge flush with the floor over a two-tile pit.
+    // Reachable at any load, which is the point: light it holds, heavy it does not,
+    // and the only way to find that out is to stand on it and wait.
+    for (int x = 5; x < 12; x++) { r->tiles[19][x] = T_CRUST; r->tiles[20][x] = T_EMPTY; }
 
-    // step ladder: 1, 2 and 3 tile rises
-    r->tiles[RH - 3][30] = T_ROCK;
-    r->tiles[RH - 3][31] = T_ROCK; r->tiles[RH - 4][31] = T_ROCK;
-    for (int y = RH - 5; y < RH - 2; y++) r->tiles[y][32] = T_ROCK;
+    // --- a crust shelf four tiles up. A load-0 jump rises 38 px and clears it; a
+    // load-1 jump rises 29 px and does not. A plane only the empty player has stood on.
+    for (int x = 3; x < 13; x++) r->tiles[15][x] = T_CRUST;
 
-    // one-way ledges to fall through and coyote-jump from
-    for (int x = 4;  x < 10; x++) r->tiles[RH - 7][x] = T_LEDGE;
-    for (int x = 12; x < 18; x++) r->tiles[RH - 11][x] = T_LEDGE;
+    // --- scaffold, four tiles above the shelf: same rule again, one storey up
+    for (int x = 8; x < 17; x++) r->tiles[11][x] = T_TIMBER;
 
-    // a black shelf: any black tile may be hiding something
-    for (int x = 20; x < 27; x++) r->tiles[RH - 9][x] = T_DARK;
+    // --- MIDDLE: a shallow pan flush with the floor, a rim on each lip. Two tiles
+    // deep, so you can stand in it at any load. The safe place to learn the dial.
+    for (int x = 16; x < 25; x++) { r->tiles[19][x] = T_BRINE; r->tiles[20][x] = T_BRINE; }
+    r->tiles[19][15] = T_RIM;
+    r->tiles[19][25] = T_RIM;
 
-    // water column on the right
-    for (int y = RH - 8; y < RH - 2; y++) for (int x = 34; x < 38; x++) r->tiles[y][x] = T_WATER;
-    for (int y = RH - 8; y < RH - 2; y++) r->tiles[y][33] = T_ROCK;
+    // --- RIGHT: a terrace, reached by single-tile steps so every load can climb it.
+    r->tiles[18][26] = T_ROCK;
+    r->tiles[17][27] = T_ROCK;  r->tiles[18][27] = T_ROCK;
+    r->tiles[16][28] = T_ROCK;  r->tiles[17][28] = T_ROCK;  r->tiles[18][28] = T_ROCK;
+    for (int y = 15; y < 21; y++) r->tiles[y][29] = T_ROCK;
+    for (int y = 15; y < 21; y++) r->tiles[y][38] = T_ROCK;
 
+    // --- the deep pan: five tiles of brine. Empty you float on it and cannot descend;
+    // full you sink and walk its floor. There is a rim down there, so the sandbox
+    // lets you back out -- the real game's bell room will not.
+    for (int y = 16; y < 21; y++)
+        for (int x = 30; x < 38; x++) r->tiles[y][x] = T_BRINE;
+    r->tiles[15][29] = T_RIM;
+    r->tiles[20][33] = T_RIM;  r->tiles[20][34] = T_RIM;
+
+    // --- a black shelf, because any black tile may be hiding something
+    for (int x = 19; x < 25; x++) r->tiles[4][x] = T_DARK;
+
+    // --- salt fringe on dry stone
     for (int x = 1; x < RW - 1; x++)
-        if (r->tiles[RH - 2][x] == T_ROCK && r->tiles[RH - 3][x] == T_EMPTY && (x * 7 % 5) == 0)
-            r->tiles[RH - 3][x] = T_GRASS;
+        if (r->tiles[19][x] == T_ROCK && r->tiles[18][x] == T_EMPTY && (x * 7 % 5) == 0)
+            r->tiles[18][x] = T_GRASS;
 
-    PlayerInit(3 * TS, (RH - 4) * TS);
+    PlayerInit(startTx * TS, startTy * TS);
+    player.load = (u8)startLoad;
 }
 
 // ---------------------------------------------------------------- frame
-static void Sim(void) { InputPoll(); PlayerStep(); }
+static void Sim(void) {
+    InputPoll();
+    RoomStepBegin();
+    PlayerStep();
+    RoomStepEnd();
+    FxStep();
+}
 
 static void Frame(void) {
     frameNo++;
@@ -141,12 +169,13 @@ static void Frame(void) {
     RenderBeginRoom();
         DrawRoom(CurRoom());
         PlayerDraw();
+        FxDraw();
     RenderEndRoomAndPresent();
 
-    if (dbgTrace && (frameNo % 6 == 0))
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f g=%d coy=%d buf=%d w=%d\n",
+    if (dbgTrace)
+        printf("f=%4ld x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d\n",
                frameNo, player.x, player.y, player.vx, player.vy,
-               player.onGround, player.coyote, player.jumpBuf, player.inWater);
+               player.onGround, player.load, player.atRim, player.submerged);
 
     for (int i = 0; i < dbgShotCount; i++) {
         if (dbgShotFrames[i] == (int)frameNo) {
@@ -178,6 +207,11 @@ int main(int argc, char **argv) {
             dbgFixedStep = 1;
         } else if (!strcmp(argv[i], "--trace")) {
             dbgTrace = 1;
+        } else if (!strcmp(argv[i], "--at") && i + 1 < argc) {
+            startTx = atoi(strtok(argv[++i], ","));
+            char *t = strtok(NULL, ","); if (t) startTy = atoi(t);
+        } else if (!strcmp(argv[i], "--load") && i + 1 < argc) {
+            startLoad = atoi(argv[++i]);
         }
     }
 
@@ -192,7 +226,7 @@ int main(int argc, char **argv) {
     InitWindow(GW * winScale, GH * winScale, "well");
     SetTargetFPS(60);
     RenderInit();
-    BuildGymRoom();
+    BuildSandbox();
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);

@@ -48,6 +48,7 @@ enum {
     TF_ONEWAY   = 1 << 4,   // solid only from above
     TF_WATER    = 1 << 5,
     TF_CONTIG   = 1 << 6,   // autotiles against its own kind
+    TF_RIM      = 1 << 7,   // a pan rim: the kettles can be filled or emptied here
 };
 
 enum {
@@ -55,8 +56,11 @@ enum {
     T_ROCK,         // ordinary solid
     T_DARK,         // solid, reads as pure black — the hiding place
     T_LEDGE,        // one-way platform
-    T_WATER,
+    T_BRINE,        // deep brine: buoyancy is signed by load
     T_GRASS,        // decorative, non-solid
+    T_CRUST,        // salt crust: holds a light body, shatters under a heavy one
+    T_RIM,          // pan rim, solid; fill and empty the kettles here
+    T_TIMBER,       // collapsing scaffold: one-way, and it is what the world is roofed with
     T_TILE_KINDS
 };
 
@@ -71,6 +75,18 @@ typedef struct {
     u8 lighting;
     u8 exists;
 } Room;
+
+// Room-arena scratch. Wiped on every transition, so crust recrystallises when you
+// come back and no save state is needed to express that.
+typedef struct {
+    u8  loadMap[RH][RW];    // cleared each frame; bodies stamp (1 + their load)
+    u8  stress[RH][RW];     // crust fatigue
+    f32 surfH[RW], surfV[RW];  // 1D brine surface wave, one column per tile
+} RoomScratch;
+extern RoomScratch scratch;
+
+#define CRUST_BREAK_LOAD 3  // loadMap value, i.e. load >= 2 (D3)
+#define CRUST_STRESS_MAX 24
 
 typedef struct {
     Room rooms[ROOM_COUNT];
@@ -95,7 +111,27 @@ typedef struct {
     int inWater;
     f32 animT;              // procedural animation clock
     f32 leanX, leanY;       // second-order lag, drives the procedural pass
+
+    // --- Verb A: the kettles ---------------------------------------------
+    u8  load;               // 0..4 kettles' worth of brine. The whole verb.
+    i32 fillTimer;          // frames of the current fill/empty action
+    int atRim;              // a TF_RIM tile overlaps the body this frame
+    int submerged;          // body centre is inside brine
+    f32 sloshX, sloshY;     // second-order lag of the liquid inside the kettles
+    f32 yokeAng;            // yoke swing, lags the body. Never squash-and-stretch.
+    i32 landImpact;         // frames left of the last landing's dust
 } Player;
+
+#define LOAD_MAX 4
+
+// Weight touches the gravity axis only (D4). Run speed, acceleration, friction and
+// turnaround are identical at every load -- the moment weight changes horizontal
+// handling it starts doing the gaff's job.
+extern const f32 JUMP_V[LOAD_MAX + 1];
+extern const f32 GRAV_L[LOAD_MAX + 1];
+extern const f32 TERM_L[LOAD_MAX + 1];
+extern const f32 SINK_L[LOAD_MAX + 1];   // signed: negative floats, positive sinks
+extern const f32 JCUT_L[LOAD_MAX + 1];
 
 extern Player player;
 
@@ -110,6 +146,22 @@ extern Input in;
 void InputPoll(void);
 
 // ---------------------------------------------------------------- render
+// ---------------------------------------------------------------- fx
+// Fixed pool. Purely presentational: nothing here is ever read by a rule.
+enum { FX_DUST, FX_SALT, FX_DROP, FX_SPLINTER };
+typedef struct { f32 x, y, vx, vy; u8 life, maxLife, kind; } Particle;
+#define FX_MAX 192
+void FxReset(void);
+void FxSpawn(int kind, float x, float y, float vx, float vy, int life);
+void FxBurst(int kind, float x, float y, int n, float spread, float up);
+void FxStep(void);
+void FxDraw(void);
+
+// ---------------------------------------------------------------- room step
+void RoomStepBegin(void);   // clears loadMap
+void RoomStepEnd(void);     // crust fatigue, brine surface wave
+void BrineDisturb(float px, float strength);
+
 void RenderInit(void);
 void RenderBeginRoom(void);
 void RenderEndRoomAndPresent(void);
@@ -117,7 +169,8 @@ void DrawRoom(Room *r);
 extern RenderTexture2D screenRT;
 
 // ---------------------------------------------------------------- palette
-extern Color palRock, palRockDeep, palRockLit, palDark, palBg, palBgDeep, palWater, palGrass, palSkin;
+extern Color palRock, palRockDeep, palRockLit, palDark, palBg, palBgDeep, palBrine, palGrass, palSkin;
+extern Color palBrineL, palSalt, palSaltLit, palDust, palTimber, palIron;
 
 // ---------------------------------------------------------------- debug
 extern int dbgShotFrames[16];
