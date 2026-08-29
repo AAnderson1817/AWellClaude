@@ -1,0 +1,578 @@
+<title>Two Verbs, Four Worlds</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+  /* Single-theme by choice: the subject is a dark 320x180 screen and these are
+     four dark worlds. Every colour is painted, so the page holds on any ground. */
+  :root{
+    --ground:#0b0b10; --surface:#15151e; --raise:#1c1c27; --rule:#2a2a38;
+    --ink:#d2cede; --dim:#7e7994; --faint:#575269;
+    --iron:#8fa8bc; --brine:#6ea79f; --phos:#a9bb6e; --crust:#c69a63;
+    --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+    --cond:"IBM Plex Sans Condensed","IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);
+       font-family:var(--serif);font-size:15px;line-height:1.62;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:34px 22px 80px}
+
+  .lede{border-bottom:1px solid var(--rule);padding-bottom:22px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.15em;
+          text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  h1{font-family:var(--cond);font-weight:700;font-size:34px;line-height:1.1;
+     margin:0 0 14px;text-wrap:balance;letter-spacing:.005em}
+  .lede p{margin:0 0 10px;max-width:68ch;color:var(--ink)}
+  .lede p.sub{color:var(--dim)}
+
+  h2.sec{font-family:var(--mono);font-size:11px;letter-spacing:.15em;
+         text-transform:uppercase;color:var(--dim);font-weight:500;
+         margin:44px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+
+  /* ---- comparison table ---- */
+  .tw{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12.5px;
+        font-variant-numeric:tabular-nums}
+  th,td{text-align:left;padding:9px 14px 9px 0;border-bottom:1px solid var(--rule);
+        vertical-align:top;white-space:nowrap}
+  thead th{color:var(--dim);font-weight:500;font-size:11px;letter-spacing:.1em;
+           text-transform:uppercase}
+  td.name{font-family:var(--cond);font-size:15px;font-weight:600;white-space:nowrap}
+  td.wide{white-space:normal;font-family:var(--serif);font-size:14px;color:var(--dim)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:1px;margin-right:8px;
+       vertical-align:baseline}
+  .pick{color:var(--brine);font-weight:600}
+
+  /* ---- premise cards ---- */
+  .card{border-left:2px solid var(--rule);padding:0 0 4px 22px;margin:0 0 46px}
+  .card.iron{border-left-color:var(--iron)} .card.brine{border-left-color:var(--brine)}
+  .card.phos{border-left-color:var(--phos)} .card.crust{border-left-color:var(--crust)}
+  .card h3{font-family:var(--cond);font-weight:700;font-size:25px;margin:0 0 4px;
+           letter-spacing:.005em}
+  .card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+             text-transform:uppercase;margin:0 0 12px}
+  .iron .tag{color:var(--iron)} .brine .tag{color:var(--brine)}
+  .phos .tag{color:var(--phos)} .crust .tag{color:var(--crust)}
+  .setting{font-style:italic;color:var(--dim);margin:0 0 22px;max-width:70ch}
+
+  .verbs{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:0 0 22px}
+  @media(max-width:720px){.verbs{grid-template-columns:1fr}}
+  .verb{background:var(--surface);border:1px solid var(--rule);border-radius:2px;
+        padding:15px 16px}
+  .verb .role{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+              text-transform:uppercase;color:var(--faint);margin:0 0 6px}
+  .verb .nm{font-family:var(--cond);font-weight:600;font-size:16px;margin:0 0 10px}
+  .verb dl{margin:0}
+  .verb dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--dim);margin:10px 0 3px}
+  .verb dd{margin:0;font-size:14px;line-height:1.55}
+
+  .rows{display:flex;flex-direction:column;gap:16px;margin:0 0 22px}
+  .row{display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:start}
+  @media(max-width:720px){.row{grid-template-columns:1fr;gap:4px}}
+  .row .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+            text-transform:uppercase;color:var(--dim);padding-top:3px}
+  .row .val{margin:0;max-width:66ch}
+
+  .found{background:var(--raise);border:1px solid var(--rule);border-radius:2px;
+         padding:16px 18px;margin:0 0 6px}
+  .found h4{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+            text-transform:uppercase;color:var(--dim);font-weight:500;margin:0 0 12px}
+  .found ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:10px}
+  .found li{font-size:14px;line-height:1.55;max-width:70ch}
+  .found li b{font-weight:500;color:#e6e2f0}
+  .weak{margin:15px 0 0;padding-top:13px;border-top:1px solid var(--rule);
+        font-size:13.5px;color:var(--dim);max-width:70ch}
+  .weak span{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--faint);display:block;margin-bottom:5px}
+
+  .rec{border:1px solid var(--brine);border-radius:2px;padding:22px 24px;margin:30px 0 0;
+       background:linear-gradient(var(--surface),var(--surface))}
+  .rec h3{font-family:var(--cond);font-weight:700;font-size:22px;margin:0 0 4px}
+  .rec .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+            text-transform:uppercase;color:var(--brine);margin:0 0 14px}
+  .rec p{margin:0 0 12px;max-width:68ch}
+  .rec ol{margin:0 0 14px;padding-left:20px;max-width:68ch}
+  .rec li{margin-bottom:9px}
+  .rec .risk{border-top:1px solid var(--rule);padding-top:14px;color:var(--dim)}
+
+  .method{margin-top:44px;padding-top:18px;border-top:1px solid var(--rule);
+          color:var(--dim);font-size:13.5px;max-width:70ch}
+  .method h2{font-family:var(--mono);font-size:11px;letter-spacing:.15em;
+             text-transform:uppercase;color:var(--dim);font-weight:500;margin:0 0 10px}
+  .method p{margin:0 0 10px}
+  code{font-family:var(--mono);font-size:.9em;color:var(--ink)}
+</style>
+
+<div class="wrap">
+ <div class="lede">
+  <p class="kicker">Phase 0 &middot; concept gate</p>
+  <h1>Two Verbs, Four Worlds</h1>
+  <p>Six divergent seeds produced twelve premises. Each was put through an emergence
+  stress test before any law-judging: <em>given only a tile grid, a player who can run
+  and jump, and these two verbs with no special-case code, what falls out of the rules?</em>
+  That is the filter Phase 3 will really apply, so it ran first.</p>
+  <p class="sub">These four are the survivors, chosen for maximum difference from each
+  other rather than by score. Each entry ends with what the stress test actually found
+  and what it says is wrong &mdash; including the parts that are wrong.</p>
+ </div>
+
+ <h2 class="sec">The slate</h2>
+ <div class="tw">
+ <table>
+  <thead><tr><th>Premise</th><th>Verb A</th><th>Verb B</th><th>Emergent</th><th>Build cost</th></tr></thead>
+  <tbody>
+   <tr><td class="name"><span class="dot" style="background:var(--iron)"></span>The Sounding Works</td>
+       <td>tuning fork</td><td>sash cramp</td><td>8</td><td>medium</td></tr>
+   <tr><td class="name pick"><span class="dot" style="background:var(--brine)"></span>Brine and Ballast</td>
+       <td>kettle yoke</td><td>salt gaff</td><td>7</td><td class="pick">low</td></tr>
+   <tr><td class="name"><span class="dot" style="background:var(--phos)"></span>Salt and Afterglow</td>
+       <td>afterglow slate</td><td>salt gourd</td><td>12</td><td>medium</td></tr>
+   <tr><td class="name"><span class="dot" style="background:var(--crust)"></span>The Proving Floor</td>
+       <td>live leaven</td><td>flour dredger</td><td>8</td><td>med-high</td></tr>
+  </tbody>
+ </table>
+ </div>
+
+ <h2 class="sec">One &mdash; The Sounding Works</h2>
+ <div class="card iron">
+  <h3>The Sounding Works</h3>
+  <p class="tag">reading vs. rigidity</p>
+  <p class="setting">A dead ore-dressing works of iron gantries and stone hoppers hung
+  across a chasm, where the machinery still runs by itself and everything alive down
+  there is blind and listens through the metal.</p>
+
+  <div class="verbs">
+   <div class="verb">
+    <p class="role">A &mdash; pure instrument, zero force</p>
+    <p class="nm">A steel tuning fork with a sliding rider weight</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>Strike it, press the stem to anything, and watch the vibration travel. Iron rings
+     bright and far, stone drags and dies, packed rust eats the tone instantly. Grit sitting
+     on a plate you are driving crawls into standing-wave patterns and slides along them,
+     so you can walk a pebble across a plate you never touch.</dd>
+     <dt>Second reading</dt>
+     <dd>The ring maps the insides of things &mdash; a wall that answers hollow, two
+     structures that are secretly one piece, a girder whose ripple stops dead three tiles
+     in because there is a crack there. And you are not the only listener: the blind things
+     feel the same metal. The tool that reads the world writes your position into it, and
+     those two facts arrive several rooms apart.</dd>
+    </dl>
+   </div>
+   <div class="verb">
+    <p class="role">B &mdash; pure fastener, zero readout</p>
+    <p class="nm">A joiner's sash cramp</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>Set the jaws across two things, turn the screw, and from then on they are one
+     object. Clamp a handhold onto a passing ore-car and ride it. Stop a swinging
+     counterweight. It is one physical cramp, not an ability &mdash; clamp it to something
+     that leaves and it leaves with the cramp.</dd>
+     <dt>Second reading</dt>
+     <dd>Joining two driven bodies stalls them, and the machine does not know it has
+     stalled &mdash; strain builds, and the cramp eventually shears off and is flung. A
+     stalled machine is a temporary platform with a countdown you can hear in the pitch.
+     And a cramp can close the two lips of one fracture, which is not joining anything: it
+     is repairing continuity inside a single body.</dd>
+    </dl>
+   </div>
+  </div>
+
+  <div class="rows">
+   <div class="row"><div class="lbl">The coupling</div><p class="val">The cramp writes one
+   extra edge into the acoustic bond table the wave stencil already reads. That is the
+   whole interface between the two verbs &mdash; one line.</p></div>
+   <div class="row"><div class="lbl">Layer 2 hook</div><p class="val">A cast counterweight
+   the size of a house, half-sunk in the first room's floor, a hairline fracture across its
+   face. Tap it early and it gives a dull thud &mdash; which the player files under dead
+   scenery, so the game has already answered the question and closed it. It rings only once
+   you have mapped the crack by tapping and know a cramp restores continuity across a
+   fracture.</p></div>
+   <div class="row"><div class="lbl">Indifference</div><p class="val">The blind things come
+   to any sustained ring because ringing is what feeding used to sound like. They pass
+   within a tile of you on stone and never register you. The ore-cars run their loop with
+   or without a body on the rail.</p></div>
+  </div>
+
+  <div class="found">
+   <h4>What the stress test found</h4>
+   <ul>
+    <li><b>Nodal patterns are not additive.</b> Grit parked on a node of plate A stays
+    parked only while A is N tiles long. Cramp plate B onto it and the union is N+M, the
+    node set is entirely different, and grit on a plate you never touched, at a pitch you
+    never changed, gets up and moves.</li>
+    <li><b>Cracks collect debris by themselves.</b> The gradient force pushes grit toward
+    minima, and an unbonded crack lip is permanently at zero &mdash; so every fracture is a
+    global minimum and marks itself with accumulated debris. No art, no flag. Cramping the
+    crack removes the minimum and the pile scatters.</li>
+    <li><b>A sheared cramp is retrievable by sound.</b> The grit rule tests entities
+    standing on a tile, not what kind. So you can drive a plate from your side of a gap,
+    hold a pitch, and walk your own dropped tool back to you across ground you cannot
+    reach.</li>
+   </ul>
+   <p class="weak"><span>Weakest link</span>The channel is nearly one-directional: B
+   changes what A reads, but A changes almost nothing about B. And the redundancy cut is
+   held up by a hand-placed carve-out rather than by physics &mdash; the grit force is
+   declared to apply to loose entities but not bodies, even though bodies carry velocity in
+   the same struct space. Remove that exception and the fork moves machinery, which
+   collapses L4.</p>
+  </div>
+ </div>
+
+ <h2 class="sec">Two &mdash; Brine and Ballast</h2>
+ <div class="card brine">
+  <h3>Brine and Ballast</h3>
+  <p class="tag">recommended &middot; your own weight as a dial</p>
+  <p class="setting">A drained salt-works of terraced evaporation pans, roofed by
+  collapsing timber scaffold, where blind filter-feeders the size of barges plough slow
+  circuits through the deep brine and everything the sea left behind is still
+  crystallising.</p>
+
+  <div class="verbs">
+   <div class="verb">
+    <p class="role">A &mdash; scalar magnitudes, gravity axis only</p>
+    <p class="nm">The Kettles &mdash; a shoulder yoke of two sealed iron kettles</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>Your own weight becomes a dial you turn. Empty, you moon-jump: high, slow,
+     drifting, comically unable to shove anything. Full, you plummet, and a four-tile drop
+     lands with a thud that dimples the crust. A stranger spends a minute at a pan rim just
+     filling and emptying to feel the jump arc stretch.</dd>
+     <dt>Second reading</dt>
+     <dd>Weight does not scale your movement &mdash; it swaps which floors exist. Salt
+     crust holds a light body and shatters under a heavy one, so the light player has a
+     whole walkable plane the heavy player has never seen. The kettles are sealed air
+     vessels: empty you float and cannot descend, full you sink and walk the pan floor.
+     Every room is two rooms and the seam is your own body.</dd>
+    </dl>
+   </div>
+   <div class="verb">
+    <p class="role">B &mdash; positional constraint, adds no energy</p>
+    <p class="nm">The Gaff &mdash; a short iron salt-hauling hook</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>You bite a corner and become a pendulum. No aiming, no throwing, no return: the
+     hook catches an outside corner within arm's reach or it clacks off. Holding up or down
+     slides your grip along the haft &mdash; pull in and you whip faster, pay out and you
+     lengthen. Letting go at the top of an arc and watching where the launch angle comes
+     out is the whole toy.</dd>
+     <dt>Second reading</dt>
+     <dd>The pivot is a two-body constraint, not a fixed point, and you find out by hooking
+     something that isn't a wall. Hook a drifting raft or a filter-feeder's dorsal plate and
+     you are towed by something that never registered the contact. And corners are bodies
+     too: heavy swings shear salt corners off mid-arc. The world's furniture has a weight
+     class and you are near the bottom of it.</dd>
+    </dl>
+   </div>
+  </div>
+
+  <div class="rows">
+   <div class="row"><div class="lbl">The coupling</div><p class="val">Three shared lines,
+   none of them written to be clever: <code>GRAV[load]</code> inside the angular
+   integrator, <code>(1+load)</code> inside the corner-wear counter, and
+   <code>corners[]</code> derived from a tile grid that both verbs delete tiles from.</p></div>
+   <div class="row"><div class="lbl">Layer 2 hook</div><p class="val">A cast-iron diving
+   bell, mouth-down on the crust at the lip of the first room's pan, a rusted lifting eye on
+   its crown. In Layer 1 it cannot be pushed, entered, climbed or tipped, and no room is
+   built around it. It becomes usable only after you have failed at the deep pan &mdash;
+   because you must be heavy to sink to the floor, cannot climb back out heavy, and there is
+   no rim down there. Hanging off the bell's eye at full load puts a combined weight on the
+   crust beneath it; the crust gives, and the bell goes down with you clinging to it,
+   carrying its trapped air pocket. Inside the pocket there is a rim.</p></div>
+   <div class="row"><div class="lbl">Indifference</div><p class="val">The filter-feeders
+   neither pursue nor avoid you. Each ploughs a fixed circuit, mouth open, straining brine;
+   standing in one means being pushed under the crust by a body that never changed course.
+   Riding one is worse, not better: it carries you exactly where it was already going and
+   scrapes you off under a low arch it has been passing for years, at the same speed, with
+   the same rhythm.</p></div>
+  </div>
+
+  <div class="found">
+   <h4>What the stress test found</h4>
+   <ul>
+    <li><b>Gravity cancels out of the range equation.</b> A full gaff swing throws you
+    exactly as far at every load &mdash; the gravity that whips you faster pulls you down
+    sooner. Load selects the <em>shape</em> of the throw at constant distance. Then terminal
+    velocity breaks the tie the wrong way, so the feeble moon-jumping player throws
+    farthest. Every intuition the jump table teaches is inverted by one shared line.</li>
+    <li><b>Swinging carves its own next anchor.</b> The load stamp is re-applied every frame
+    from the tiles under your feet with no pivot exemption, so at the bottom of each arc you
+    stamp weight onto the crust you skim. It fails in a row of discrete holes at the arc's
+    lowest point &mdash; and every hole is a fresh convex corner.</li>
+    <li><b>Filling destroys its own preconditions.</b> Buoyancy is negative when light and
+    positive when heavy, so a player floating at a rim over deep brine fills one kettle,
+    fills the second, and at the instant load crosses over, the buoyancy holding them in the
+    rim tile inverts and drops them out mid-fill. Over deep brine you are stuck &mdash;
+    unless you catch the rim's own corner with the gaff and hang there while you finish.
+    Nothing was written to require both verbs; it falls out of one signed table crossing
+    zero.</li>
+   </ul>
+   <p class="weak"><span>Weakest link</span>The part the premise is proudest of &mdash; the
+   two-body mass ratio &mdash; is dead code against static corners, so in most of 25 rooms it
+   degenerates to a plain pendulum and only fires against hand-tuned entities. Cut it and
+   findings 1&ndash;7 survive intact. Two defects must be settled before Phase 1: the crust
+   threshold is off by one against its own stated rule, and the gaff currently defeats
+   buoyancy &mdash; which dissolves the exact contradiction the diving bell is built on.</p>
+  </div>
+ </div>
+
+ <h2 class="sec">Three &mdash; Salt and Afterglow</h2>
+ <div class="card phos">
+  <h3>Salt and Afterglow</h3>
+  <p class="tag">seeing by subtraction</p>
+  <p class="setting">A disused mineral works cut into terraces, lit only by damp mats of
+  glowing moss that grow wherever water seeps, and grazed by blind animals the size of the
+  room that scrape the walls for salt.</p>
+
+  <div class="verbs">
+   <div class="verb">
+    <p class="role">A &mdash; read-only, emits nothing</p>
+    <p class="nm">The afterglow slate</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>A pane of phosphor-coated slag on a wire handle. Anything bright that passes behind
+     it leaves a glowing smear that fades over about five seconds. Wave it through a
+     luminous drip and it keeps the streak; swing it in a circle and hold a glowing loop in
+     your hand. A five-second-memory etch-a-sketch made of light. It cannot brighten one
+     pixel of the world.</dd>
+     <dt>Second reading</dt>
+     <dd>It integrates over time, so rhythm becomes geometry &mdash; a drip every 1.4s is a
+     dotted line whose spacing you can read off. And when a cell saturates it goes opaque,
+     which makes the slate a hand-held eclipse: cover the one blinding vent and the whole
+     rest of the screen lifts. The tool's real use is subtraction. You make the world dimmer
+     in order to see more.</dd>
+    </dl>
+   </div>
+   <div class="verb">
+    <p class="role">B &mdash; adds matter, subtracts light</p>
+    <p class="nm">The salt gourd</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>A falling-sand automaton in your hands. Salt pours, piles at its angle of repose,
+     flows around ledges, pours through a one-tile gap, and a settled pile is solid enough
+     to stand on and walk up. You will fill a crevice for no reason at all and enjoy it.</dd>
+     <dt>Second reading</dt>
+     <dd>Salt is hygroscopic and this world's light is wet. A grain sitting on a moss tile
+     drains it, and after two seconds the moss goes dark and hard, permanently. The tool
+     that adds matter is the tool that destroys illumination &mdash; and you find out by
+     burying a patch you were standing on and watching the room lose a quarter of its
+     brightness while you are still in it.</dd>
+    </dl>
+   </div>
+  </div>
+
+  <div class="rows">
+   <div class="row"><div class="lbl">The coupling</div><p class="val">Grains in flight are
+   the only fast bright objects in the world, and the slate integrates them &mdash; so a
+   poured stream draws on the slate, and the shape it draws is the trajectory. Burying moss
+   lowers ambient light, which raises exposure, which makes a faint smear finally readable.
+   The destructive verb is the exposure control for the perceptual one.</p></div>
+   <div class="row"><div class="lbl">Layer 2 hook</div><p class="val">A shallow stone basin
+   set flush into the first room's floor, its bottom the same dull grey-green as the slate,
+   with a small rusted weight in the middle. You walk across it in the first thirty seconds
+   and it does nothing. It is a slate the size of the floor that has been integrating this
+   room's light since long before you arrived &mdash; saturated flat, and read as ordinary
+   stone. Kill every moss tile in that room and its charge starts falling unevenly, because
+   the phosphor under the weight aged differently, and for ten seconds a figure resolves in
+   the floor that nobody drew.</p></div>
+   <div class="row"><div class="lbl">Indifference</div><p class="val">The salt-lickers are
+   blind grazers taller than the visible ceiling; you usually see a flank and a tongue
+   entering from one edge. They walk through your position and displace you along the floor
+   &mdash; no damage, no reaction, no event at all. The only thing they respond to is salt,
+   so pouring a staircase near one means it turns and eats your staircase while you are
+   standing on it.</p></div>
+  </div>
+
+  <div class="found">
+   <h4>What the stress test found</h4>
+   <ul>
+    <li><b>Destroying light makes the room brighter.</b> Kill enough moss and the frame's
+    luminance maximum collapses, so auto-exposure applies maximum gain until the dither hash
+    itself becomes the image &mdash; and the last surviving bright object is whatever you
+    are pouring. You become the room's light source while holding one tool that emits
+    nothing and another that only destroys light.</li>
+    <li><b>You can ride your own pile.</b> Pour straight down at your feet; the cell you
+    stand in promotes to solid while your hitbox overlaps it, and depenetration pushes you
+    out along the shallowest axis &mdash; upward. A vertical traversal verb nobody designed,
+    produced by the collision resolver being handed a tile that materialised inside the
+    player.</li>
+    <li><b>A memory budget rendered as a shape.</b> The grain array is a hard cap, so a
+    sustained pour does not get denser when you tilt harder &mdash; it gets truncated at a
+    fixed distance from the gourd. The slate integrates that truncation as a line of fixed
+    length. The player can read the size of a fixed-size array off the face of a tool.</li>
+   </ul>
+   <p class="weak"><span>Weakest link</span>Five of the strongest surprises route through
+   one global scalar &mdash; the frame's luminance maximum &mdash; and that is precisely the
+   variable someone will smooth or clamp the first time the pour-strobe shows up in
+   playtest, because unclamped it is a real photosensitivity hazard. One line of exposure
+   smoothing turns this pair from rich to thin in an afternoon, and whoever writes it will
+   think they are fixing a rendering bug. Separately, salt piles live in the room arena
+   while moss death is a persistent tile write, so salt builds nothing that survives a screen
+   transition &mdash; which quietly removes it from the traversal vocabulary across all 25
+   rooms.</p>
+  </div>
+ </div>
+
+ <h2 class="sec">Four &mdash; The Proving Floor</h2>
+ <div class="card crust">
+  <h3>The Proving Floor</h3>
+  <p class="tag">volume and force vs. adhesion and memory</p>
+  <p class="setting">A bakehouse the size of a cathedral that nobody has staffed in a very
+  long time &mdash; still warm, still running, its lower halls silted knee-deep in old
+  flour.</p>
+
+  <div class="verbs">
+   <div class="verb">
+    <p class="role">A &mdash; volume, force, time</p>
+    <p class="nm">A lump of live leaven</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>Set it down anywhere and it swells. Soft-bodied: you sink into it, it takes your
+     shape, it squeezes through a gap and comes out elongated, it lifts anything light
+     resting on top, it plugs a hole airtight. People laugh the first time they sit on one
+     and slowly rise. It grows faster where the floor is warm and stops dead where it is
+     cold, which anyone works out in seconds.</dd>
+     <dt>Second reading</dt>
+     <dd>It has a clock. Left too long in heat it over-proofs and collapses into slack, and
+     slack dough is not a solid &mdash; it is a fluid that seeks the lowest point, pours
+     through gratings the intact lump could never fit, and re-thickens once it reaches
+     somewhere cold. The same object is a jack, a plug, a platform, a timer, and, if you
+     deliberately cook it too long, a liquid you can decant somewhere you cannot reach.</dd>
+    </dl>
+   </div>
+   <div class="verb">
+    <p class="role">B &mdash; adhesion, visibility, memory</p>
+    <p class="nm">A tin flour dredger</p>
+    <dl>
+     <dt>First reading</dt>
+     <dd>Sift and a slow cloud comes off, drifts on whatever air the room has, and settles
+     into drifts on ledges. It has no weight and no collision &mdash; it cannot hold
+     anything up. It is pure pleasure: shake it and the room's invisible air becomes
+     legible, curling around a doorway, spiralling above a warm tile. Kick a drift and it
+     puffs.</dd>
+     <dt>Second reading</dt>
+     <dd>Flour is a recording medium, and what it records is not yours. Dust a hall, leave,
+     come back: there are tracks across it that are not your size and not your gait, going
+     somewhere. And the real inversion &mdash; dough will not anchor to a floured surface,
+     so the useful tool is often the <em>removal</em> of flour, and the game never says
+     so.</dd>
+    </dl>
+   </div>
+  </div>
+
+  <div class="rows">
+   <div class="row"><div class="lbl">The coupling</div><p class="val">Dough anchors only
+   where there is no dust, and expansion pushes off its anchor set. Flour under a lump and
+   symmetric growth becomes net horizontal thrust &mdash; and because a sliding blob wipes
+   dust behind it, it re-anchors the instant it runs off the end. The length of the floured
+   strip is exactly the distance the lump travels, which is a rule you can measure with a
+   shaker and then aim.</p></div>
+   <div class="row"><div class="lbl">Layer 2 hook</div><p class="val">A long shallow stone
+   trough at the base of the first room's wall, filled flush with a grey, rock-hard set mass
+   &mdash; a sponge left to die decades ago. You walk over it for the entire game. It is not
+   dead, only dry, cold, and by the end buried under the flour you have been dusting into
+   that room since minute one. It wakes only on bare contact with live leaven along its
+   length, which requires the one action that both wipes it clean and delivers dough:
+   sliding a floured lump down it.</p></div>
+   <div class="row"><div class="lbl">Indifference</div><p class="val">Nothing is hunting.
+   The machinery keeps handling material and you are material: millstones turn, a conveyor
+   of trays goes into a dark aperture and comes back empty, and all of it processes a body
+   exactly as it processes a lump. The mill-moths are dog-sized, want spilled flour, and walk
+   over you to get to it. Their feet are cold.</p></div>
+  </div>
+
+  <div class="found">
+   <h4>What the stress test found</h4>
+   <ul>
+    <li><b>Footprints steer dough.</b> Walking decrements dust, and dough anchors only where
+    dust is zero &mdash; so a lump grown in a dusted room anchors only on tiles you happened
+    to walk on, and its thrust is the sum of normals under your own path. Two identical
+    rooms, two walking routes, two launch directions. The number of times you have walked
+    somewhere becomes a physical quantity.</li>
+    <li><b>Size is instability.</b> A blob growing across a dusted floor loses anchors as it
+    gets bigger, because every new frontier cell in a floured tile is dead weight. Past some
+    radius the anchored fraction crosses zero and the whole thing launches with no input at
+    all. In a dusty room dough has a maximum stable diameter, which you discover by having a
+    lump leave without permission.</li>
+    <li><b>Dough climbs.</b> Thrust is the sum of inward normals, and slope tiles have
+    diagonal normals &mdash; so a lump grown into an inside corner of two slopes has a
+    residual with a vertical component, and de-anchoring it sends it straight up
+    indefinitely. No line of code says dough climbs. Slopes were in the tile set before
+    either verb existed.</li>
+   </ul>
+   <p class="weak"><span>Weakest link</span>Verb A's vent-and-pressure second reading cannot
+   happen: wind is authored per room and never written at runtime, so rerouting pressure
+   needs either a solver (outside the envelope) or hand-coded two-port vents &mdash; a
+   special case, which is exactly what this filter exists to catch. Cut it. Behind that, an
+   unanchored blob is exempt from gravity as specified, so a mis-aimed lump drifts off-screen
+   forever and needs a fall rule before any sandbox session is meaningful.</p>
+  </div>
+ </div>
+
+ <h2 class="sec">Recommendation</h2>
+ <div class="rec">
+  <h3>Brine and Ballast</h3>
+  <p class="tag">and what would have to be true in Phase 3</p>
+  <p>Not because it scored highest &mdash; Salt and Afterglow found more surprises and is
+  the more beautiful idea. Because of where its surprises come from and what it costs to
+  find out.</p>
+  <ol>
+   <li><strong>The emergence sits in shared variables, not in authored content.</strong>
+   The stress test's own verdict is that the pitched feature &mdash; the two-body mass ratio
+   &mdash; is the weak part, and that the real richness comes from three duller shared lines.
+   That is exactly the right shape for L2. Compare Salt and Afterglow, whose five best
+   surprises all hang off one global scalar that a renderer fix would quietly delete.</li>
+   <li><strong>It is the only one I am confident we can play with early.</strong> No field
+   simulation: lookup tables indexed by load, a corner array built once per room, one
+   pendulum integrator. The others risk spending Phases 2 and 3 debugging a simulation
+   instead of playing with toys &mdash; and Phase 3's gate is five surprises found <em>by
+   playing</em>, not by reasoning.</li>
+   <li><strong>Both verbs pass gate (a) hard.</strong> Filling and emptying at a rim to feel
+   the jump arc stretch; releasing a swing at different angles to see where you go. Both are
+   fun in thirty seconds with no goal attached.</li>
+   <li><strong>L12 is arithmetic, not fiction.</strong> The jump table teaches heavy =
+   powerful for hours. Then gravity cancels out of the swing's range equation and the light
+   body throws farthest. Guiding the player into thinking they fully understand something,
+   then revealing that they don't &mdash; as a consequence of one shared constant.</li>
+   <li><strong>L4 splits cleanly.</strong> The kettles change scalar magnitudes along the
+   gravity axis and cannot attach you to anything. The gaff adds no energy and alters no
+   property of your body. Where they look like they overlap &mdash; both get you up &mdash;
+   is where they are most cleanly divided: weight raises your apex and cannot cross a gap,
+   the gaff crosses gaps and can never lift you above the corner you caught.</li>
+  </ol>
+  <p class="risk"><strong>The honest risk.</strong> The Layer 2 hook depends on a
+  contradiction the gaff may dissolve. The diving bell's gate is &ldquo;heavy enough to sink,
+  too heavy to climb out, no rim down there&rdquo; &mdash; but the pivot integrator reads
+  gravity and never buoyancy, so hooking a submerged corner lets you ratchet down and back up
+  and the contradiction evaporates anywhere a submerged corner exists. That has to be settled
+  deliberately before Phase 1, not discovered in Phase 5: either buoyancy enters the submerged
+  pivot, which kills a good emergent behaviour and saves the bell, or the bell's gate gets
+  rebuilt on something the gaff cannot reach. Second risk, smaller: two verbs that both act on
+  your own body means the world changes less than in the other three. Crust destruction and
+  corner wear are the only persistent edits, and the room arena wipes crust on transition
+  &mdash; so it recrystallises when you return. That is a defensible choice, but it needs to
+  be a choice.</p>
+ </div>
+
+ <div class="method">
+  <h2>How this was produced, and where to distrust it</h2>
+  <p>Six seeds, each given a different generative constraint, produced two premises apiece.
+  Each of the twelve went through an independent emergence stress test before any law-judging,
+  then two adversarial judges working from opposite directions.</p>
+  <p><strong>The filter did not discriminate.</strong> All twelve came back
+  &ldquo;rich&rdquo;, and the judges have been averaging 7&ndash;8 with no blocking
+  violations. A 12/12 pass rate means the scores are not doing the work, so the selection
+  here is mine, made by reading all twelve in full &mdash; not the panel's ranking. The
+  stress tests earned their keep anyway: their surprise lists and weakest-link critiques are
+  specific, mechanical, and in several places found defects the premises did not know they
+  had.</p>
+  <p>Two runners-up worth pulling up if none of these land: <em>Dry Measure</em> (a
+  surveyor's spring tape whose stiffness is decided by what its tip touches, paired with grit
+  that is a friction dial &mdash; the retract pulls whichever end has less friction, and you
+  do not get to choose, the floor does) and <em>The Long Thaw</em> (a felted blanket that is a
+  stiffness state machine, paired with a block of lake ice &mdash; you use the coldest thing
+  in the world to build a machine that delivers heat). The Long Thaw is the best-written of
+  the twelve and the biggest build risk.</p>
+ </div>
+</div>
