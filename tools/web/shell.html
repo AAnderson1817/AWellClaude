@@ -1,4 +1,4 @@
-<title>Movement Gym</title>
+<title>The Salt Works</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
 <style>
   /* Deliberately single-theme. The subject is a 240p CRT in a dark room; a light
@@ -86,7 +86,7 @@
 
 <div class="wide" style="padding:28px 20px 64px">
   <header style="max-width:1120px;margin:0 auto">
-    <h1>Movement Gym</h1>
+    <h1>The Salt Works</h1>
     <span class="eyebrow">Phase 1 · one room · 320&times;180</span>
   </header>
 
@@ -101,29 +101,27 @@
       <div class="keys">
         <div class="keyrow"><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>or A / D &mdash; run</span></div>
         <div class="keyrow"><kbd>Z</kbd><kbd>Space</kbd><span>jump &mdash; hold for height</span></div>
-        <div class="keyrow"><kbd>&darr;</kbd><span>drop through a thin ledge</span></div>
+        <div class="keyrow"><kbd>&uarr;</kbd><span>swim up</span></div>
+        <div class="keyrow"><kbd>X</kbd><span>hold at an iron lip &mdash; fill</span></div>
+        <div class="keyrow"><kbd>X</kbd><kbd>&darr;</kbd><span>hold at an iron lip &mdash; tip out</span></div>
       </div>
       <h2 style="margin-top:26px">The room</h2>
-      <p style="margin:0;color:var(--dim);max-width:34ch">Floor gaps of two, three and four
-      tiles; a one, two and three tile step; two thin ledges; a black shelf; water.
-      It is a calibration rig, not a design.</p>
+      <p style="margin:0;color:var(--dim);max-width:34ch">A sandbox, not a design. A pale
+      crust bridge over a pit on the left and a crust shelf above it; a shallow pan with an
+      iron lip at each end; a terrace and a deep pan on the right. Nothing here is a puzzle
+      &mdash; it is somewhere to find out what weight does.</p>
     </div>
 
     <div class="tablewrap">
       <table>
-        <caption>Tuning &mdash; pixels per 1/60s frame</caption>
+        <caption>The dial &mdash; measured, not intended</caption>
+        <thead><tr><th>load</th><th>jump</th><th>fall cap</th><th>in brine</th></tr></thead>
         <tbody>
-          <tr><th>run</th><td>1.45</td><td class="note">~87 px/s; a room is 3.7s wide</td></tr>
-          <tr><th>accel</th><td>0.24 / 0.16</td><td class="note">ground / air</td></tr>
-          <tr><th>turnaround</th><td>&times;1.9</td><td class="note">accel bonus against your own velocity</td></tr>
-          <tr><th>friction</th><td>0.34 / 0.045</td><td class="note">ground / air</td></tr>
-          <tr><th>gravity</th><td>0.225</td><td class="note">&times;0.62 near the apex of a held jump</td></tr>
-          <tr><th>terminal</th><td>4.30</td><td class="note">fall cap</td></tr>
-          <tr><th>jump</th><td>&minus;3.20</td><td class="note">rises 21 px &mdash; 2.6 tiles</td></tr>
-          <tr><th>cutoff</th><td>&minus;1.05</td><td class="note">rise clamp on early release</td></tr>
-          <tr><th>coyote</th><td>6 frames</td><td class="note">consumed by a jump, never retro-cleared</td></tr>
-          <tr><th>buffer</th><td>7 frames</td><td class="note">how long a press stays live</td></tr>
-          <tr><th>air distance</th><td>44 px</td><td class="note">5.5 tiles from a full run</td></tr>
+          <tr><th>empty</th><td>4.49 tiles</td><td>2.60</td><td class="note">floats, 2.4&nbsp;px under</td></tr>
+          <tr><th>one</th><td>3.45 tiles</td><td>3.40</td><td class="note">floats, 5.5&nbsp;px under</td></tr>
+          <tr><th>two</th><td>2.68 tiles</td><td>4.30</td><td class="note">sinks</td></tr>
+          <tr><th>three</th><td>1.92 tiles</td><td>5.20</td><td class="note">sinks</td></tr>
+          <tr><th>four</th><td>1.34 tiles</td><td>6.10</td><td class="note">sinks</td></tr>
         </tbody>
       </table>
     </div>
@@ -131,11 +129,12 @@
 
   <div class="ask" style="max-width:1120px;margin-left:auto;margin-right:auto">
    <div style="max-width:62ch">
-    <p>Movement is the foundation and the hardest thing to change later, so this is the
-    one thing I want your verdict on before anything else gets built on top of it.
-    <strong>Does it feel right?</strong></p>
-    <p>Useful answers are things like: floaty at the apex, too slippery stopping, jump
-    too short for the room, turnaround too sharp. Any number in that table can move.</p>
+    <p>Weight is the verb. Run speed, acceleration and friction are identical at every
+    load on purpose &mdash; only the gravity axis moves, so the kettles never start doing
+    the second verb's job. <strong>Does the dial feel worth turning?</strong></p>
+    <p>Two things worth trying, neither of which any room tells you about: stand still on
+    the pale bridge with full kettles, then try crossing the same bridge without stopping.
+    And look at how deep you sit in a pan &mdash; that is the only load counter there is.</p>
    </div>
   </div>
 </div>
