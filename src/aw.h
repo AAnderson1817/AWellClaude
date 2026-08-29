@@ -1,0 +1,129 @@
+// aw.h — everything shared. C-style: flat structs, fixed-size arrays, no allocation
+// in the game loop, no function pointers on entities, no inheritance.
+#ifndef AW_H
+#define AW_H
+
+#include "raylib.h"
+#include <stdint.h>
+#include <stddef.h>
+
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef int32_t  i32;
+typedef float    f32;
+
+// ---------------------------------------------------------------- resolution
+#define GW 320          // internal render target width
+#define GH 180          // internal render target height
+#define TS 8            // tile size in pixels
+#define RW 40           // room width  in tiles  (40*8 = 320)
+#define RH 22           // room height in tiles  (22*8 = 176)
+#define ROOM_Y 2        // room is centred in the 180px frame: 2px band top & bottom
+
+#define WORLD_W 5       // L1: the ceiling. 5x5 = 25 rooms. This never rises.
+#define WORLD_H 5
+#define ROOM_COUNT (WORLD_W * WORLD_H)
+
+#define DT (1.0f / 60.0f)
+
+// ---------------------------------------------------------------- memory
+// Three nested preallocated arenas. Global lives for the process, session for a
+// save, room is wiped on every transition (bug containment comes free).
+typedef struct { u8 *base; size_t size, used; } Arena;
+
+void  ArenaInit(Arena *a, u8 *base, size_t size);
+void *ArenaPush(Arena *a, size_t size, size_t align);
+void  ArenaReset(Arena *a);
+#define PushArray(a, T, n) (T *)ArenaPush((a), sizeof(T) * (n), _Alignof(T))
+#define PushStruct(a, T)   (T *)ArenaPush((a), sizeof(T), _Alignof(T))
+
+// ---------------------------------------------------------------- tiles
+// The whole collision/lighting model lives in these flags, as in the original.
+enum {
+    TF_SOLID    = 1 << 0,   // blocks the player on all four sides
+    TF_BLOCKS_L = 1 << 1,   // blocks light
+    TF_OBSCURES = 1 << 2,   // drawn over the player
+    TF_DARK     = 1 << 3,   // reads as black; anything may hide in it
+    TF_ONEWAY   = 1 << 4,   // solid only from above
+    TF_WATER    = 1 << 5,
+    TF_CONTIG   = 1 << 6,   // autotiles against its own kind
+};
+
+enum {
+    T_EMPTY = 0,
+    T_ROCK,         // ordinary solid
+    T_DARK,         // solid, reads as pure black — the hiding place
+    T_LEDGE,        // one-way platform
+    T_WATER,
+    T_GRASS,        // decorative, non-solid
+    T_TILE_KINDS
+};
+
+extern const u8 tileFlags[T_TILE_KINDS];
+static inline int TileSolid(u8 t)  { return (tileFlags[t] & TF_SOLID) != 0; }
+static inline int TileOneWay(u8 t) { return (tileFlags[t] & TF_ONEWAY) != 0; }
+
+// ---------------------------------------------------------------- room
+typedef struct {
+    u8 tiles[RH][RW];       // flat typed array, exactly as the original stores it
+    u8 bgId;
+    u8 lighting;
+    u8 exists;
+} Room;
+
+typedef struct {
+    Room rooms[ROOM_COUNT];
+    int cx, cy;             // current room coords
+} World;
+
+extern World world;
+static inline Room *RoomAt(int x, int y) { return &world.rooms[y * WORLD_W + x]; }
+static inline Room *CurRoom(void)        { return RoomAt(world.cx, world.cy); }
+u8 TileAtPx(float px, float py);   // world pixel -> tile id in the current room
+
+// ---------------------------------------------------------------- player
+typedef struct {
+    f32 x, y;               // top-left of the hitbox, in room pixels
+    f32 vx, vy;
+    i32 w, h;
+    int onGround;
+    int facing;             // -1 / +1
+    int coyote;             // frames of ground-memory remaining
+    int jumpBuf;            // frames of buffered jump remaining
+    int jumpHeld;
+    int inWater;
+    f32 animT;              // procedural animation clock
+    f32 leanX, leanY;       // second-order lag, drives the procedural pass
+} Player;
+
+extern Player player;
+
+void PlayerInit(float x, float y);
+void PlayerStep(void);
+void PlayerDraw(void);
+
+// ---------------------------------------------------------------- input
+// One indirection so scripted playtests and the keyboard share a path.
+typedef struct { int left, right, up, down, jump, jumpPressed, a, b; } Input;
+extern Input in;
+void InputPoll(void);
+
+// ---------------------------------------------------------------- render
+void RenderInit(void);
+void RenderBeginRoom(void);
+void RenderEndRoomAndPresent(void);
+void DrawRoom(Room *r);
+extern RenderTexture2D screenRT;
+
+// ---------------------------------------------------------------- palette
+extern Color palRock, palRockDeep, palRockLit, palDark, palBg, palBgDeep, palWater, palGrass, palSkin;
+
+// ---------------------------------------------------------------- debug
+extern int dbgShotFrames[16];
+extern int dbgShotCount;
+extern const char *dbgOutDir;
+extern int dbgFixedStep;    // 1 = exactly one sim step per rendered frame
+extern long frameNo;
+
+#endif
