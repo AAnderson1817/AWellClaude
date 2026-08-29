@@ -1,0 +1,154 @@
+<title>Movement Gym</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+  /* Deliberately single-theme. The subject is a 240p CRT in a dark room; a light
+     palette would misrepresent what is being judged. Every colour is painted. */
+  :root {
+    --ground:  #08080c;
+    --surface: #12111b;
+    --rule:    #26243a;
+    --ink:     #cbc6d9;
+    --dim:     #736e8c;
+    --bone:    #cec5a8;   /* the player's colour: the only warm thing in the world */
+    
+    --water-ok:#2c5a78;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 14px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: min(1120px, 100%); margin: 0 auto; padding: 28px 20px 64px; }
+  .wide { max-width: 1302px; margin: 0 auto; }
+
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+           padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  h1 { font-family: var(--cond); font-weight: 700; font-size: 24px; letter-spacing: 0.01em;
+       margin: 0; text-wrap: balance; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+             text-transform: uppercase; color: var(--dim); }
+
+  /* --- the screen is the hero ------------------------------------------- */
+  .screen { margin: 22px auto 0; position: relative;
+           width: min(1302px, 100%); }
+  .bezel {
+    background: #000; border: 1px solid var(--rule); border-radius: 3px;
+    padding: 10px; display: flex; justify-content: center;
+    box-shadow: 0 0 0 1px #000 inset, 0 24px 60px -30px #000;
+  }
+  canvas { display: block; width: 1280px; max-width: 100%; height: auto;
+           background: #000; outline: none; }
+  .veil {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    background: rgba(4,4,8,0.86); cursor: pointer; border-radius: 3px;
+    transition: opacity .35s ease; font-family: var(--mono);
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim);
+  }
+  .veil[hidden] { display: none; }
+  .veil.gone { opacity: 0; pointer-events: none; }
+
+  /* --- key + numbers ----------------------------------------------------- */
+  .band { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 34px;
+          margin-top: 26px; align-items: start; }
+  @media (max-width: 760px) { .band { grid-template-columns: 1fr; gap: 26px; } }
+
+  h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+       text-transform: uppercase; color: var(--dim); font-weight: 500;
+       margin: 0 0 12px; }
+
+  .keys { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+  .keyrow { display: flex; align-items: center; gap: 10px; }
+  kbd { font-family: var(--mono); font-size: 11px; font-weight: 500;
+        background: var(--surface); border: 1px solid var(--rule); border-bottom-width: 2px;
+        border-radius: 3px; padding: 3px 7px; color: var(--ink); }
+  .keyrow span { color: var(--dim); font-size: 13px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  caption { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--dim); padding-bottom: 12px; }
+  th, td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid var(--rule); }
+  th { font-weight: 500; color: var(--dim); }
+  td { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+  td.note { font-family: var(--sans); color: var(--dim); }
+  .tablewrap { overflow-x: auto; }
+
+  .ask { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--rule);
+         color: var(--ink); }
+  .ask strong { color: var(--bone); font-weight: 500; }
+  .ask p { margin: 0 0 10px; }
+  .ask p:last-child { margin-bottom: 0; color: var(--dim); }
+  @media (prefers-reduced-motion: reduce) { .veil { transition: none; } }
+</style>
+
+<div class="wide" style="padding:28px 20px 64px">
+  <header style="max-width:1120px;margin:0 auto">
+    <h1>Movement Gym</h1>
+    <span class="eyebrow">Phase 1 · one room · 320&times;180</span>
+  </header>
+
+  <div class="screen">
+    <div class="bezel"><canvas id="cv" tabindex="0"></canvas></div>
+    <div class="veil" id="veil">loading</div>
+  </div>
+
+  <div class="band" style="max-width:1120px;margin-left:auto;margin-right:auto">
+    <div>
+      <h2>Key</h2>
+      <div class="keys">
+        <div class="keyrow"><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>or A / D &mdash; run</span></div>
+        <div class="keyrow"><kbd>Z</kbd><kbd>Space</kbd><span>jump &mdash; hold for height</span></div>
+        <div class="keyrow"><kbd>&darr;</kbd><span>drop through a thin ledge</span></div>
+      </div>
+      <h2 style="margin-top:26px">The room</h2>
+      <p style="margin:0;color:var(--dim);max-width:34ch">Floor gaps of two, three and four
+      tiles; a one, two and three tile step; two thin ledges; a black shelf; water.
+      It is a calibration rig, not a design.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Tuning &mdash; pixels per 1/60s frame</caption>
+        <tbody>
+          <tr><th>run</th><td>1.45</td><td class="note">~87 px/s; a room is 3.7s wide</td></tr>
+          <tr><th>accel</th><td>0.24 / 0.16</td><td class="note">ground / air</td></tr>
+          <tr><th>turnaround</th><td>&times;1.9</td><td class="note">accel bonus against your own velocity</td></tr>
+          <tr><th>friction</th><td>0.34 / 0.045</td><td class="note">ground / air</td></tr>
+          <tr><th>gravity</th><td>0.225</td><td class="note">&times;0.62 near the apex of a held jump</td></tr>
+          <tr><th>terminal</th><td>4.30</td><td class="note">fall cap</td></tr>
+          <tr><th>jump</th><td>&minus;3.20</td><td class="note">rises 21 px &mdash; 2.6 tiles</td></tr>
+          <tr><th>cutoff</th><td>&minus;1.05</td><td class="note">rise clamp on early release</td></tr>
+          <tr><th>coyote</th><td>6 frames</td><td class="note">consumed by a jump, never retro-cleared</td></tr>
+          <tr><th>buffer</th><td>7 frames</td><td class="note">how long a press stays live</td></tr>
+          <tr><th>air distance</th><td>44 px</td><td class="note">5.5 tiles from a full run</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ask" style="max-width:1120px;margin-left:auto;margin-right:auto">
+   <div style="max-width:62ch">
+    <p>Movement is the foundation and the hardest thing to change later, so this is the
+    one thing I want your verdict on before anything else gets built on top of it.
+    <strong>Does it feel right?</strong></p>
+    <p>Useful answers are things like: floaty at the apex, too slippery stopping, jump
+    too short for the room, turnaround too sharp. Any number in that table can move.</p>
+   </div>
+  </div>
+</div>
+
+<script>/*__GAME_JS__*/</script>
+<script>
+  const cv = document.getElementById('cv');
+  const veil = document.getElementById('veil');
+  RL({ canvas: cv, print: () => {}, printErr: () => {} }).then(() => {
+    veil.textContent = 'click to play';
+    const start = () => { veil.classList.add('gone'); cv.focus(); };
+    veil.addEventListener('click', start);
+    cv.addEventListener('click', () => cv.focus());
+    setTimeout(start, 1200);
+  });
+</script>
