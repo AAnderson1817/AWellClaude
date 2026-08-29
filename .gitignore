@@ -1,0 +1,6 @@
+build/
+lib/*.a
+tools/setup.log
+tools/.setup_complete
+node_modules/
+shots/
