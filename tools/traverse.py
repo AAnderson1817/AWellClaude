@@ -57,13 +57,22 @@ def body_fits(rooms, rm, c, r):
     """The body is ~1.5 tiles tall; require this tile and the one above to be clear."""
     return passable(rooms, rm, c, r) and passable(rooms, rm, c, r - 1)
 
+def near_rim(rooms, rm, c, r):
+    """A body overlapping a rim tile can fill or tip out, i.e. change its own load."""
+    for dc in (-1, 0, 1):
+        for dr in (-1, 0, 1, 2):
+            cc, rr = c + dc, r + dr
+            if 0 <= cc < RW and 0 <= rr < RH and rooms[rm][rr][cc] == 'R': return True
+    return False
+
 def flood(rooms, rm, load, seeds):
-    """Reachable tiles for a body of this load, starting from seeds."""
+    """Reachable (tile, load) states. Load is part of the search because a rim lets the
+    player change what they weigh, which changes what they can climb and where they sink."""
     seen = set(); q = deque()
     for s in seeds:
-        if body_fits(rooms, rm, *s): seen.add(s); q.append(s)
+        if body_fits(rooms, rm, *s): seen.add((s[0], s[1], load)); q.append((s[0], s[1], load))
     while q:
-        c, r = q.popleft()
+        c, r, load = q.popleft()
         cand = []
         inwater = brine(rooms, rm, c, r)
         grounded = solid(rooms, rm, c, r + 1) or (rooms[rm][r + 1][c] in ONEWAY if r + 1 < RH else False)
@@ -89,10 +98,17 @@ def flood(rooms, rm, load, seeds):
                     if all(body_fits(rooms, rm, c + (1 if dc > 0 else -1) * k, r - up)
                            for k in range(0, abs(dc) + 1)) or dc == 0:
                         cand.append((tc, r - up))
+        loads = [load]
+        if near_rim(rooms, rm, c, r): loads = list(range(5))
         for n in cand:
-            if n in seen: continue
             if not body_fits(rooms, rm, *n): continue
-            seen.add(n); q.append(n)
+            for L in loads:
+                st = (n[0], n[1], L)
+                if st in seen: continue
+                seen.add(st); q.append(st)
+        for L in loads:
+            st = (c, r, L)
+            if st not in seen: seen.add(st); q.append(st)
     return seen
 
 def doors(rooms, rm):
@@ -139,8 +155,9 @@ def main():
                 keys = list(ds)
                 if len(keys) > 1:
                     base = flood(rooms, rm, load, ds[keys[0]])
+                    reach = set((c, r) for c, r, _ in base)
                     for k in keys[1:]:
-                        if not any(t in base for t in ds[k]): ok = False
+                        if not any(t in reach for t in ds[k]): ok = False
                 cols.append('ok ' if ok else 'CUT')
                 if not ok: issues.append(f"({x},{y}) load {load}: doors not mutually reachable")
             t = re.search(r'teaches=(\S+)', meta.get(rm, '') or '')
