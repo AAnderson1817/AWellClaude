@@ -7,9 +7,9 @@ ROOM 4,3 teaches=S6 note=The deepest sump, roofed a tile above its own surface: 
 #XXXXXXXXXXXXX.........................#
 #XXXXXXXXXXXXX.........................#
 #XX,,,,................................#
-#XX~~~~~~~~~~~~RR#######################
-#XX~~~~~~~~~~~~#####XXXXXXXXXXXXXXXXXXX#
-#XX~~~~~~~~~~~~#####XXXXXXXXXXXXXXXXXXX#
+#XX~~~~~~~~~~~~RR###............########
+#XX~~~~~~~~~~~~#####............XXXXXXX#
+#XX~~~~~~~~~~~~#####XXXXRRRRRRXXXXXXXXX#
 #XX###~~~~~~~~~#####XXXXXXXXXXXXXXXXXXX#
 #XX~~~~~~~~~~~~#####XXXXXXXXXXXXXXXXXXX#
 #XX~~~~~~~~~########XXXXXXXXXXXXXXXXXXX#

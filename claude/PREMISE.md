@@ -63,6 +63,15 @@ honest affordance answer (L6), not a rule that switched itself off.
 Consequence for Phase 4: **no convex submerged corner may be authored in the bell's room
 below the brine line.** Everywhere else they are welcome.
 
+**D1a — amended at the end of Phase 4.** The constraint was originally handed to (4,4),
+the deepest pan. That was wrong, and the contradiction is instructive: a room a heavy
+body can only leave via the bell is, by definition, a gate — and L7 requires Phase 4 to
+build the world fully open with no gates at all. The two cannot both be true in Phase 4.
+So the bell's room is deferred to Phase 5, where it is authored deliberately as the one
+place the world is not open, and (4,4) stays an ordinary open deep pan with rims on its
+floor and a door at the waterline. The no-corner rule still holds — it just applies to a
+room that does not exist yet.
+
 **D2 — The two-body mass ratio is cut from Phase 2/3 scope.**
 The stress test found it degenerates to a plain pendulum against static corners, so it is
 dead code in most rooms and only fires against hand-tuned entities. Findings 1–7 all

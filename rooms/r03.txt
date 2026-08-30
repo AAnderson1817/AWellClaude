@@ -1,16 +1,16 @@
-ROOM 0,3 teaches=S7 note=A flooded hall under a slab roof, with one blunt prong hanging into it: the way east lies two tiles under the float line, so you bite the ledge slung below the surface and pull yourself down under your own buoyancy.
+ROOM 0,3 teaches=S7 note=A flooded hall under a vaulted roof with one slender black spike hanging into it: the way east lies two tiles under the float line, so you bite the ledge slung below the surface and pull yourself down under your own buoyancy.
 #########################....###########
-#XXXXXXXXXXXXXXXXXXXXXXX...............#
-#XXXXXXXXXXXXXXXXXXXXXXX...............#
-#............XXXXXXXX.TTTTTT...........#
-#............XXXXXXXX..................#
-#............XXXXXXXX..................#
-#.............XXXXXX......TTTTTT.......#
-#.............XXXXXX...................#
-#.............XXXXXX...................#
-#..............XXXX...TTTTTT...........#
-#..............XXXX....................#
-#..............XXXX....................#
+#XXXXXXXXXXXXXXXXXXXXXXX......XXXXXXXXX#
+#XXXXXX...,,,,.....XX.....,,,,...XXXXXX#
+#XXXX..............XX...TTTTTT.....XXXX#
+#..................XX..................#
+#..................XX..................#
+#..................XX.....TTTTTT.......#
+#..................XX..................#
+#..................XX..................#
+#..................XX.TTTTTT...........#
+#..................XX..................#
+#..................XX..................#
 #..,,,....................TTTTTT..,,,..#
 #~~~~~~~~~~~~~~~~~~~~~~~RR~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
