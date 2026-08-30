@@ -3,7 +3,7 @@
 that has not been authored yet with a bare template so the build always runs."""
 import re, glob, sys, os
 have = {}
-for f in sorted(glob.glob('rooms/row*.txt')) + ['rooms/r22.txt']:
+for f in sorted(glob.glob('rooms/row*.txt')) + sorted(glob.glob('rooms/r[0-9][0-9].txt')):
     if not os.path.exists(f): continue
     for blk in re.split(r'\n(?=ROOM )', open(f).read().strip()):
         lines = blk.split('\n')

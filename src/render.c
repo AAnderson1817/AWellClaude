@@ -153,19 +153,28 @@ void DrawRoom(Room *r) {
                 } break;
 
                 case T_BELL: {
-                    // Cast iron, mouth down, a rusted lifting eye on the crown. It is
-                    // never lit, never framed, and never referred to by any room.
-                    int top = (y == 0) || (r->tiles[y - 1][x] != T_BELL);
-                    int lft = (x == 0) || (r->tiles[y][x - 1] != T_BELL);
-                    int rgt = (x == RW - 1) || (r->tiles[y][x + 1] != T_BELL);
-                    DrawRectangle(px, py, TS, TS, (Color){52, 47, 44, 255});
-                    if (top) {
-                        DrawRectangle(px, py, TS, 1, (Color){96, 88, 80, 255});
-                        DrawRectangle(px + 3, py - 2, 2, 2, (Color){78, 70, 62, 255});
+                    // Cast iron, mouth down, a rusted lifting eye on the crown. Shaped
+                    // from its neighbours so a 3x2 block reads as one object. It is never
+                    // lit, never framed, and no room is built around it.
+                    int up  = (y > 0)      && (r->tiles[y - 1][x] == T_BELL);
+                    int dn  = (y < RH - 1) && (r->tiles[y + 1][x] == T_BELL);
+                    int lf  = (x > 0)      && (r->tiles[y][x - 1] == T_BELL);
+                    int rg  = (x < RW - 1) && (r->tiles[y][x + 1] == T_BELL);
+                    Color iron = {58, 54, 52, 255}, lit = {104, 98, 92, 255},
+                          dark = {31, 28, 27, 255};
+                    DrawRectangle(px, py, TS, TS, iron);
+                    if (!up) {
+                        // crown: shoulder in at the corners so the top reads as a dome
+                        DrawRectangle(px, py, TS, 1, lit);
+                        if (!lf) { DrawRectangle(px, py, 2, 1, palBg); DrawRectangle(px + 2, py, 1, 1, lit); }
+                        if (!rg) { DrawRectangle(px + TS - 2, py, 2, 1, palBg); DrawRectangle(px + TS - 3, py, 1, 1, lit); }
+                        if (!lf && !rg) DrawRectangle(px + 3, py - 2, 2, 2, iron);   // the eye
+                        else if (lf && rg) DrawRectangle(px + 3, py - 2, 2, 2, iron);
                     }
-                    if (lft) DrawRectangle(px, py, 1, TS, (Color){38, 34, 32, 255});
-                    if (rgt) DrawRectangle(px + TS - 1, py, 1, TS, (Color){38, 34, 32, 255});
-                    if (((x * 3 + y * 5) & 3) == 0) DrawRectangle(px + 2, py + 4, 1, 1, (Color){86, 62, 44, 255});
+                    if (!dn) DrawRectangle(px, py + TS - 2, TS, 2, dark);  // the mouth
+                    if (!lf) DrawRectangle(px, py, 1, TS, dark);
+                    if (!rg) DrawRectangle(px + TS - 1, py, 1, TS, dark);
+                    if (((x * 7 + y * 3) & 3) == 0) DrawRectangle(px + 2, py + 3, 1, 1, (Color){92, 66, 46, 255});
                 } break;
 
                 case T_RIM: {

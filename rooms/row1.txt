@@ -70,14 +70,14 @@ ROOM 2,1 teaches=S9 note=A stone lip four tiles above a crusted pan: hang from i
 #############RRRRRRRRRRRRRR#############
 ########################################
 
-ROOM 3,1 teaches=S11 note=One anchor under a hanging pier, three landings fanned out east of it: the same swing reaches all three and only the moment of release picks one.
+ROOM 3,1 teaches=S11 note=A pier to hang under and three landings stacked east of it - the plank you left, a ledge above it, one above the anchor itself - and only the moment of release picks one.
 ########################################
 #XXXXX...........##....................#
 #XXX.............##....................#
 #................##....................#
 #................##....................#
 #................##....................#
-#................##....................#
+#................##........----........#
 #................##....................#
 #................##.....................
 #.............########..................
@@ -86,7 +86,7 @@ ROOM 3,1 teaches=S11 note=One anchor under a hanging pier, three landings fanned
 #...........-------------------------###
 #..................................#####
 #................................#######
-.....................----......#########
+...............................#########
 .............................###########
 ...........................#############
 ....~~~~~~.........,,,,..###############

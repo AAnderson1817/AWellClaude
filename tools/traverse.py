@@ -79,6 +79,10 @@ def flood(rooms, rm, load, seeds):
         # horizontal
         for dc in (-1, 1):
             cand.append((c + dc, r))
+        # drop through a one-way platform by holding Down -- ledges and timber are
+        # hatches, and every bottom door in the world so far is capped by one.
+        if r + 1 < RH and rooms[rm][r + 1][c] in ONEWAY:
+            cand.append((c, r + 2))
         # fall, with the air control the body actually has
         if not grounded and not inwater:
             for dc in (-1, 0, 1):
