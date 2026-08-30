@@ -54,6 +54,17 @@ A corner exists wherever a solid tile has **air above it and air to one side**. 
 the level geometry *is* the set of anchors — and because crust that fails deletes tiles,
 the player's own weight manufactures new corners.
 
+## The one-tile gap trap
+The body is 12 px tall and a tile is 8 px. **A single tile of clearance is not a gap a
+body can enter.** A solid tile one row above a walkable floor seals that corridor
+completely, silently, and it will not look sealed in the text.
+
+Every horizontal route needs TWO clear rows. If you want a low place a body squeezes
+under, two rows is the minimum and it is already tight. This is also why a staircase
+built from solid blocks across a through-route walls it off: build climbs out of one-way
+tiles ('-' or 'T') wherever a route passes under them, and use solid stair blocks only
+where the corridor genuinely ends.
+
 ## Composition rules
 - One room is one screen. The camera is locked. There is no scrolling.
 - **Each room is one readable still image.** A player should be able to look at it and
@@ -62,6 +73,14 @@ the player's own weight manufactures new corners.
 - **No room repeats another's idea.** You are given a specific surprise to showcase.
 - Darkness conceals: any `X` tile may be hiding something, and you should use that.
 - Do NOT design a puzzle that requires a mechanic not in the table above.
+- **Vary your vertical language.** A long diagonal staircase of one-way planks is the
+  default answer to "get up there" and it has already been used to death — one room in
+  the world has an eleven-step one. Across your rooms, find different ways up: stacked
+  landings, a shaft with alternating stubs, hookable beams, a rising crust shelf, a
+  column you climb round. `tools/compose.py` will flag PLANK-STAIR at five steps.
+- **Use the whole frame.** The camera is locked and all 22 rows are the composition. A
+  room whose content sits in the bottom third wastes that, and twenty-five such rooms
+  read as one room. `tools/compose.py` flags TOP-EMPTY and SPARSE.
 - Do NOT gate anything. Phase 4 builds the world fully traversable with NO gates at all;
   gates are added later, only where testing shows people get lost. Every door you are
   given must remain passable at every load, or reachable by another route in the room.

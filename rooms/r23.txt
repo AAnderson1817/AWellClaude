@@ -1,0 +1,23 @@
+ROOM 2,3 teaches=S9 note=A bored massif over a crust lid: hang heavy from the beam tip, the nub shears, and the landing finishes the crust your feet had been grazing - the second break is the one that lets you into the sealed bay.
+##################....##################
+#..XXXXXXXXXXXXXXX....XXXXXXXXXXXX.....#
+#..XXXXXXXXXXXXXXX.TTTXXXXXXXXXXXX.....#
+#..XXXXXXXXXXXXXXX....XXXXXXXXXXXX.....#
+#..XXXXXXXXXXXXXXTTTT........XXXXX.....#
+#..XXXXXXXXXXXXXX............XXXXX.....#
+#...XXXXXXXXXXXXXXXXXXXXX....XXXX......#
+#....XXXXXXXXXXXXXXXXXXXX....XXX.......#
+#.....XXXXXXXXXXXXXXXXX..TTTTXXX........
+#......XXXXXXXXXXXXX.........XX.........
+#....#####XXXXXXX........TTTT...........
+#....,,,,,..............................
+#.......................################
+#.......................################
+#===============R~~~~~RRR~~~~~~~~~~~~~~#
+.~~~~~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~#
+.~~~~~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~#
+.~~~~~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~#
+.~~~~~~~~~~~RRR~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#####RRRRRR##########RRRRRR#############
+########################################

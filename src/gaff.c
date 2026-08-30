@@ -71,10 +71,8 @@ static int BodyFits(float x, float y) {
     int tx0 = (int)floorf(x / TS), tx1 = (int)floorf((x + player.w - 1) / TS);
     int ty0 = (int)floorf(y / TS), ty1 = (int)floorf((y + player.h - 1) / TS);
     for (int ty = ty0; ty <= ty1; ty++)
-        for (int tx = tx0; tx <= tx1; tx++) {
-            if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return 0;
+        for (int tx = tx0; tx <= tx1; tx++)
             if (TileSolid(TileGet(tx, ty))) return 0;
-        }
     return 1;
 }
 

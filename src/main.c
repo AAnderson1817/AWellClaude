@@ -26,6 +26,10 @@ static int dbgTrace = 0;
 static int startTx = -1, startTy = -1, startLoad = 0;
 static int startRx = START_ROOM_X, startRy = START_ROOM_Y;
 static const char *contactPath = 0;
+static long maxFrames = 0;
+static int visitReport = 0;
+static int noDraw = 0;
+static u8 visited[ROOM_COUNT];
 static int dbgShotsDone = 0;
 static float acc = 0.0f;
 
@@ -58,8 +62,40 @@ static void ParsePlan(char *s) {
     for (int i = 0; i < planLen; i++) planTotal += plan[i].frames;
 }
 
+// A wandering bot. Not clever: it holds a direction for a while, jumps sometimes, grabs
+// sometimes, fills sometimes -- roughly the shape of a person with no plan. Deterministic
+// from its seed so a run can be repeated exactly.
+int wanderSeed = 0;
+static u32 wrng;
+static int wDir, wHold, wJump, wGaff, wKett, wUp, wDown;
+static float WRnd(void) {
+    wrng ^= wrng << 13; wrng ^= wrng >> 17; wrng ^= wrng << 5;
+    return (float)(wrng & 0xFFFF) / 65535.0f;
+}
+
 void InputPoll(void) {
     static int prevJump = 0;
+    if (wanderSeed) {
+        if (!wrng) wrng = (u32)wanderSeed * 2654435761u + 1u;
+        if (--wHold <= 0) {
+            wHold = 8 + (int)(WRnd() * 50);
+            float p = WRnd();
+            wDir  = p < 0.42f ? 1 : (p < 0.84f ? -1 : 0);
+            wJump = WRnd() < 0.45f;
+            wGaff = WRnd() < 0.22f;
+            wKett = WRnd() < 0.30f;
+            wUp   = WRnd() < 0.25f;
+            wDown = WRnd() < 0.18f;
+        }
+        in.left = wDir < 0; in.right = wDir > 0;
+        in.up = wUp; in.down = wDown;
+        // tap the jump rather than holding it, or the buffer never re-arms
+        in.jump = wJump && ((frameNo / 7) & 1);
+        in.jumpPressed = in.jump && !prevJump;
+        in.a = wKett; in.b = wGaff;
+        prevJump = in.jump;
+        return;
+    }
     if (planLen) {
         while (planIdx < planLen && planLeft <= 0) { planIdx++; if (planIdx < planLen) planLeft = plan[planIdx].frames; }
         int m = (planIdx < planLen) ? plan[planIdx].mask : 0;
@@ -101,6 +137,7 @@ static void Sim(void) {
 
 static void Frame(void) {
     frameNo++;
+    visited[world.cy * WORLD_W + world.cx] = 1;
 
     if (dbgFixedStep) {
         Sim();
@@ -112,12 +149,14 @@ static void Frame(void) {
         if (steps == 0) InputPoll();
     }
 
-    RenderBeginRoom();
-        DrawRoom(CurRoom());
-        GaffDraw();
-        PlayerDraw();
-        FxDraw();
-    RenderEndRoomAndPresent();
+    if (!noDraw) {
+        RenderBeginRoom();
+            DrawRoom(CurRoom());
+            GaffDraw();
+            PlayerDraw();
+            FxDraw();
+        RenderEndRoomAndPresent();
+    }
 
     if (dbgTrace)
         printf("f=%4ld r=%d,%d x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d hook=%d corners=%d\n",
@@ -162,6 +201,11 @@ int main(int argc, char **argv) {
             startLoad = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--drop")) {
             extern int dbgReleaseAtBottom; dbgReleaseAtBottom = 1;
+        } else if (!strcmp(argv[i], "--wander") && i + 1 < argc) {
+            extern int wanderSeed; wanderSeed = atoi(argv[++i]);
+            dbgFixedStep = 1; visitReport = 1; noDraw = 1;
+        } else if (!strcmp(argv[i], "--frames") && i + 1 < argc) {
+            maxFrames = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--contact") && i + 1 < argc) {
             contactPath = argv[++i];
         } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
@@ -177,9 +221,11 @@ int main(int argc, char **argv) {
     ArenaInit(&roomArena, rm, 1u * 1024u * 1024u);
 
     SetTraceLogLevel(LOG_WARNING);
-    SetConfigFlags(FLAG_VSYNC_HINT);
+    // Headless runs are deterministic and fixed-step, so there is no reason to sit at
+    // 60 fps waiting for a wall clock nobody is watching.
+    if (!dbgFixedStep) SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(GW * winScale, GH * winScale, "well");
-    SetTargetFPS(60);
+    SetTargetFPS(dbgFixedStep ? 0 : 60);
     RenderInit();
     LoadWorld();
     world.cx = startRx; world.cy = startRy;
@@ -223,8 +269,19 @@ int main(int argc, char **argv) {
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);
 #else
-    while (!WindowShouldClose() && !dbgShotsDone && !PlanExhausted()) Frame();
+    while (!WindowShouldClose() && !dbgShotsDone && !PlanExhausted()
+           && !(maxFrames && frameNo >= maxFrames)) Frame();
 #endif
+    if (visitReport) {
+        int n = 0;
+        for (int i = 0; i < ROOM_COUNT; i++) if (visited[i]) n++;
+        printf("VISITED %d/25\n", n);
+        for (int y = 0; y < WORLD_H; y++) {
+            printf("  ");
+            for (int x = 0; x < WORLD_W; x++) printf("%s", visited[y * WORLD_W + x] ? " ## " : " .. ");
+            printf("\n");
+        }
+    }
     CloseWindow();
     return 0;
 }

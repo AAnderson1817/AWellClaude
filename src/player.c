@@ -41,11 +41,13 @@ int RectHitsSolidPublic(float x, float y, int w, int h);
 static int RectHitsSolid(float x, float y, int w, int h) {
     int tx0 = (int)floorf(x / TS), tx1 = (int)floorf((x + w - 1) / TS);
     int ty0 = (int)floorf(y / TS), ty1 = (int)floorf((y + h - 1) / TS);
+    // No bounds check here on purpose: TileGet already answers "just outside the room"
+    // correctly -- open where a room lies that way, rock where the world ends. Checking
+    // bounds here instead would make every shared edge a wall, and the body could never
+    // step out of a room at all.
     for (int ty = ty0; ty <= ty1; ty++)
-        for (int tx = tx0; tx <= tx1; tx++) {
-            if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return 1;
+        for (int tx = tx0; tx <= tx1; tx++)
             if (TileSolid(TileGet(tx, ty))) return 1;
-        }
     return 0;
 }
 
@@ -56,9 +58,7 @@ static int LedgeBlocks(float oldBottom, float newY, int w, int h) {
     int ty0 = (int)floorf(oldBottom / TS), ty1 = (int)floorf((newBottom - 1) / TS);
     int tx0 = (int)floorf(player.x / TS), tx1 = (int)floorf((player.x + w - 1) / TS);
     for (int ty = ty0; ty <= ty1; ty++) {
-        if (ty < 0 || ty >= RH) continue;
         for (int tx = tx0; tx <= tx1; tx++) {
-            if (tx < 0 || tx >= RW) continue;
             if (!TileOneWay(TileGet(tx, ty))) continue;
             float top = ty * (float)TS;
             if (oldBottom <= top + 0.001f && newBottom > top) return 1;
@@ -132,10 +132,8 @@ static int TileFlagsUnderBody(int flag) {
     int tx0 = (int)floorf(player.x / TS), tx1 = (int)floorf((player.x + player.w - 1) / TS);
     int ty0 = (int)floorf(player.y / TS), ty1 = (int)floorf((player.y + player.h) / TS);
     for (int ty = ty0; ty <= ty1; ty++)
-        for (int tx = tx0; tx <= tx1; tx++) {
-            if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) continue;
+        for (int tx = tx0; tx <= tx1; tx++)
             if (tileFlags[TileGet(tx, ty)] & flag) return 1;
-        }
     return 0;
 }
 
@@ -169,8 +167,20 @@ static void StampLoad(void) {
 }
 
 // ---------------------------------------------------------------- kettles
+// A lip you are standing against is a lip you can use. Testing only the tiles the body
+// overlaps means a body pressed flat against a rim is one pixel short of reaching it,
+// which is invisible, maddening, and was making the first room's pan a trap.
+static int NearRim(void) {
+    int tx0 = (int)floorf(player.x / TS) - 1, tx1 = (int)floorf((player.x + player.w - 1) / TS) + 1;
+    int ty0 = (int)floorf(player.y / TS) - 1, ty1 = (int)floorf((player.y + player.h) / TS) + 1;
+    for (int ty = ty0; ty <= ty1; ty++)
+        for (int tx = tx0; tx <= tx1; tx++)
+            if (tileFlags[TileGet(tx, ty)] & TF_RIM) return 1;
+    return 0;
+}
+
 static void KettleStep(void) {
-    player.atRim = TileFlagsUnderBody(TF_RIM);
+    player.atRim = NearRim();
     // Standing at a rim stirs the brine beside it. Solves nothing; it is only the
     // world admitting you are there.
     if (player.atRim && player.onGround && (frameNo % 14) == 0)
