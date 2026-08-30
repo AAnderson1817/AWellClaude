@@ -76,21 +76,38 @@ static float WRnd(void) {
 void InputPoll(void) {
     static int prevJump = 0;
     if (wanderSeed) {
+        static float lastX, lastY; static int stuckFor, climbFor;
         if (!wrng) wrng = (u32)wanderSeed * 2654435761u + 1u;
         if (--wHold <= 0) {
-            wHold = 8 + (int)(WRnd() * 50);
+            wHold = 14 + (int)(WRnd() * 70);
             float p = WRnd();
-            wDir  = p < 0.42f ? 1 : (p < 0.84f ? -1 : 0);
-            wJump = WRnd() < 0.45f;
-            wGaff = WRnd() < 0.22f;
+            wDir  = p < 0.45f ? 1 : (p < 0.90f ? -1 : 0);
+            wJump = WRnd() < 0.40f;
+            wGaff = WRnd() < 0.25f;
             wKett = WRnd() < 0.30f;
-            wUp   = WRnd() < 0.25f;
-            wDown = WRnd() < 0.18f;
+            wUp   = WRnd() < 0.30f;
+            wDown = WRnd() < 0.15f;
         }
-        in.left = wDir < 0; in.right = wDir > 0;
-        in.up = wUp; in.down = wDown;
-        // tap the jump rather than holding it, or the buffer never re-arms
-        in.jump = wJump && ((frameNo / 7) & 1);
+        // The one thing a bot needs to stop being useless: if it is pushing against
+        // something and going nowhere, try going over it. Without this it never climbs,
+        // and a test that never climbs cannot tell a hard route from a sealed one.
+        if (fabsf(player.x - lastX) < 0.3f && fabsf(player.y - lastY) < 0.3f) stuckFor++;
+        else stuckFor = 0;
+        lastX = player.x; lastY = player.y;
+        if (stuckFor > 10 && climbFor <= 0) { climbFor = 26 + (int)(WRnd() * 34); stuckFor = 0; }
+        if (climbFor > 0) climbFor--;
+
+        // While climbing, sweep back and forth: nearly every ladder in this world is
+        // landings on alternating sides, and a bot that only ever pushes one way stalls
+        // against the first wall it meets and never finds the next step.
+        int cdir = wDir;
+        if (climbFor > 0) cdir = ((frameNo / 22) & 1) ? 1 : -1;
+        in.left = cdir < 0; in.right = cdir > 0;
+        in.up = wUp || (climbFor > 0 && (frameNo & 3) == 0);
+        in.down = wDown && climbFor <= 0;
+        // hold the jump through a rise (height is variable) but let it re-arm
+        int want = (climbFor > 0) ? ((frameNo % 26) < 17) : (wJump && ((frameNo / 9) & 1));
+        in.jump = want;
         in.jumpPressed = in.jump && !prevJump;
         in.a = wKett; in.b = wGaff;
         prevJump = in.jump;

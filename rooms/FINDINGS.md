@@ -32,3 +32,30 @@ will need a revision pass rather than a one-room fix:
   with an empty top band. Now 19.5% with the roof fallen in at both ends, two beams at
   different heights, a stone mass hanging mid-frame, and the bell enlarged to a shaped
   3x2 object that reads as cast iron rather than a crate.
+
+
+## What the two traversal tools each prove, and what they do not
+
+**tools/traverse.py (static).** Models walking, falling with air control, whole-tile
+jumps, dropping through one-way platforms, load-signed buoyancy, and load changes at
+rims. Does NOT model the gaff. It proves that every door in a room is reachable from
+every other door at all five loads. Combined with the room graph being connected, that
+is the traversability claim.
+
+**tools/sweep.py + --wander (empirical).** Seeded bots with no plan, driven through the
+real physics with the real verbs. It proves what actually happens rather than what a
+model says. It found the two engine bugs that a model could never have found: bodies
+could not cross a room edge leftward or upward, and rims were unusable when pressed
+flat against them.
+
+**The bot's honest limit.** It reaches 12-13 of 25. It never gets into rows 0 and 1,
+because the only ways up are top doors reached by ladders of eight landings on
+alternating sides, two rows apart. A player does that without thinking; a bot pressing
+a random direction essentially never does, even in 400,000 frames, even with a
+climb-when-stuck heuristic and a sideways sweep.
+
+I checked whether that was the room's fault by dumping (1,2) with its reachable set
+marked: the U door is reachable, the ladder is eight 2-tile hops, and a load-0 body
+clears four tiles. The room is fine. **So the bot's ceiling is a statement about the
+bot, and the traversability claim rests on the static analysis.** Do not report the
+sweep number as a coverage figure without that caveat.
