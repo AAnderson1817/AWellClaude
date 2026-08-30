@@ -35,6 +35,7 @@ typedef struct { u8 *base; size_t size, used; } Arena;
 void  ArenaInit(Arena *a, u8 *base, size_t size);
 void *ArenaPush(Arena *a, size_t size, size_t align);
 void  ArenaReset(Arena *a);
+extern Arena globalArena, sessionArena, roomArena;
 #define PushArray(a, T, n) (T *)ArenaPush((a), sizeof(T) * (n), _Alignof(T))
 #define PushStruct(a, T)   (T *)ArenaPush((a), sizeof(T), _Alignof(T))
 
@@ -61,6 +62,7 @@ enum {
     T_CRUST,        // salt crust: holds a light body, shatters under a heavy one
     T_RIM,          // pan rim, solid; fill and empty the kettles here
     T_TIMBER,       // collapsing scaffold: one-way, and it is what the world is roofed with
+    T_BELL,         // the diving bell. Layer 2 hook: visible in minute one, inert until the end.
     T_TILE_KINDS
 };
 
@@ -88,6 +90,7 @@ typedef struct {
     u8  loadMap[RH][RW];    // cleared each frame; bodies stamp (1 + their load)
     u8  stress[RH][RW];     // crust fatigue
     f32 surfH[RW], surfV[RW];  // 1D brine surface wave, one column per tile
+    u8  broken[RH][RW];     // tiles destroyed by either verb THIS visit
     Corner corners[CORNER_MAX];
     i32 cornerCount;
     i32 cornersDirty;
@@ -105,7 +108,29 @@ typedef struct {
 extern World world;
 static inline Room *RoomAt(int x, int y) { return &world.rooms[y * WORLD_W + x]; }
 static inline Room *CurRoom(void)        { return RoomAt(world.cx, world.cy); }
+// Level data is immutable. Everything either verb destroys is recorded in the room
+// arena instead, so it all comes back when you leave and return -- which is what the
+// premise means by the crust recrystallising, and it costs no save state.
+static inline u8 TileGet(int tx, int ty) {
+    // Just outside the room is open when a room lies that way and solid when it does
+    // not, so a body can step across a shared edge but the world's rim is rock. The
+    // authored wall at the last column still blocks everywhere it is drawn solid.
+    if (tx < 0)   return world.cx > 0            ? T_EMPTY : T_ROCK;
+    if (tx >= RW) return world.cx < WORLD_W - 1  ? T_EMPTY : T_ROCK;
+    if (ty < 0)   return world.cy > 0            ? T_EMPTY : T_ROCK;
+    if (ty >= RH) return world.cy < WORLD_H - 1  ? T_EMPTY : T_ROCK;
+    if (scratch.broken[ty][tx]) return T_EMPTY;
+    return world.rooms[world.cy * WORLD_W + world.cx].tiles[ty][tx];
+}
+static inline void TileBreak(int tx, int ty) {
+    if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return;
+    scratch.broken[ty][tx] = 1;
+    scratch.cornersDirty = 1;
+}
 u8 TileAtPx(float px, float py);   // world pixel -> tile id in the current room
+void LoadWorld(void);
+void EnterRoom(int nx, int ny);
+int  RoomTransition(void);
 
 // ---------------------------------------------------------------- player
 typedef struct {

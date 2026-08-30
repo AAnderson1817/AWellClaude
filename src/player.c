@@ -44,7 +44,7 @@ static int RectHitsSolid(float x, float y, int w, int h) {
     for (int ty = ty0; ty <= ty1; ty++)
         for (int tx = tx0; tx <= tx1; tx++) {
             if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return 1;
-            if (TileSolid(CurRoom()->tiles[ty][tx])) return 1;
+            if (TileSolid(TileGet(tx, ty))) return 1;
         }
     return 0;
 }
@@ -59,7 +59,7 @@ static int LedgeBlocks(float oldBottom, float newY, int w, int h) {
         if (ty < 0 || ty >= RH) continue;
         for (int tx = tx0; tx <= tx1; tx++) {
             if (tx < 0 || tx >= RW) continue;
-            if (!TileOneWay(CurRoom()->tiles[ty][tx])) continue;
+            if (!TileOneWay(TileGet(tx, ty))) continue;
             float top = ty * (float)TS;
             if (oldBottom <= top + 0.001f && newBottom > top) return 1;
         }
@@ -112,7 +112,7 @@ static void MoveY(float dy) {
                         int tx1 = (int)floorf((player.x + player.w - 1) / TS);
                         for (int tx = tx0; tx <= tx1; tx++) {
                             if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) continue;
-                            if (CurRoom()->tiles[ty][tx] != T_CRUST) continue;
+                            if (TileGet(tx, ty) != T_CRUST) continue;
                             int v = scratch.stress[ty][tx] + add;
                             scratch.stress[ty][tx] = (u8)(v > 255 ? 255 : v);
                         }
@@ -134,7 +134,7 @@ static int TileFlagsUnderBody(int flag) {
     for (int ty = ty0; ty <= ty1; ty++)
         for (int tx = tx0; tx <= tx1; tx++) {
             if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) continue;
-            if (tileFlags[CurRoom()->tiles[ty][tx]] & flag) return 1;
+            if (tileFlags[TileGet(tx, ty)] & flag) return 1;
         }
     return 0;
 }

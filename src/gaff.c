@@ -19,7 +19,7 @@ void BuildCorners(void) {
     scratch.cornerCount = 0;
     for (int ty = 1; ty < RH; ty++) {
         for (int tx = 0; tx < RW; tx++) {
-            if (!TileSolid(r->tiles[ty][tx])) continue;
+            if (!TileSolid(TileGet(tx, ty))) continue;
             if (TileSolid(r->tiles[ty - 1][tx])) continue;          // roofed: no corner
             int openL = (tx == 0)      ? 0 : !TileSolid(r->tiles[ty][tx - 1]);
             int openR = (tx == RW - 1) ? 0 : !TileSolid(r->tiles[ty][tx + 1]);
@@ -73,7 +73,7 @@ static int BodyFits(float x, float y) {
     for (int ty = ty0; ty <= ty1; ty++)
         for (int tx = tx0; tx <= tx1; tx++) {
             if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return 0;
-            if (TileSolid(CurRoom()->tiles[ty][tx])) return 0;
+            if (TileSolid(TileGet(tx, ty))) return 0;
         }
     return 1;
 }
@@ -150,7 +150,7 @@ void GaffStep(void) {
 
     // --- hanging
     Corner *c = &scratch.corners[player.hooked];
-    if (!TileSolid(CurRoom()->tiles[c->ty][c->tx])) { Release(); return; }
+    if (!TileSolid(TileGet(c->tx, c->ty))) { Release(); return; }
     if (!in.b) { Release(); return; }
 
     // Grip slide. Angular momentum r^2*omega is conserved, so pulling in whips you.
@@ -199,8 +199,7 @@ void GaffStep(void) {
         c->worn = (u8)(w > 255 ? 255 : w);
         if (c->worn >= CORNER_WEAR_MAX) {
             // The nub shears off mid-arc, at whatever angle the counter expired on.
-            Room *rm = CurRoom();
-            rm->tiles[c->ty][c->tx] = T_EMPTY;
+            TileBreak(c->tx, c->ty);
             FxBurst(FX_SALT, (float)c->px, (float)c->py, 9, 0.7f, 0.5f);
             Release();
             scratch.cornersDirty = 1;

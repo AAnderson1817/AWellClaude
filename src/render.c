@@ -152,6 +152,22 @@ void DrawRoom(Room *r) {
                     if (((x * 5 + y * 3) & 3) == 0) DrawRectangle(px + 3, py, 1, 3, palRockDeep);
                 } break;
 
+                case T_BELL: {
+                    // Cast iron, mouth down, a rusted lifting eye on the crown. It is
+                    // never lit, never framed, and never referred to by any room.
+                    int top = (y == 0) || (r->tiles[y - 1][x] != T_BELL);
+                    int lft = (x == 0) || (r->tiles[y][x - 1] != T_BELL);
+                    int rgt = (x == RW - 1) || (r->tiles[y][x + 1] != T_BELL);
+                    DrawRectangle(px, py, TS, TS, (Color){52, 47, 44, 255});
+                    if (top) {
+                        DrawRectangle(px, py, TS, 1, (Color){96, 88, 80, 255});
+                        DrawRectangle(px + 3, py - 2, 2, 2, (Color){78, 70, 62, 255});
+                    }
+                    if (lft) DrawRectangle(px, py, 1, TS, (Color){38, 34, 32, 255});
+                    if (rgt) DrawRectangle(px + TS - 1, py, 1, TS, (Color){38, 34, 32, 255});
+                    if (((x * 3 + y * 5) & 3) == 0) DrawRectangle(px + 2, py + 4, 1, 1, (Color){86, 62, 44, 255});
+                } break;
+
                 case T_RIM: {
                     // A rim has to read as a thing you can act on without a single
                     // word saying so: a worn iron lip, brighter than any stone, with a

@@ -1,4 +1,5 @@
 #include "aw.h"
+#include "rooms_gen.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,7 +13,7 @@
 // One static block for the whole process. Nothing else allocates, ever.
 #define GLOBAL_BYTES (8u * 1024u * 1024u)
 static u8 globalBlock[GLOBAL_BYTES];
-static Arena globalArena, sessionArena, roomArena;
+Arena globalArena, sessionArena, roomArena;
 
 Input in;
 long frameNo = 0;
@@ -22,8 +23,8 @@ int dbgShotCount = 0;
 const char *dbgOutDir = "shots";
 int dbgFixedStep = 0;
 static int dbgTrace = 0;
-static int startTx = 2, startTy = 17, startLoad = 0;
-static int useGaffSandbox = 0;
+static int startTx = -1, startTy = -1, startLoad = 0;
+static int startRx = START_ROOM_X, startRy = START_ROOM_Y;
 static int dbgShotsDone = 0;
 static float acc = 0.0f;
 
@@ -32,7 +33,8 @@ static float acc = 0.0f;
 // "R:60,RJ:8,R:40,-:30" = 60 frames right, 8 right+jump, 40 right, 30 idle.
 #define PLAN_MAX 64
 static struct { int mask, frames; } plan[PLAN_MAX];
-static int planLen = 0, planIdx = 0, planLeft = 0;
+static int planLen = 0, planIdx = 0, planLeft = 0, planTotal = 0;
+int PlanExhausted(void) { return planLen && frameNo > planTotal + 2; }
 enum { M_L = 1, M_R = 2, M_U = 4, M_D = 8, M_J = 16, M_A = 32, M_B = 64 };
 
 static void ParsePlan(char *s) {
@@ -52,6 +54,7 @@ static void ParsePlan(char *s) {
         tok = strtok(NULL, ",");
     }
     if (planLen) planLeft = plan[0].frames;
+    for (int i = 0; i < planLen; i++) planTotal += plan[i].frames;
 }
 
 void InputPoll(void) {
@@ -81,121 +84,6 @@ void InputPoll(void) {
     prevJump = jump;
 }
 
-// ---------------------------------------------------------------- sandbox room
-// Phase 2 has one room and it is a place to play with weight, not a design.
-// Left: a crust shelf over a drop, so light walks where heavy falls through.
-// Middle: the rim of a shallow pan you can fill and empty at.
-// Right: a deep pan whose floor you can only reach heavy -- and whose rim sits over
-// the deep end, which is where filling starts fighting itself.
-static void BuildSandbox(void) {
-    ArenaReset(&roomArena);
-    Room *r = RoomAt(2, 2);
-    memset(r->tiles, 0, sizeof r->tiles);
-    memset(&scratch, 0, sizeof scratch);
-    FxReset();
-    r->exists = 1;
-    world.cx = 2; world.cy = 2;
-
-    for (int x = 0; x < RW; x++) { r->tiles[0][x] = T_ROCK; r->tiles[RH - 1][x] = T_ROCK; }
-    for (int y = 0; y < RH; y++) { r->tiles[y][0] = T_ROCK; r->tiles[y][RW - 1] = T_ROCK; }
-    for (int x = 1; x < RW - 1; x++) { r->tiles[19][x] = T_ROCK; r->tiles[20][x] = T_ROCK; }
-
-    // --- LEFT: a crust bridge flush with the floor over a two-tile pit.
-    // Reachable at any load, which is the point: light it holds, heavy it does not,
-    // and the only way to find that out is to stand on it and wait.
-    for (int x = 5; x < 12; x++) { r->tiles[19][x] = T_CRUST; r->tiles[20][x] = T_EMPTY; }
-
-    // --- a crust shelf four tiles up. A load-0 jump rises 38 px and clears it; a
-    // load-1 jump rises 29 px and does not. A plane only the empty player has stood on.
-    for (int x = 3; x < 13; x++) r->tiles[15][x] = T_CRUST;
-
-    // --- scaffold, four tiles above the shelf: same rule again, one storey up
-    for (int x = 8; x < 17; x++) r->tiles[11][x] = T_TIMBER;
-
-    // --- MIDDLE: a shallow pan flush with the floor, a rim on each lip. Two tiles
-    // deep, so you can stand in it at any load. The safe place to learn the dial.
-    for (int x = 16; x < 25; x++) { r->tiles[19][x] = T_BRINE; r->tiles[20][x] = T_BRINE; }
-    r->tiles[19][15] = T_RIM;
-    r->tiles[19][25] = T_RIM;
-
-    // --- RIGHT: a terrace, reached by single-tile steps so every load can climb it.
-    r->tiles[18][26] = T_ROCK;
-    r->tiles[17][27] = T_ROCK;  r->tiles[18][27] = T_ROCK;
-    r->tiles[16][28] = T_ROCK;  r->tiles[17][28] = T_ROCK;  r->tiles[18][28] = T_ROCK;
-    for (int y = 15; y < 21; y++) r->tiles[y][29] = T_ROCK;
-    for (int y = 15; y < 21; y++) r->tiles[y][38] = T_ROCK;
-
-    // --- the deep pan: five tiles of brine. Empty you float on it and cannot descend;
-    // full you sink and walk its floor. There is a rim down there, so the sandbox
-    // lets you back out -- the real game's bell room will not.
-    for (int y = 16; y < 21; y++)
-        for (int x = 30; x < 38; x++) r->tiles[y][x] = T_BRINE;
-    r->tiles[15][29] = T_RIM;
-    r->tiles[20][33] = T_RIM;  r->tiles[20][34] = T_RIM;
-
-    // --- nubs to bite, at heights that need a jump to reach
-    int nx[5] = { 6, 14, 20, 26, 35 };
-    int ny[5] = { 12, 16, 14, 13, 15 };
-    for (int i = 0; i < 5; i++) { r->tiles[ny[i]][nx[i]] = T_ROCK; r->tiles[ny[i]][nx[i] + 1] = T_ROCK; }
-
-    // --- a ledge below the brine line in the deep pan, so buoyancy has something to
-    //     be wound against (D1 kept the submerged ratchet on purpose)
-    r->tiles[18][30] = T_ROCK;
-
-    // --- a black shelf, because any black tile may be hiding something
-    for (int x = 19; x < 25; x++) r->tiles[4][x] = T_DARK;
-
-    // --- salt fringe on dry stone
-    for (int x = 1; x < RW - 1; x++)
-        if (r->tiles[19][x] == T_ROCK && r->tiles[18][x] == T_EMPTY && (x * 7 % 5) == 0)
-            r->tiles[18][x] = T_GRASS;
-
-    PlayerInit(startTx * TS, startTy * TS);
-    player.load = (u8)startLoad;
-}
-
-// An empty room with things to bite. Phase 3 asks for a sandbox, not a level: there
-// is nothing to solve here and nothing is placed to be solved. Isolated nubs at a
-// range of heights, one crust strip, one pan, one rim.
-static void BuildGaffSandbox(void) {
-    ArenaReset(&roomArena);
-    Room *r = RoomAt(2, 2);
-    memset(r->tiles, 0, sizeof r->tiles);
-    memset(&scratch, 0, sizeof scratch);
-    FxReset();
-    r->exists = 1;
-    world.cx = 2; world.cy = 2;
-
-    for (int x = 0; x < RW; x++) { r->tiles[0][x] = T_ROCK; r->tiles[RH - 1][x] = T_ROCK; }
-    for (int y = 0; y < RH; y++) { r->tiles[y][0] = T_ROCK; r->tiles[y][RW - 1] = T_ROCK; }
-    for (int x = 1; x < RW - 1; x++) { r->tiles[19][x] = T_ROCK; r->tiles[20][x] = T_ROCK; }
-
-    // a line of isolated nubs to bite, each two tiles wide, at descending heights
-    int nubX[6] = { 8, 13, 18, 23, 28, 33 };
-    int nubY[6] = { 15, 16, 15, 13, 15, 14 };
-    for (int i = 0; i < 6; i++) {
-        r->tiles[nubY[i]][nubX[i]]     = T_ROCK;
-        r->tiles[nubY[i]][nubX[i] + 1] = T_ROCK;
-    }
-
-    // one crust strip in the floor, directly under the arc of nub 2
-    for (int x = 11; x < 17; x++) { r->tiles[19][x] = T_CRUST; r->tiles[20][x] = T_EMPTY; }
-
-    // one deep pan with a rim on its lip and two ledges down its inside wall, both
-    // below the brine line. D1 kept the gaff's submerged ratchet deliberately, so the
-    // sandbox has to contain something to ratchet on.
-    for (int y = 16; y < 21; y++)
-        for (int x = 24; x < 32; x++) r->tiles[y][x] = T_BRINE;
-    for (int y = 15; y < 21; y++) { r->tiles[y][23] = T_ROCK; r->tiles[y][32] = T_ROCK; }
-    r->tiles[15][23] = T_RIM;
-    r->tiles[15][32] = T_RIM;
-    r->tiles[17][24] = T_ROCK;      // submerged ledge, upper
-    r->tiles[19][24] = T_ROCK;      // submerged ledge, lower
-
-    PlayerInit(startTx * TS, startTy * TS);
-    player.load = (u8)startLoad;
-}
-
 // ---------------------------------------------------------------- frame
 static void Sim(void) {
     InputPoll();
@@ -203,6 +91,7 @@ static void Sim(void) {
     PlayerStep();
     RoomStepEnd();
     FxStep();
+    RoomTransition();
     // Both verbs delete tiles, and corners are derived from tiles. Rebuilding here is
     // the third shared line of the coupling: crust that fails under weight manufactures
     // the hooks the gaff needs, and a sheared nub exposes its neighbours.
@@ -230,8 +119,8 @@ static void Frame(void) {
     RenderEndRoomAndPresent();
 
     if (dbgTrace)
-        printf("f=%4ld x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d hook=%d corners=%d\n",
-               frameNo, player.x, player.y, player.vx, player.vy,
+        printf("f=%4ld r=%d,%d x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d hook=%d corners=%d\n",
+               frameNo, world.cx, world.cy, player.x, player.y, player.vx, player.vy,
                player.onGround, player.load, player.atRim, player.submerged,
                player.hooked, (int)scratch.cornerCount);
 
@@ -272,8 +161,9 @@ int main(int argc, char **argv) {
             startLoad = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--drop")) {
             extern int dbgReleaseAtBottom; dbgReleaseAtBottom = 1;
-        } else if (!strcmp(argv[i], "--gaff")) {
-            useGaffSandbox = 1; startTx = 3; startTy = 16;
+        } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
+            startRx = atoi(strtok(argv[++i], ","));
+            char *t = strtok(NULL, ","); if (t) startRy = atoi(t);
         }
     }
 
@@ -288,13 +178,22 @@ int main(int argc, char **argv) {
     InitWindow(GW * winScale, GH * winScale, "well");
     SetTargetFPS(60);
     RenderInit();
-    if (useGaffSandbox) BuildGaffSandbox(); else BuildSandbox();
+    LoadWorld();
+    world.cx = startRx; world.cy = startRy;
+    ArenaReset(&roomArena);
+    memset(&scratch, 0, sizeof scratch);
+    FxReset();
     BuildCorners();
+    // P marks the tile the player stands IN: feet at that tile's bottom edge.
+    int ptx = (startTx >= 0 ? startTx : START_TILE_X);
+    int pty = (startTy >= 0 ? startTy : START_TILE_Y);
+    PlayerInit(ptx * TS + 1, (pty + 1) * TS - 12);
+    player.load = (u8)startLoad;
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);
 #else
-    while (!WindowShouldClose() && !dbgShotsDone) Frame();
+    while (!WindowShouldClose() && !dbgShotsDone && !PlanExhausted()) Frame();
 #endif
     CloseWindow();
     return 0;

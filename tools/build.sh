@@ -9,6 +9,9 @@ for d in "$EMSDK"/node/*/bin; do [ -d "$d" ] && export PATH="$d:$PATH"; done
 
 cd "$ROOT"
 mkdir -p build
+
+# Rooms are authored as text and compiled into the binary. Never streamed at runtime.
+python3 tools/genrooms.py rooms/world.txt src/rooms_gen.h > /dev/null
 TARGET="${1:-all}"
 SRC=(src/*.c)
 

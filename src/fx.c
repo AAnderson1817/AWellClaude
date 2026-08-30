@@ -90,9 +90,8 @@ void RoomStepEnd(void) {
             if (scratch.loadMap[y][x] >= CRUST_BREAK_LOAD) {
                 if (scratch.stress[y][x] < 255) scratch.stress[y][x]++;
                 if (scratch.stress[y][x] >= CRUST_STRESS_MAX) {
-                    r->tiles[y][x] = T_EMPTY;
+                    TileBreak(x, y);
                     scratch.stress[y][x] = 0;
-                    scratch.cornersDirty = 1;
                     FxBurst(FX_SALT, x * TS + TS * 0.5f, y * TS + TS * 0.5f, 7, 0.55f, 0.55f);
                 }
             } else if (scratch.stress[y][x] > 0 && (frameNo & 7) == 0) {
