@@ -60,6 +60,40 @@ for y in range(5):
         if fill < 18: tag += "SPARSE "
         if tag: worst.append((x, y, tag.strip()))
         print(f"({x},{y})   {t:5}     {m_:5}      {b:5}     {fill:5.1f}  {gap:3}  {tag}")
+
+# --- does any pair of rooms read as the same picture?
+# Compare coarse silhouettes: the frame downsampled to 10x11 blocks, occupied or not.
+# Two rooms that agree on almost every block are the same still image twice, whatever
+# their tiles say, and that is the rule about not repeating an idea.
+def silhouette(g):
+    sig = []
+    for by in range(11):
+        for bx in range(10):
+            n = sum(1 for r in range(by * 2, by * 2 + 2) for c in range(bx * 4, bx * 4 + 4)
+                    if g[r][c] != '.')
+            sig.append(1 if n >= 3 else 0)
+    return sig
+
+authored = [k for k in rooms if 'PENDING' not in meta.get(k, '')]
+sigs = {k: silhouette(rooms[k]) for k in authored}
+pairs = []
+keys = sorted(authored)
+for i in range(len(keys)):
+    for j in range(i + 1, len(keys)):
+        a, b = sigs[keys[i]], sigs[keys[j]]
+        inter = sum(1 for x, y in zip(a, b) if x and y)
+        union = sum(1 for x, y in zip(a, b) if x or y)
+        if union < 12: continue
+        jac = inter / union
+        if jac >= 0.72: pairs.append((jac, keys[i], keys[j]))
+pairs.sort(reverse=True)
+if pairs:
+    print("\nrooms that read as the same picture:")
+    for jac, a, b in pairs[:12]:
+        print(f"  {jac:.2f}  {a} ~ {b}")
+else:
+    print("\nno two rooms read as the same picture")
+
 print()
 if worst:
     print(f"{len(worst)} rooms need a composition pass:")

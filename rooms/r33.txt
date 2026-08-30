@@ -1,0 +1,23 @@
+ROOM 3,3 teaches=S5 note=A shallow iron basin under a hanging mass: float in it and both lips sit exactly one tile above your feet and stop you dead, but fill two at the lip and the pan floor turns the same lip into a step.
+########################################
+#..XXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXX.#
+#...XXXXXXXXXXXXXX.....XXXXXXXXXXXXXX..#
+#....XXXXXXXXXXXX.......XXXXXXXXXXXX...#
+#....XXXXXXXXXXXX........XXXXXXXXXX....#
+#.....XXXXXXXXXX..........XXXXXXXX.....#
+#.....XXXXXXXXXX..........XXXXXXXX.....#
+#......XXXXXXXX............XXXXXX......#
+........XXXXXX.............XXXXXX......#
+........XXXXX...............XXXX.......#
+........,,,,,...............XXXX.......#
+.....RR.......RR##.....................#
+#####RR~~~~~~~RR##..##.................#
+#####RR#######RR##..##.##..............#
+##################..##.##.##...........#
+##################~~##~##~##~##~~~~~~~~.
+##################~~##~##~##~##~##~~~~~.
+##################~~##~##~##~##~##~~~~~.
+################~~~~~~~~~~~~~~~~~~~~~~~.
+################~~~~~~~~~~~~~~~~~~~~~~~#
+###################RRRRRRR----RRRR######
+##########################....##########

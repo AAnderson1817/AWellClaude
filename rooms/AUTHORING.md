@@ -78,6 +78,10 @@ where the corridor genuinely ends.
   the world has an eleven-step one. Across your rooms, find different ways up: stacked
   landings, a shaft with alternating stubs, hookable beams, a rising crust shelf, a
   column you climb round. `tools/compose.py` will flag PLANK-STAIR at five steps.
+- **No two rooms may read as the same picture.** `tools/compose.py` now compares every
+  pair of rooms as coarse silhouettes and prints any pair that agrees on 72%+ of the
+  frame. Reaching for the same motif in room after room — the same hanging mass, the
+  same ceiling shape — trips it even when the tiles differ.
 - **Use the whole frame.** The camera is locked and all 22 rows are the composition. A
   room whose content sits in the bottom third wastes that, and twenty-five such rooms
   read as one room. `tools/compose.py` flags TOP-EMPTY and SPARSE.

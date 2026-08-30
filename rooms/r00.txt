@@ -1,0 +1,23 @@
+ROOM 0,0 teaches=S2 note=A crust catwalk under a hanging roof mass: the low black ceiling allows only short hops, and short hops are exactly what carries a heavy body across.
+########################################
+#.....XXXXXXXXXXXXXXXXXXXXXXXXXXXXX....#
+#.......XXXXXXXXXXXXXXXXXXXXXXX...XXXX.#
+#..........XXXXXXXXXXXXXXXX........XX..#
+#............XX......XX................#
+#............XX......XX................#
+#............XX......XX.....TTTTTTTTTT.#
+#............XX......XX......,.,.,.....#
+#.........XXXXXXXXXXXXXXXXX............#
+#........XXXXXXXXXXXXXXXXXXX...........#
+#.........XXXXXXXXXXXXXXXXX............#
+#...........XXXXXXXXXXXXX..............#
+#.............XXXXXXXXX................#
+#..............,..,..,..........TTTTTT.#
+#................................,.,...#
+#.......................................
+#...=====.====.===.====.==..===########.
+####...........................########.
+######.........................########.
+########.......................#########
+##########........TTTT.........#########
+##################....##################
