@@ -20,6 +20,7 @@ Color palSaltLit= {198,202,204, 255 };
 Color palDust   = {126,118,110, 255 };
 Color palTimber = { 88, 72, 56, 255 };
 Color palIron   = { 66, 74, 78, 255 };
+Color palSkinWet= {118,127,124, 255 };   // the part of you that is under the brine
 
 // The CRT pass. Not an overlay: the scanline falloff is modulated per-pixel by
 // luminosity, so bright pixels bloom across the gap and dark ones sink into it.

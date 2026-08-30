@@ -36,6 +36,8 @@ const f32 SINK_L[LOAD_MAX + 1] = { -0.55f, -0.24f,  0.22f,  0.34f,  0.46f  };
 #define FILL_FRAMES  20      // one kettle per 20 frames
 
 // ---------------------------------------------------------------- collision
+int RectHitsSolidPublic(float x, float y, int w, int h);
+
 static int RectHitsSolid(float x, float y, int w, int h) {
     int tx0 = (int)floorf(x / TS), tx1 = (int)floorf((x + w - 1) / TS);
     int ty0 = (int)floorf(y / TS), ty1 = (int)floorf((y + h - 1) / TS);
@@ -46,6 +48,8 @@ static int RectHitsSolid(float x, float y, int w, int h) {
         }
     return 0;
 }
+
+int RectHitsSolidPublic(float x, float y, int w, int h) { return RectHitsSolid(x, y, w, h); }
 
 static int LedgeBlocks(float oldBottom, float newY, int w, int h) {
     float newBottom = newY + h;
@@ -140,8 +144,13 @@ static int TileFlagsUnderBody(int flag) {
 static float SubmergedFraction(void) {
     float cx = player.x + player.w * 0.5f;
     int n = 0;
-    for (int i = 0; i < player.h; i++)
-        if (tileFlags[TileAtPx(cx, player.y + i + 0.5f)] & TF_WATER) n++;
+    player.waterY = -1;
+    for (int i = 0; i < player.h; i++) {
+        if (tileFlags[TileAtPx(cx, player.y + i + 0.5f)] & TF_WATER) {
+            if (player.waterY < 0) player.waterY = (int)(player.y) + i;
+            n++;
+        }
+    }
     return (float)n / (float)player.h;
 }
 
@@ -197,6 +206,7 @@ void PlayerInit(float x, float y) {
     player.w = 6; player.h = 12;
     player.facing = 1;
     player.load = 0;
+    player.hooked = -1;
 }
 
 void PlayerStep(void) {
@@ -224,6 +234,24 @@ void PlayerStep(void) {
     else if (player.jumpBuf > 0) player.jumpBuf--;
 
     KettleStep();
+    GaffStep();
+    if (player.hooked >= 0) {
+        // Hanging replaces free movement. The kettles still work -- you can fill or
+        // tip while on the hook if a rim is in reach, which is how D1's ratchet and
+        // the deep-pan fill are meant to interact.
+        player.hookHeldPrev = in.b;
+        StampLoad();
+        player.animT += 0.05f;
+        player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;
+        player.leanY += (player.vy * 0.35f - player.leanY) * 0.18f;
+        float sl = 0.26f - L * 0.045f;
+        player.sloshX += (player.vx * (0.5f + L * 0.55f) - player.sloshX) * sl;
+        player.sloshY += (player.vy * (0.2f + L * 0.30f) - player.sloshY) * (sl * 0.8f);
+        player.yokeAng += (-player.vx * 0.11f * (1.0f + L * 0.4f) - player.yokeAng) * 0.14f;
+        if (player.landImpact > 0) player.landImpact--;
+        return;
+    }
+    player.hookHeldPrev = in.b;
 
     // ---- horizontal: identical at every load (D4)
     int dir = in.right - in.left;
@@ -278,8 +306,10 @@ void PlayerStep(void) {
         if (player.vy > TERM_L[L]) player.vy = TERM_L[L];
     }
 
-    MoveX(player.vx);
-    MoveY(player.vy);
+    if (player.hooked < 0) {
+        MoveX(player.vx);
+        MoveY(player.vy);
+    }
     StampLoad();
 
     // ---- procedural animation. Lag only: no squash, no stretch (L10).
@@ -324,6 +354,17 @@ void PlayerDraw(void) {
             if (tilt < -1) tilt = -1;
             DrawRectangle(kx, ky + 4 - h, 3, h, palBrine);
             DrawRectangle(kx + (tilt > 0 ? 2 : 0), ky + 4 - h, 1, 1, palBrineL);
+        }
+    }
+
+    // The brine line cuts the body. Without this a floating player reads as standing
+    // on top of the water, because at load 0 only a fifth of them is under it.
+    if (player.waterY >= 0) {
+        int wy = ROOM_Y + player.waterY;
+        int bot = py + player.h;
+        if (wy < bot) {
+            int top = wy > py ? wy : py;
+            DrawRectangle(px - 1, top, player.w + 2, bot - top, palSkinWet);
         }
     }
 

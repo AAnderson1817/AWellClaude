@@ -78,10 +78,19 @@ typedef struct {
 
 // Room-arena scratch. Wiped on every transition, so crust recrystallises when you
 // come back and no save state is needed to express that.
+// A convex top corner of a solid tile: the only thing the gaff can bite.
+// Derived from the tile grid, which is why both verbs deleting tiles is a coupling
+// and not a coincidence.
+typedef struct { i32 px, py; i32 tx, ty; u8 side; u8 worn; } Corner;
+#define CORNER_MAX 256
+
 typedef struct {
     u8  loadMap[RH][RW];    // cleared each frame; bodies stamp (1 + their load)
     u8  stress[RH][RW];     // crust fatigue
     f32 surfH[RW], surfV[RW];  // 1D brine surface wave, one column per tile
+    Corner corners[CORNER_MAX];
+    i32 cornerCount;
+    i32 cornersDirty;
 } RoomScratch;
 extern RoomScratch scratch;
 
@@ -117,10 +126,29 @@ typedef struct {
     i32 fillTimer;          // frames of the current fill/empty action
     int atRim;              // a TF_RIM tile overlaps the body this frame
     int submerged;          // body centre is inside brine
+    i32 waterY;             // room-pixel y of the brine line cutting the body, or -1
     f32 sloshX, sloshY;     // second-order lag of the liquid inside the kettles
     f32 yokeAng;            // yoke swing, lags the body. Never squash-and-stretch.
     i32 landImpact;         // frames left of the last landing's dust
+
+    // --- Verb B: the gaff -------------------------------------------------
+    i32 hooked;             // index into scratch.corners, or -1
+    f32 theta;              // 0 is straight below the corner
+    f32 omega;              // angular velocity, rad/frame
+    f32 r;                  // grip length, clamped
+    i32 pivotFrames;        // for corner wear
+    i32 clack;              // frames left of a failed catch
+    i32 hookHeldPrev;
+    i32 stuck;
+    i32 hookTx, hookTy;     // the corner's identity, which survives a rebuild
+    u8  hookSide;           // its index does not
 } Player;
+
+#define GAFF_REACH   24.0f
+#define GAFF_RMIN    16.0f
+#define GAFF_RMAX    28.0f
+#define CORNER_WEAR_MAX 32
+#define GAFF_ARC     1.48f   // radians either side of straight-down; never above the corner
 
 #define LOAD_MAX 4
 
@@ -138,6 +166,7 @@ extern Player player;
 void PlayerInit(float x, float y);
 void PlayerStep(void);
 void PlayerDraw(void);
+int  RectHitsSolidPublic(float x, float y, int w, int h);
 
 // ---------------------------------------------------------------- input
 // One indirection so scripted playtests and the keyboard share a path.
@@ -158,6 +187,10 @@ void FxStep(void);
 void FxDraw(void);
 
 // ---------------------------------------------------------------- room step
+void BuildCorners(void);
+void GaffStep(void);
+void GaffDraw(void);
+
 void RoomStepBegin(void);   // clears loadMap
 void RoomStepEnd(void);     // crust fatigue, brine surface wave
 void BrineDisturb(float px, float strength);
@@ -170,7 +203,7 @@ extern RenderTexture2D screenRT;
 
 // ---------------------------------------------------------------- palette
 extern Color palRock, palRockDeep, palRockLit, palDark, palBg, palBgDeep, palBrine, palGrass, palSkin;
-extern Color palBrineL, palSalt, palSaltLit, palDust, palTimber, palIron;
+extern Color palBrineL, palSalt, palSaltLit, palDust, palTimber, palIron, palSkinWet;
 
 // ---------------------------------------------------------------- debug
 extern int dbgShotFrames[16];

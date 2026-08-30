@@ -104,24 +104,26 @@
         <div class="keyrow"><kbd>&uarr;</kbd><span>swim up</span></div>
         <div class="keyrow"><kbd>X</kbd><span>hold at an iron lip &mdash; fill</span></div>
         <div class="keyrow"><kbd>X</kbd><kbd>&darr;</kbd><span>hold at an iron lip &mdash; tip out</span></div>
+        <div class="keyrow"><kbd>C</kbd><span>hold near a corner &mdash; bite it</span></div>
+        <div class="keyrow"><kbd>&uarr;</kbd><kbd>&darr;</kbd><span>while hanging &mdash; slide your grip</span></div>
       </div>
       <h2 style="margin-top:26px">The room</h2>
       <p style="margin:0;color:var(--dim);max-width:34ch">A sandbox, not a design. A pale
-      crust bridge over a pit on the left and a crust shelf above it; a shallow pan with an
-      iron lip at each end; a terrace and a deep pan on the right. Nothing here is a puzzle
-      &mdash; it is somewhere to find out what weight does.</p>
+      crust bridge over a pit and a crust shelf above it; blocks at various heights with
+      corners worth biting; a shallow pan with an iron lip at each end; a terrace, a deep
+      pan, and one ledge below its brine line. Nothing here is a puzzle.</p>
     </div>
 
     <div class="tablewrap">
       <table>
-        <caption>The dial &mdash; measured, not intended</caption>
-        <thead><tr><th>load</th><th>jump</th><th>fall cap</th><th>in brine</th></tr></thead>
+        <caption>Measured in the build, not intended</caption>
+        <thead><tr><th>load</th><th>jump</th><th>in brine</th><th>hook lasts</th><th>crust gives</th></tr></thead>
         <tbody>
-          <tr><th>empty</th><td>4.49 tiles</td><td>2.60</td><td class="note">floats, 2.4&nbsp;px under</td></tr>
-          <tr><th>one</th><td>3.45 tiles</td><td>3.40</td><td class="note">floats, 5.5&nbsp;px under</td></tr>
-          <tr><th>two</th><td>2.68 tiles</td><td>4.30</td><td class="note">sinks</td></tr>
-          <tr><th>three</th><td>1.92 tiles</td><td>5.20</td><td class="note">sinks</td></tr>
-          <tr><th>four</th><td>1.34 tiles</td><td>6.10</td><td class="note">sinks</td></tr>
+          <tr><th>empty</th><td>4.49 tiles</td><td class="note">floats, 2.4&nbsp;px under</td><td>257 f</td><td class="note">never</td></tr>
+          <tr><th>one</th><td>3.45 tiles</td><td class="note">floats, 5.5&nbsp;px under</td><td>129 f</td><td class="note">never</td></tr>
+          <tr><th>two</th><td>2.68 tiles</td><td class="note">sinks</td><td>89 f</td><td>69 f</td></tr>
+          <tr><th>three</th><td>1.92 tiles</td><td class="note">sinks</td><td>65 f</td><td>67 f</td></tr>
+          <tr><th>four</th><td>1.34 tiles</td><td class="note">sinks</td><td>57 f</td><td>64 f</td></tr>
         </tbody>
       </table>
     </div>
@@ -129,12 +131,15 @@
 
   <div class="ask" style="max-width:1120px;margin-left:auto;margin-right:auto">
    <div style="max-width:62ch">
-    <p>Weight is the verb. Run speed, acceleration and friction are identical at every
-    load on purpose &mdash; only the gravity axis moves, so the kettles never start doing
-    the second verb's job. <strong>Does the dial feel worth turning?</strong></p>
-    <p>Two things worth trying, neither of which any room tells you about: stand still on
-    the pale bridge with full kettles, then try crossing the same bridge without stopping.
-    And look at how deep you sit in a pan &mdash; that is the only load counter there is.</p>
+    <p>Both verbs are in. The kettles change scalar magnitudes along the gravity axis; the
+    gaff adds no energy at all and only redirects momentum you already had. They meet in
+    three shared lines of code &mdash; and in the last two columns of that table, which are
+    two separate wear counters reading the same number.
+    <strong>Does the pair feel like one game?</strong></p>
+    <p>Three things worth trying, none of which any room tells you about. Hang from a
+    corner with full kettles and wait. Empty the kettles, get into the deep pan, bite the
+    ledge under the surface, pull down, and let go. And stand heavy on the pale bridge until
+    it drops you &mdash; then look at what the hole left behind is shaped like.</p>
    </div>
   </div>
 </div>
@@ -143,7 +148,9 @@
 <script>
   const cv = document.getElementById('cv');
   const veil = document.getElementById('veil');
+  window.__ready = false;
   RL({ canvas: cv, print: () => {}, printErr: () => {} }).then(() => {
+    window.__ready = true;
     veil.textContent = 'click to play';
     const start = () => { veil.classList.add('gone'); cv.focus(); };
     veil.addEventListener('click', start);

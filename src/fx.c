@@ -92,6 +92,7 @@ void RoomStepEnd(void) {
                 if (scratch.stress[y][x] >= CRUST_STRESS_MAX) {
                     r->tiles[y][x] = T_EMPTY;
                     scratch.stress[y][x] = 0;
+                    scratch.cornersDirty = 1;
                     FxBurst(FX_SALT, x * TS + TS * 0.5f, y * TS + TS * 0.5f, 7, 0.55f, 0.55f);
                 }
             } else if (scratch.stress[y][x] > 0 && (frameNo & 7) == 0) {

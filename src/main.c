@@ -23,6 +23,7 @@ const char *dbgOutDir = "shots";
 int dbgFixedStep = 0;
 static int dbgTrace = 0;
 static int startTx = 2, startTy = 17, startLoad = 0;
+static int useGaffSandbox = 0;
 static int dbgShotsDone = 0;
 static float acc = 0.0f;
 
@@ -132,6 +133,15 @@ static void BuildSandbox(void) {
     r->tiles[15][29] = T_RIM;
     r->tiles[20][33] = T_RIM;  r->tiles[20][34] = T_RIM;
 
+    // --- nubs to bite, at heights that need a jump to reach
+    int nx[5] = { 6, 14, 20, 26, 35 };
+    int ny[5] = { 12, 16, 14, 13, 15 };
+    for (int i = 0; i < 5; i++) { r->tiles[ny[i]][nx[i]] = T_ROCK; r->tiles[ny[i]][nx[i] + 1] = T_ROCK; }
+
+    // --- a ledge below the brine line in the deep pan, so buoyancy has something to
+    //     be wound against (D1 kept the submerged ratchet on purpose)
+    r->tiles[18][30] = T_ROCK;
+
     // --- a black shelf, because any black tile may be hiding something
     for (int x = 19; x < 25; x++) r->tiles[4][x] = T_DARK;
 
@@ -144,6 +154,48 @@ static void BuildSandbox(void) {
     player.load = (u8)startLoad;
 }
 
+// An empty room with things to bite. Phase 3 asks for a sandbox, not a level: there
+// is nothing to solve here and nothing is placed to be solved. Isolated nubs at a
+// range of heights, one crust strip, one pan, one rim.
+static void BuildGaffSandbox(void) {
+    ArenaReset(&roomArena);
+    Room *r = RoomAt(2, 2);
+    memset(r->tiles, 0, sizeof r->tiles);
+    memset(&scratch, 0, sizeof scratch);
+    FxReset();
+    r->exists = 1;
+    world.cx = 2; world.cy = 2;
+
+    for (int x = 0; x < RW; x++) { r->tiles[0][x] = T_ROCK; r->tiles[RH - 1][x] = T_ROCK; }
+    for (int y = 0; y < RH; y++) { r->tiles[y][0] = T_ROCK; r->tiles[y][RW - 1] = T_ROCK; }
+    for (int x = 1; x < RW - 1; x++) { r->tiles[19][x] = T_ROCK; r->tiles[20][x] = T_ROCK; }
+
+    // a line of isolated nubs to bite, each two tiles wide, at descending heights
+    int nubX[6] = { 8, 13, 18, 23, 28, 33 };
+    int nubY[6] = { 15, 16, 15, 13, 15, 14 };
+    for (int i = 0; i < 6; i++) {
+        r->tiles[nubY[i]][nubX[i]]     = T_ROCK;
+        r->tiles[nubY[i]][nubX[i] + 1] = T_ROCK;
+    }
+
+    // one crust strip in the floor, directly under the arc of nub 2
+    for (int x = 11; x < 17; x++) { r->tiles[19][x] = T_CRUST; r->tiles[20][x] = T_EMPTY; }
+
+    // one deep pan with a rim on its lip and two ledges down its inside wall, both
+    // below the brine line. D1 kept the gaff's submerged ratchet deliberately, so the
+    // sandbox has to contain something to ratchet on.
+    for (int y = 16; y < 21; y++)
+        for (int x = 24; x < 32; x++) r->tiles[y][x] = T_BRINE;
+    for (int y = 15; y < 21; y++) { r->tiles[y][23] = T_ROCK; r->tiles[y][32] = T_ROCK; }
+    r->tiles[15][23] = T_RIM;
+    r->tiles[15][32] = T_RIM;
+    r->tiles[17][24] = T_ROCK;      // submerged ledge, upper
+    r->tiles[19][24] = T_ROCK;      // submerged ledge, lower
+
+    PlayerInit(startTx * TS, startTy * TS);
+    player.load = (u8)startLoad;
+}
+
 // ---------------------------------------------------------------- frame
 static void Sim(void) {
     InputPoll();
@@ -151,6 +203,10 @@ static void Sim(void) {
     PlayerStep();
     RoomStepEnd();
     FxStep();
+    // Both verbs delete tiles, and corners are derived from tiles. Rebuilding here is
+    // the third shared line of the coupling: crust that fails under weight manufactures
+    // the hooks the gaff needs, and a sheared nub exposes its neighbours.
+    if (scratch.cornersDirty) { BuildCorners(); scratch.cornersDirty = 0; }
 }
 
 static void Frame(void) {
@@ -168,14 +224,16 @@ static void Frame(void) {
 
     RenderBeginRoom();
         DrawRoom(CurRoom());
+        GaffDraw();
         PlayerDraw();
         FxDraw();
     RenderEndRoomAndPresent();
 
     if (dbgTrace)
-        printf("f=%4ld x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d\n",
+        printf("f=%4ld x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d hook=%d corners=%d\n",
                frameNo, player.x, player.y, player.vx, player.vy,
-               player.onGround, player.load, player.atRim, player.submerged);
+               player.onGround, player.load, player.atRim, player.submerged,
+               player.hooked, (int)scratch.cornerCount);
 
     for (int i = 0; i < dbgShotCount; i++) {
         if (dbgShotFrames[i] == (int)frameNo) {
@@ -212,6 +270,10 @@ int main(int argc, char **argv) {
             char *t = strtok(NULL, ","); if (t) startTy = atoi(t);
         } else if (!strcmp(argv[i], "--load") && i + 1 < argc) {
             startLoad = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "--drop")) {
+            extern int dbgReleaseAtBottom; dbgReleaseAtBottom = 1;
+        } else if (!strcmp(argv[i], "--gaff")) {
+            useGaffSandbox = 1; startTx = 3; startTy = 16;
         }
     }
 
@@ -226,7 +288,8 @@ int main(int argc, char **argv) {
     InitWindow(GW * winScale, GH * winScale, "well");
     SetTargetFPS(60);
     RenderInit();
-    BuildSandbox();
+    if (useGaffSandbox) BuildGaffSandbox(); else BuildSandbox();
+    BuildCorners();
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);

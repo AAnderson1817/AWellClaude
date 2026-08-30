@@ -17,9 +17,10 @@ derives from is in `claude/animal-well-research-brief.md`.
   "movement feel" means here, so movement is judged with the kettles on rather than twice.
 - Phase 2 — Verb A, the kettles. DONE. Six surprises logged in `SURPRISES.md`.
   GATE: the user plays it and judges whether the dial is worth turning.
-- Phase 3 — Verb B, the gaff. NEXT. Needs 5+ surprises from the *pair*, found by playing
-  a sandbox, before any room is designed.
-- Phases 4-5 — not started.
+- Phase 3 — Verb B, the gaff. DONE. Five pair surprises logged (S7-S11), all measured.
+  GATE: the user plays it and judges whether the pair reads as one game.
+- Phases 4-5 — not started. Phase 4 must not begin until a room can name the SURPRISES
+  entry it showcases.
 
 ## Built so far (premise-independent)
 - `src/aw.h` — all shared types and constants. GW/GH 320x180, TS 8, room 40x22 tiles at
@@ -82,6 +83,21 @@ Crust fatigue lives in `scratch.stress` in the **room arena**, so it recrystalli
 transition with no save state. It accumulates only while a body of load >= 2 rests on the
 tile (`loadMap >= CRUST_BREAK_LOAD`), decays otherwise, and takes an extra dose on landing
 scaled by impact x weight.
+
+## Verb B — the gaff (built)
+`src/gaff.c`. Corners are rebuilt from the tile grid into `scratch.corners` whenever
+either verb deletes a tile (`scratch.cornersDirty`). A catch needs a convex TOP corner
+within `GAFF_REACH` (24 px) with clear line of sight, and it clacks off if there is
+nowhere to hang. Grip `r` is clamped to [16, 28]; `GAFF_RMIN` is 16 because a shorter
+grip puts the body inside the tile the corner belongs to.
+
+Two things that must not regress:
+- The arc is clamped to `GAFF_ARC` either side of straight down. Without it the swing
+  carries the body above the corner and wedges it inside the nub with every recovery
+  direction blocked — a hard softlock. There is also a 30-frame blocked-move failsafe.
+- An active hook is re-identified by (tile, side) after a corner rebuild, never by index,
+  and wear is carried across the rebuild. Both verbs delete tiles, so the list is
+  renumbered under a live hook routinely.
 
 ## Open questions for later phases
 - Lighting (rim light / thresholded posterised) is deferred: it is the visual identity
