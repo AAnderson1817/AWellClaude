@@ -1,20 +1,20 @@
-ROOM 0,3 teaches=S7 note=A pan roofed by a black stalactite, and the only way out east lies two tiles under the float line: hook the ledge slung below the surface and pull yourself down under your own buoyancy.
+ROOM 0,3 teaches=S7 note=A flooded hall under a slab roof, with one blunt prong hanging into it: the way east lies two tiles under the float line, so you bite the ledge slung below the surface and pull yourself down under your own buoyancy.
 #########################....###########
-#XXXXXXXXXXXXXXXXXXXXXXX......XXXXXXXXX#
-#XXXXXXXXXXXXXXXXXXXXXX........XXXXXXXX#
-#XXXXXXXXXXXXXXXXXXXX.TTTTTT....XXXXXXX#
-#XXXXXXXXXXXXXXXXXX..............XXXXXX#
-#.XXXXXXXXXXXXXXXX................XXXXX#
-#...XXXXXXXXXXXXX.........TTTTTT...XXXX#
-#.....XXXXXXXXXX....................XXX#
-#.......XXXXXXX......................XX#
-#........XXXXX........TTTTTT..........X#
-#.........XXX..........................#
-#..........X...........................#
+#XXXXXXXXXXXXXXXXXXXXXXX...............#
+#XXXXXXXXXXXXXXXXXXXXXXX...............#
+#............XXXXXXXX.TTTTTT...........#
+#............XXXXXXXX..................#
+#............XXXXXXXX..................#
+#.............XXXXXX......TTTTTT.......#
+#.............XXXXXX...................#
+#.............XXXXXX...................#
+#..............XXXX...TTTTTT...........#
+#..............XXXX....................#
+#..............XXXX....................#
 #..,,,....................TTTTTT..,,,..#
+#~~~~~~~~~~~~~~~~~~~~~~~RR~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~-------~~...
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------~~.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
