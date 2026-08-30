@@ -30,11 +30,11 @@ ROOM        doors   load0 load1 load2 load3 load4   teaches
 (2,3)       LRU    ok    ok    ok    ok    ok      S9
 (3,3)       DLR    ok    ok    ok    ok    ok      S5
 (4,3)       LU     ok    ok    ok    ok    ok      S6
-(0,4)       R      ok    ok    ok    ok    ok      PENDING
-(1,4)       LRU    CUT   CUT   CUT   CUT   CUT     PENDING
-(2,4)       LR     ok    ok    ok    ok    ok      PENDING
-(3,4)       LRU    CUT   CUT   CUT   CUT   CUT     PENDING
-(4,4)       L      ok    ok    ok    ok    ok      PENDING
+(0,4)       R      ok    ok    ok    ok    ok      S7
+(1,4)       LRU    ok    ok    ok    ok    ok      S3
+(2,4)       LR     ok    ok    ok    ok    ok      S4
+(3,4)       LRU    ok    ok    ok    ok    ok      S1
+(4,4)       L      ok    ok    ok    ok    ok      S7
 
 deep brine (a load-4 body sinks and cannot swim up):
   (1,1) depth  3 tiles -> hook
@@ -45,21 +45,16 @@ deep brine (a load-4 body sinks and cannot swim up):
   (2,3) depth  6 tiles -> rim
   (3,3) depth  5 tiles -> rim
   (4,3) depth 12 tiles -> rim
+  (0,4) depth  6 tiles -> rim
+  (1,4) depth  4 tiles -> rim
+  (2,4) depth  4 tiles -> rim
+  (3,4) depth  4 tiles -> rim
+  (4,4) depth  8 tiles -> rim
 
 rooms reachable from the start, by doors alone: 25/25
 
 ------------------------------------------------------------
-10 ISSUES
-  ! (1,4) load 0: doors not mutually reachable
-  ! (1,4) load 1: doors not mutually reachable
-  ! (1,4) load 2: doors not mutually reachable
-  ! (1,4) load 3: doors not mutually reachable
-  ! (1,4) load 4: doors not mutually reachable
-  ! (3,4) load 0: doors not mutually reachable
-  ! (3,4) load 1: doors not mutually reachable
-  ! (3,4) load 2: doors not mutually reachable
-  ! (3,4) load 3: doors not mutually reachable
-  ! (3,4) load 4: doors not mutually reachable
+no issues
 ```
 
 ## Composition — tools/compose.py
@@ -85,26 +80,18 @@ room    top(1-7)  mid(8-14)  bot(15-20)   fill%  gap  verdict
 (2,2)      58        19         69      19.2    3  
 (3,2)      67        45        102      28.2    1  
 (4,2)      96        41         91      30.0    3  
-(0,3)      94       112        228      57.1    0  
+(0,3)      84       102        228      54.5    0  
 (1,3)     155        92        228      62.5    0  
-(2,3)     174       128        228      69.7    0  
+(2,3)     176       128        228      70.0    0  
 (3,3)      88        99        228      54.6    0  
-(4,3)     104       266        228      78.7    0  
-(0,4)       0         0         76      10.0   18  TOP-EMPTY DEAD-BAND(18) SPARSE 
-(1,4)       0         0         76      10.0   18  TOP-EMPTY DEAD-BAND(18) SPARSE 
-(2,4)       0         0         76      10.0   18  TOP-EMPTY DEAD-BAND(18) SPARSE 
-(3,4)       0         0         76      10.0   18  TOP-EMPTY DEAD-BAND(18) SPARSE 
-(4,4)       0         0         76      10.0   18  TOP-EMPTY DEAD-BAND(18) SPARSE 
+(4,3)     104       242        228      75.5    0  
+(0,4)      39       165        214      55.0    1  
+(1,4)      60        88        228      49.5    1  
+(2,4)      64        93        228      50.7    3  
+(3,4)      84       107        228      55.1    2  
+(4,4)      81       100        201      50.3    2  
 
-rooms that read as the same picture:
-  0.74  (2, 3) ~ (4, 3)
-  0.73  (0, 3) ~ (3, 3)
-  0.72  (0, 3) ~ (2, 3)
+no two rooms read as the same picture
 
-5 rooms need a composition pass:
-  (0,4)  TOP-EMPTY DEAD-BAND(18) SPARSE
-  (1,4)  TOP-EMPTY DEAD-BAND(18) SPARSE
-  (2,4)  TOP-EMPTY DEAD-BAND(18) SPARSE
-  (3,4)  TOP-EMPTY DEAD-BAND(18) SPARSE
-  (4,4)  TOP-EMPTY DEAD-BAND(18) SPARSE
+every room uses its frame
 ```
