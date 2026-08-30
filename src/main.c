@@ -25,6 +25,7 @@ int dbgFixedStep = 0;
 static int dbgTrace = 0;
 static int startTx = -1, startTy = -1, startLoad = 0;
 static int startRx = START_ROOM_X, startRy = START_ROOM_Y;
+static const char *contactPath = 0;
 static int dbgShotsDone = 0;
 static float acc = 0.0f;
 
@@ -161,6 +162,8 @@ int main(int argc, char **argv) {
             startLoad = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--drop")) {
             extern int dbgReleaseAtBottom; dbgReleaseAtBottom = 1;
+        } else if (!strcmp(argv[i], "--contact") && i + 1 < argc) {
+            contactPath = argv[++i];
         } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
             startRx = atoi(strtok(argv[++i], ","));
             char *t = strtok(NULL, ","); if (t) startRy = atoi(t);
@@ -189,6 +192,33 @@ int main(int argc, char **argv) {
     int pty = (startTy >= 0 ? startTy : START_TILE_Y);
     PlayerInit(ptx * TS + 1, (pty + 1) * TS - 12);
     player.load = (u8)startLoad;
+
+    if (contactPath) {
+        // One image of the whole world, so 25 rooms can actually be looked at.
+        Image sheet = GenImageColor(GW * WORLD_W, GH * WORLD_H, BLACK);
+        for (int ry = 0; ry < WORLD_H; ry++) {
+            for (int rx = 0; rx < WORLD_W; rx++) {
+                world.cx = rx; world.cy = ry;
+                memset(&scratch, 0, sizeof scratch);
+                BeginTextureMode(screenRT);
+                    ClearBackground(palBgDeep);
+                    DrawRoom(CurRoom());
+                EndTextureMode();
+                Image im = LoadImageFromTexture(screenRT.texture);
+                ImageFlipVertical(&im);
+                ImageDraw(&sheet, im,
+                          (Rectangle){0, 0, (float)GW, (float)GH},
+                          (Rectangle){(float)(rx * GW), (float)(ry * GH), (float)GW, (float)GH},
+                          WHITE);
+                UnloadImage(im);
+            }
+        }
+        ExportImage(sheet, contactPath);
+        UnloadImage(sheet);
+        printf("contact sheet -> %s\n", contactPath);
+        CloseWindow();
+        return 0;
+    }
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);
