@@ -48,7 +48,9 @@ for y in range(5):
                 cur = q.popleft()
                 for p in radj.get(cur, []):
                     if p not in seen: seen.add(p); q.append(p)
-            stranded = sorted(set((c, r) for c, r, _ in fwd - seen))
+            # Tiles on the frame are doorways out of the room, not places to be stuck.
+            stranded = sorted(set((c, r) for c, r, _ in fwd - seen
+                                  if 0 < c < RW - 1 and 0 < r < RH - 1))
             if stranded:
                 bad += 1
                 print(f"({x},{y}) entering at load {load}: {ncrust} crust tiles; if they all "

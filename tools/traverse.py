@@ -110,10 +110,20 @@ def flood(rooms, rm, load, seeds):
     return seen
 
 def doors(rooms, rm):
-    """Tiles just inside each doorway, tagged with the direction they lead."""
+    """Tiles just inside each doorway, tagged with the direction they lead.
+
+    A door is only usable where a BODY fits through it, and a body is 12px tall in an
+    8px grid: it always occupies two rows. So a horizontal door tile counts only if the
+    boundary column is open on that row AND the row above -- otherwise the body walks up
+    to the opening with its head in the rock above it and stops, which is exactly what
+    room (1,0) did. Same for a vertical door and the columns either side of it."""
     x, y = rm; out = {}
-    if x > 0:  out['L'] = [(1, r) for r in range(RH) if passable(rooms, rm, 0, r)]
-    if x < W-1:out['R'] = [(RW-2, r) for r in range(RH) if passable(rooms, rm, RW-1, r)]
+    if x > 0:
+        out['L'] = [(1, r) for r in range(1, RH)
+                    if passable(rooms, rm, 0, r) and passable(rooms, rm, 0, r - 1)]
+    if x < W-1:
+        out['R'] = [(RW-2, r) for r in range(1, RH)
+                    if passable(rooms, rm, RW-1, r) and passable(rooms, rm, RW-1, r - 1)]
     if y > 0:  out['U'] = [(c, 1) for c in range(RW) if passable(rooms, rm, c, 0)]
     if y < H-1:out['D'] = [(c, RH-2) for c in range(RW) if passable(rooms, rm, c, RH-1)]
     return {k: v for k, v in out.items() if v}
