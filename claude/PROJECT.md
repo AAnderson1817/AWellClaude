@@ -107,6 +107,28 @@ Two things that must not regress:
 - The bell room's constraint from D1: **no convex submerged corner below the brine line**,
   or the gaff's ratchet dissolves the Layer 2 gate.
 
+## The world (Phase 4)
+Rooms are authored as 22x40 text in `rooms/`, one file per row or per room, assembled by
+`tools/assemble.py` into `rooms/world.txt` and compiled into the binary by
+`tools/genrooms.py`. Connectivity is fixed centrally in `tools/gentemplate.py` -- 20
+horizontal doors and 10 vertical -- with borders pre-drawn into `rooms/template.txt`, so
+independently authored rooms cannot disagree at their shared edges. That worked: 24 rooms
+by five authors, zero border errors.
+
+Its cost, which is visible: fixing most horizontal doors at rows 15-18 forces similar
+floor heights, so the world reads as horizontal bands on a contact sheet.
+
+Three checking tools, and what each is worth:
+- `tools/traverse.py` — static. Every door reachable from every other at all five loads,
+  every deep pool escapable, all 25 rooms connected. This is the traversability claim.
+- `tools/compose.py` — frame usage, plank-staircase detection, and pairwise silhouette
+  similarity so "no room repeats another's idea" is checkable.
+- `tools/sweep.py` + `--wander` — seeded bots with no plan, real physics. This is what
+  found the two engine bugs. Its 12/25 ceiling is a fact about the bot, not the world;
+  see FINDINGS.md before quoting it.
+
 ## Debug flags
 `--play "R:60,RJ:8,A:40"` scripted input (L R U D J A B, `-` idle) · `--shots 20,120`
 · `--out DIR` · `--trace` per-frame state · `--at TX,TY` place the player · `--load N`
+· `--room X,Y` start room · `--wander SEED` bot · `--frames N` · `--contact FILE` render
+all 25 rooms to one sheet · `--drop` release a swing at the bottom of its arc
