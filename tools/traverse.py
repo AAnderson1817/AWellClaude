@@ -65,6 +65,30 @@ def near_rim(rooms, rm, c, r):
             if 0 <= cc < RW and 0 <= rr < RH and rooms[rm][rr][cc] == 'R': return True
     return False
 
+def moves(rooms, rm, load, c, r):
+    """Every tile a body at (c,r) with this load can get to in one step. The movement
+    rules live here and nowhere else, so any tool that needs the graph agrees with the
+    one that walks it."""
+    cand = []
+    inwater = brine(rooms, rm, c, r)
+    grounded = solid(rooms, rm, c, r + 1) or (rooms[rm][r + 1][c] in ONEWAY if r + 1 < RH else False)
+    for dc in (-1, 1):
+        cand.append((c + dc, r))
+    if r + 1 < RH and rooms[rm][r + 1][c] in ONEWAY:
+        cand.append((c, r + 2))                      # hold Down and drop through
+    if not grounded and not inwater:
+        for dc in (-1, 0, 1):
+            if passable(rooms, rm, c + dc, r): cand.append((c + dc, r + 1))
+    if inwater:
+        cand.append((c, r + 1))
+        if FLOATS[load]: cand.append((c, r - 1))
+    if grounded or (inwater and FLOATS[load]):
+        for up in range(1, JUMP[load] + 1):
+            if not body_fits(rooms, rm, c, r - up): break
+            for dc in range(-up, up + 1):
+                if body_fits(rooms, rm, c + dc, r - up): cand.append((c + dc, r - up))
+    return cand
+
 def flood(rooms, rm, load, seeds):
     """Reachable (tile, load) states. Load is part of the search because a rim lets the
     player change what they weigh, which changes what they can climb and where they sink."""
@@ -73,38 +97,8 @@ def flood(rooms, rm, load, seeds):
         if body_fits(rooms, rm, *s): seen.add((s[0], s[1], load)); q.append((s[0], s[1], load))
     while q:
         c, r, load = q.popleft()
-        cand = []
-        inwater = brine(rooms, rm, c, r)
-        grounded = solid(rooms, rm, c, r + 1) or (rooms[rm][r + 1][c] in ONEWAY if r + 1 < RH else False)
-        # horizontal
-        for dc in (-1, 1):
-            cand.append((c + dc, r))
-        # drop through a one-way platform by holding Down -- ledges and timber are
-        # hatches, and every bottom door in the world so far is capped by one.
-        if r + 1 < RH and rooms[rm][r + 1][c] in ONEWAY:
-            cand.append((c, r + 2))
-        # fall, with the air control the body actually has
-        if not grounded and not inwater:
-            for dc in (-1, 0, 1):
-                if passable(rooms, rm, c + dc, r): cand.append((c + dc, r + 1))
-        # sink / float
-        if inwater:
-            cand.append((c, r + 1))
-            if FLOATS[load]: cand.append((c, r - 1))
-        # jump
-        if grounded or (inwater and FLOATS[load]):
-            for up in range(1, JUMP[load] + 1):
-                if not body_fits(rooms, rm, c, r - up): break
-                # you can drift sideways as you rise, about one tile per tile of rise
-                for dc in range(-up, up + 1):
-                    tc = c + dc
-                    if not body_fits(rooms, rm, tc, r - up): continue
-                    if all(body_fits(rooms, rm, c + (1 if dc > 0 else -1) * k, r - up)
-                           for k in range(0, abs(dc) + 1)) or dc == 0:
-                        cand.append((tc, r - up))
-        loads = [load]
-        if near_rim(rooms, rm, c, r): loads = list(range(5))
-        for n in cand:
+        loads = list(range(5)) if near_rim(rooms, rm, c, r) else [load]
+        for n in moves(rooms, rm, load, c, r):
             if not body_fits(rooms, rm, *n): continue
             for L in loads:
                 st = (n[0], n[1], L)

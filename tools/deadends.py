@@ -6,6 +6,22 @@ where testing shows people wander into one. This is that test, run empirically a
 the real physics rather than against a model.
 """
 import subprocess, os, sys, re
+# Place each bot at a tile that actually exists in its room. Using the world's single
+# start tile for every room drops most bots inside solid rock, where they cannot move
+# and every room looks like a dead end.
+_src = open('tools/traverse.py').read().split("def main()")[0]
+_g = {}; exec(compile(_src, 'traverse', 'exec'), _g)
+_rooms, _meta, _start = _g['parse']('rooms/world.txt')
+def start_tile(x, y):
+    ds = _g['doors'](_rooms, (x, y))
+    for k in ('L', 'R', 'D', 'U'):
+        if k in ds:
+            for (c, r) in ds[k]:
+                if _g['body_fits'](_rooms, (x, y), c, r): return c, r
+    for r in range(20, 0, -1):
+        for c in range(1, 39):
+            if _g['body_fits'](_rooms, (x, y), c, r): return c, r
+    return 2, 17
 BOTS = int(sys.argv[1]) if len(sys.argv) > 1 else 8
 FRAMES = int(sys.argv[2]) if len(sys.argv) > 2 else 90000
 env = dict(os.environ, LIBGL_ALWAYS_SOFTWARE="1", GALLIUM_DRIVER="llvmpipe")
@@ -17,8 +33,9 @@ for y in range(5):
         u = [0] * 25
         for s in range(1, BOTS + 1):
             try:
-                out = subprocess.run(["xvfb-run", "-a", "-s", "-screen 0 320x180x24",
-                                      "./build/game", "--room", f"{x},{y}",
+                stx, sty = start_tile(x, y)
+                out = subprocess.run(["./build/game", "--room", f"{x},{y}",
+                                      "--at", f"{stx},{sty}",
                                       "--wander", str(s), "--frames", str(FRAMES)],
                                      capture_output=True, text=True, timeout=90, env=env).stdout
             except subprocess.TimeoutExpired:
