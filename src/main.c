@@ -246,8 +246,7 @@ int main(int argc, char **argv) {
     RenderInit();
     LoadWorld();
     world.cx = startRx; world.cy = startRy;
-    ArenaReset(&roomArena);
-    memset(&scratch, 0, sizeof scratch);
+    RoomArenaFresh();
     FxReset();
     BuildCorners();
     // P marks the tile the player stands IN: feet at that tile's bottom edge.
@@ -262,7 +261,7 @@ int main(int argc, char **argv) {
         for (int ry = 0; ry < WORLD_H; ry++) {
             for (int rx = 0; rx < WORLD_W; rx++) {
                 world.cx = rx; world.cy = ry;
-                memset(&scratch, 0, sizeof scratch);
+                RoomArenaFresh();
                 BeginTextureMode(screenRT);
                     ClearBackground(palBgDeep);
                     DrawRoom(CurRoom());

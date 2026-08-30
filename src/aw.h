@@ -95,7 +95,12 @@ typedef struct {
     i32 cornerCount;
     i32 cornersDirty;
 } RoomScratch;
-extern RoomScratch scratch;
+
+// Room-scope state lives IN the room arena, not in a global that merely gets cleared.
+// EnterRoom resets the arena and pushes a fresh one, so the wipe is the allocator's
+// doing -- which is the whole point of the three-arena model.
+extern RoomScratch *roomScratch;
+#define scratch (*roomScratch)
 
 #define CRUST_BREAK_LOAD 3  // loadMap value, i.e. load >= 2 (D3)
 #define CRUST_STRESS_MAX 24
@@ -130,6 +135,7 @@ static inline void TileBreak(int tx, int ty) {
 u8 TileAtPx(float px, float py);   // world pixel -> tile id in the current room
 void LoadWorld(void);
 void EnterRoom(int nx, int ny);
+void RoomArenaFresh(void);
 int  RoomTransition(void);
 
 // ---------------------------------------------------------------- player

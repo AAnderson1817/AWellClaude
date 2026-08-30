@@ -3,7 +3,7 @@
 #include <math.h>
 
 World world;
-RoomScratch scratch;
+RoomScratch *roomScratch;
 
 const u8 tileFlags[T_TILE_KINDS] = {
     [T_EMPTY]  = 0,
@@ -36,11 +36,16 @@ void LoadWorld(void) {
 
 // A transition wipes the room arena. Crust knits back, sheared nubs return, particles
 // and the brine surface reset, and no bug in one room can survive into the next.
+void RoomArenaFresh(void) {
+    ArenaReset(&roomArena);
+    roomScratch = PushStruct(&roomArena, RoomScratch);
+    memset(roomScratch, 0, sizeof *roomScratch);
+}
+
 void EnterRoom(int nx, int ny) {
     if (nx < 0 || nx >= WORLD_W || ny < 0 || ny >= WORLD_H) return;
     world.cx = nx; world.cy = ny;
-    ArenaReset(&roomArena);
-    memset(&scratch, 0, sizeof scratch);
+    RoomArenaFresh();
     FxReset();
     player.hooked = -1;
     player.omega = 0.0f;
