@@ -55,7 +55,12 @@ int RectHitsSolidPublic(float x, float y, int w, int h) { return RectHitsSolid(x
 
 static int LedgeBlocks(float oldBottom, float newY, int w, int h) {
     float newBottom = newY + h;
-    int ty0 = (int)floorf(oldBottom / TS), ty1 = (int)floorf((newBottom - 1) / TS);
+    // This is a CROSSING test, not an occupancy test: we want the row whose top edge the
+    // feet pass through this step. Using the AABB convention (newBottom - 1) here looks
+    // right and is not -- for a one-pixel fall it examines the row the feet are leaving
+    // and never the row they are entering, so every one-way platform in the game was
+    // passable from above.
+    int ty0 = (int)floorf(oldBottom / TS), ty1 = (int)floorf(newBottom / TS);
     int tx0 = (int)floorf(player.x / TS), tx1 = (int)floorf((player.x + w - 1) / TS);
     for (int ty = ty0; ty <= ty1; ty++) {
         for (int tx = tx0; tx <= tx1; tx++) {
