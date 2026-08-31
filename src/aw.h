@@ -1,11 +1,17 @@
-// aw.h — everything shared. C-style: flat structs, fixed-size arrays, no allocation
-// in the game loop, no function pointers on entities, no inheritance.
+// aw.h -- the entire shared surface of the navigation slice.
+//
+// This is a restart. The slice does one thing: a body that runs and jumps around
+// one room. There is no world grid, no allocator, no second verb, nothing that
+// counts or scores, and no text anywhere on screen. Everything else waits until
+// the movement has been played and signed off.
+//
+// C, not C++. Flat structs, fixed-size arrays, no allocation after startup, no
+// virtual dispatch, no entity base class.
 #ifndef AW_H
 #define AW_H
 
 #include "raylib.h"
 #include <stdint.h>
-#include <stddef.h>
 
 typedef uint8_t  u8;
 typedef uint16_t u16;
@@ -14,199 +20,117 @@ typedef int32_t  i32;
 typedef float    f32;
 
 // ---------------------------------------------------------------- resolution
-#define GW 320          // internal render target width
-#define GH 180          // internal render target height
-#define TS 8            // tile size in pixels
-#define RW 40           // room width  in tiles  (40*8 = 320)
-#define RH 22           // room height in tiles  (22*8 = 176)
-#define ROOM_Y 2        // room is centred in the 180px frame: 2px band top & bottom
-
-// Navigation slice: four rooms, enough to give movement somewhere to happen. The 5x5
-// ceiling from L1 returns when the real world is built -- this is scaffolding for feel.
-#define WORLD_W 2
-#define WORLD_H 2
-#define ROOM_COUNT (WORLD_W * WORLD_H)
-
+#define GW 320              // internal render target
+#define GH 180
+#define TS 8                // tile size
+#define RW 40               // 40 * 8 = 320
+#define RH 22               // 22 * 8 = 176
+#define ROOM_Y 2            // the room sits in the 180px frame with a 2px band
 #define DT (1.0f / 60.0f)
 
-// ---------------------------------------------------------------- memory
-// Three nested preallocated arenas. Global lives for the process, session for a
-// save, room is wiped on every transition (bug containment comes free).
-typedef struct { u8 *base; size_t size, used; } Arena;
-
-void  ArenaInit(Arena *a, u8 *base, size_t size);
-void *ArenaPush(Arena *a, size_t size, size_t align);
-void  ArenaReset(Arena *a);
-extern Arena globalArena, sessionArena, roomArena;
-#define PushArray(a, T, n) (T *)ArenaPush((a), sizeof(T) * (n), _Alignof(T))
-#define PushStruct(a, T)   (T *)ArenaPush((a), sizeof(T), _Alignof(T))
-
 // ---------------------------------------------------------------- tiles
-// The whole collision/lighting model lives in these flags, as in the original.
+// The whole collision and lighting model is these four bits. A tile is one byte.
 enum {
-    TF_SOLID    = 1 << 0,   // blocks the player on all four sides
-    TF_BLOCKS_L = 1 << 1,   // blocks light
-    TF_OBSCURES = 1 << 2,   // drawn over the player
-    TF_DARK     = 1 << 3,   // reads as black; anything may hide in it
-    TF_ONEWAY   = 1 << 4,   // solid only from above
-    TF_WATER    = 1 << 5,
-    TF_CONTIG   = 1 << 6,   // autotiles against its own kind
+    TF_SOLID  = 1 << 0,     // blocks on all four sides
+    TF_ONEWAY = 1 << 1,     // blocks downward motion only: stand on it, jump through it
+    TF_OPAQUE = 1 << 2,     // receives light, does not pass it on
+    TF_EMIT   = 1 << 3,     // a light source
 };
 
 enum {
     T_EMPTY = 0,
-    T_ROCK,         // ordinary solid
-    T_DARK,         // solid, reads as pure black — the hiding place
-    T_LEDGE,        // one-way platform
-    T_BRINE,        // deep brine: buoyancy is signed by load
-    T_GRASS,        // decorative, non-solid
-    T_CRUST,        // salt crust: holds a light body, shatters under a heavy one
-    T_TIMBER,       // collapsing scaffold: one-way, and it is what the world is roofed with
-    T_TILE_KINDS
+    T_ROCK,                 // ordinary stone
+    T_LEDGE,                // one-way shelf
+    T_VEIN,                 // stone with a lit mineral seam running through it
+    T_MOSS,                 // hanging growth; not solid, not anything
+    T_KINDS
 };
 
-extern const u8 tileFlags[T_TILE_KINDS];
-static inline int TileSolid(u8 t)  { return (tileFlags[t] & TF_SOLID) != 0; }
+extern const u8 tileFlags[T_KINDS];
+static inline int TileSolid(u8 t)  { return (tileFlags[t] & TF_SOLID)  != 0; }
 static inline int TileOneWay(u8 t) { return (tileFlags[t] & TF_ONEWAY) != 0; }
 
-// ---------------------------------------------------------------- room
-typedef struct {
-    u8 tiles[RH][RW];       // flat typed array, exactly as the original stores it
-    u8 bgId;
-    u8 lighting;
-    u8 exists;
-} Room;
+// ---------------------------------------------------------------- the room
+// One room. Level data is authored as text in room.c and read once at startup;
+// nothing streams from disk, and nothing writes to it at runtime.
+extern u8 tiles[RH][RW];
 
-// Room-arena scratch. Wiped on every transition, so crust recrystallises when you
-// come back and no save state is needed to express that.
-typedef struct {
-    u8  loadMap[RH][RW];    // cleared each frame; bodies stamp (1 + their load)
-    u8  stress[RH][RW];     // crust fatigue
-    f32 surfH[RW], surfV[RW];  // 1D brine surface wave, one column per tile
-    u8  broken[RH][RW];     // tiles destroyed by either verb THIS visit
-} RoomScratch;
-
-// Room-scope state lives IN the room arena, not in a global that merely gets cleared.
-// EnterRoom resets the arena and pushes a fresh one, so the wipe is the allocator's
-// doing -- which is the whole point of the three-arena model.
-extern RoomScratch *roomScratch;
-#define scratch (*roomScratch)
-
-#define CRUST_BREAK_LOAD 3  // loadMap value, i.e. load >= 2 (D3)
-#define CRUST_STRESS_MAX 24
-
-typedef struct {
-    Room rooms[ROOM_COUNT];
-    int cx, cy;             // current room coords
-} World;
-
-extern World world;
-static inline Room *RoomAt(int x, int y) { return &world.rooms[y * WORLD_W + x]; }
-static inline Room *CurRoom(void)        { return RoomAt(world.cx, world.cy); }
-// Level data is immutable. Anything destroyed is recorded in the room arena instead,
-// so it comes back when you leave and return, and costs no save state.
+// Outside the room is stone. There is nowhere else to be.
 static inline u8 TileGet(int tx, int ty) {
-    // Just outside the room is open when a room lies that way and solid when it does
-    // not, so a body can step across a shared edge but the world's rim is rock. The
-    // authored wall at the last column still blocks everywhere it is drawn solid.
-    if (tx < 0)   return world.cx > 0            ? T_EMPTY : T_ROCK;
-    if (tx >= RW) return world.cx < WORLD_W - 1  ? T_EMPTY : T_ROCK;
-    if (ty < 0)   return world.cy > 0            ? T_EMPTY : T_ROCK;
-    if (ty >= RH) return world.cy < WORLD_H - 1  ? T_EMPTY : T_ROCK;
-    if (scratch.broken[ty][tx]) return T_EMPTY;
-    return world.rooms[world.cy * WORLD_W + world.cx].tiles[ty][tx];
+    if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return T_ROCK;
+    return tiles[ty][tx];
 }
-static inline void TileBreak(int tx, int ty) {
-    if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return;
-    scratch.broken[ty][tx] = 1;
-}
-u8 TileAtPx(float px, float py);   // world pixel -> tile id in the current room
-void LoadWorld(void);
-void EnterRoom(int nx, int ny);
-void RoomArenaFresh(void);
-int  RoomTransition(void);
+u8 TileAtPx(float px, float py);
 
-// ---------------------------------------------------------------- player
+void RoomLoad(void);
+void RoomDraw(void);
+void LightStep(void);       // recompute the moving part of the light
+void LightDraw(void);       // multiply the room by it
+int  RoomStartTx(void);
+int  RoomStartTy(void);
+
+// ---------------------------------------------------------------- the body
 typedef struct {
     f32 x, y;               // top-left of the hitbox, in room pixels
     f32 vx, vy;
     i32 w, h;
     int onGround;
     int facing;             // -1 / +1
-    int coyote;             // frames of ground-memory remaining
-    int jumpBuf;            // frames of buffered jump remaining
+    int coyote;             // frames of ground-memory left
+    int jumpBuf;            // frames of buffered jump left
     int jumpHeld;
-    f32 animT;              // procedural animation clock
-    f32 leanX, leanY;       // second-order lag, drives the procedural pass
-
-    // --- weight ------------------------------------------------------------
-    // The one thing beyond running and jumping. It only touches the gravity axis:
-    // how high you jump, how fast you fall, and whether you float or sink.
-    u8  load;               // 0..4 kettles of brine
-    i32 fillTimer;          // frames into the current fill or pour
-    i32 submerged;          // any part of the body under the surface
-    i32 waterY;             // room-pixel y of the waterline cutting the body, or -1
-    f32 sloshX, sloshY;     // second-order lag of the liquid, so it keeps moving
-    f32 yokeAng;            // the yoke lags your turns. Never squash-and-stretch.
-    i32 landImpact;
+    int airFrames;
+    int landImpact;
+    f32 animT;
+    f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.
+    i32 blink;
 } Player;
 
-
-#define LOAD_MAX 4
-
-// Weight touches the gravity axis only. Run speed, acceleration, friction and
-// turnaround are identical at every load.
-extern const f32 JUMP_V[LOAD_MAX + 1];
-extern const f32 GRAV_L[LOAD_MAX + 1];
-extern const f32 TERM_L[LOAD_MAX + 1];
-extern const f32 SINK_L[LOAD_MAX + 1];   // signed: negative floats, positive sinks
-extern const f32 JCUT_L[LOAD_MAX + 1];
-
 extern Player player;
-
 void PlayerInit(float x, float y);
 void PlayerStep(void);
 void PlayerDraw(void);
-int  RectHitsSolidPublic(float x, float y, int w, int h);
+void PlayerDrawEyes(void);   // drawn after the light pass: you can always find yourself
 
 // ---------------------------------------------------------------- input
-// One indirection so scripted playtests and the keyboard share a path.
-typedef struct { int left, right, up, down, jump, jumpPressed, a, b; } Input;
+// One indirection, so a scripted playtest and a keyboard take the same path.
+typedef struct { int left, right, up, down, jump, jumpPressed; } Input;
 extern Input in;
 void InputPoll(void);
 
-// ---------------------------------------------------------------- render
 // ---------------------------------------------------------------- fx
-// Fixed pool. Purely presentational: nothing here is ever read by a rule.
-enum { FX_DUST, FX_SALT, FX_DROP, FX_SPLINTER };
-typedef struct { f32 x, y, vx, vy; u8 life, maxLife, kind; } Particle;
-#define FX_MAX 192
-void FxReset(void);
-void FxSpawn(int kind, float x, float y, float vx, float vy, int life);
-void FxBurst(int kind, float x, float y, int n, float spread, float up);
+// A fixed pool of specks. Nothing here is ever read by a rule; it exists so the
+// room looks like somewhere air moves and water finds its way down.
+enum { FX_MOTE, FX_DRIP, FX_SPLASH, FX_DUST };
+typedef struct { f32 x, y, vx, vy; u16 life, maxLife; u8 kind; u8 seed; } Particle;
+#define FX_MAX 160
+void FxInit(void);
 void FxStep(void);
 void FxDraw(void);
+void FxBurst(int kind, float x, float y, int n, float spread, float up);
 
-// ---------------------------------------------------------------- room step
-void RoomStepBegin(void);   // clears loadMap
-void RoomStepEnd(void);     // crust fatigue, brine surface wave
-void BrineDisturb(float px, float strength);
-
+// ---------------------------------------------------------------- render
 void RenderInit(void);
-void RenderBeginRoom(void);
-void RenderEndRoomAndPresent(void);
-void DrawRoom(Room *r);
+void RenderBegin(void);
+void RenderPresent(void);
 extern RenderTexture2D screenRT;
 
 // ---------------------------------------------------------------- palette
-extern Color palRock, palRockDeep, palRockLit, palDark, palBg, palBgDeep, palBrine, palGrass, palSkin;
-extern Color palBrineL, palSalt, palSaltLit, palDust, palTimber, palIron, palSkinWet;
+extern Color palVoid, palBack, palBackLit, palRock, palRockDeep, palRockLit;
+extern Color palLedge, palLedgeLit, palVein, palVeinHot, palMoss;
+extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop;
 
 // ---------------------------------------------------------------- debug
-extern int dbgShotFrames[16];
-extern int dbgShotCount;
-extern const char *dbgOutDir;
-extern int dbgFixedStep;    // 1 = exactly one sim step per rendered frame
 extern long frameNo;
+extern int  dbgFixedStep;
+extern const char *dbgOutDir;
+
+// A tiny deterministic hash, used for tile texture and for the specks. Same seed,
+// same room, every run -- so a screenshot is a fact and not a coincidence.
+static inline u32 Hash2(int x, int y) {
+    u32 h = (u32)(x * 374761393) + (u32)(y * 668265263);
+    h = (h ^ (h >> 13)) * 1274126177u;
+    return h ^ (h >> 16);
+}
 
 #endif

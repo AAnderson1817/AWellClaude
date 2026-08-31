@@ -1,67 +1,114 @@
-# Salt Works — project state
+# Project state
 
 ## Where this is
-**Reset to a navigation slice**, after the two-verb build was played and found muddled.
-Four rooms, movement + water + weight, nothing else. The prior state (two verbs, 25
-rooms) is parked on the branch `claude/archive-two-verb-slice` and the tag
-`phase4-two-verbs`; `parked/` holds `gaff.c` and the 25 authored rooms.
 
-## Why the reset
-The user played the two-verb build and reported: the water is the best thing in it, the
-gaff is incomprehensible ("I don't know what biting corners would do"), and some
-platforms had no collision.
+**Rebuilt from scratch as a single room.** Running and jumping, nothing else.
 
-All three were true and they share a root cause. I was both builder and playtester, and
-I substituted instrumentation for play:
+The previous build (two verbs, four rooms, water and weight) is parked. The one before
+that (two verbs, 25 rooms) is on the branch `claude/archive-two-verb-slice` and the tag
+`phase4-two-verbs`. `parked/` holds both: `nav-4room/` is the source of the four-room
+navigation slice including the buoyancy code, `gaff.c` and `rooms-25/` are the two-verb
+work, and `parked/tools/` holds the world-scale analysers that a one-room game does not
+need.
 
-- **The platform bug had been in since Phase 1.** `LedgeBlocks` used the AABB occupancy
-  convention `(newBottom - 1)` for what is a *crossing* test, so a one-pixel fall checked
-  the row the feet were leaving and never the row they were entering. Every one-way
-  platform in the game was passable from above. I never caught it because I never tested
-  the one thing it governs — I verified crust fatigue, buoyancy, corner wear, room arenas
-  and edge transitions, and never once checked that a body can stand on a platform. Worse,
-  `traverse.py` modelled one-way tiles as landable, so tooling and game disagreed for four
-  phases while both reported success.
-- **The gaff failed L3's first gate** — a stranger enjoys it before knowing its purpose.
-  I certified that gate on an emergence count and 4,000 frames of traces. A trace shows
-  that hooking a submerged ledge stores buoyant energy. It cannot show that nobody would
-  discover they can hook at all.
-- **The decision that let this through** was folding Phase 1's gate into Phase 2. That
-  gate was "the user plays it and judges the movement", and I argued myself out of it
-  because the load dial *is* the movement. The argument was reasonable and the conclusion
-  was wrong: that gate existed precisely to catch this.
+Nothing from those is deleted. The buoyancy in `parked/nav-4room/player.c` is the one
+thing anyone has liked so far and it comes back when navigation is signed off.
 
-The thing the user praised is the tell. Fractional buoyancy came from *playing* — the
-first version was a binary in-water test that oscillated at the surface, and only running
-it showed that. Everything muddled came from reasoning about what would be interesting.
+## Why it was rebuilt rather than trimmed
 
-## The rule going forward
-Legibility is the first gate for any new verb: a stranger uses it correctly inside thirty
-seconds, unprompted, before emergence gets a vote. And a playable build goes in the user's
-hands before anything is built on top of it.
+The four-room slice was still the two-verb codebase with parts removed: a world grid of
+one dimension, three nested arenas with nothing to allocate, a room-transition path that
+could not fire, a text-to-header room compiler for four rooms. Every one of those was
+load-bearing for a game that no longer existed, and each was a place for a bug to live
+where nobody would look for it.
 
-## What is in the build now
-- `src/aw.h` — 320x180, 8px tiles, 40x22 rooms, **2x2 world** (the 5x5 ceiling returns
-  when the real world is built; this is scaffolding for feel).
-- Movement: run 1.45 px/f, turnaround bite, apex hangtime, jump cutoff, 6-frame coyote,
-  7-frame input buffer.
-- Water: buoyancy blends gravity and a load-signed sink term **by submerged fraction**,
-  never a binary in-water test. A body floats where the two cancel, which differs per load
-  and is therefore readable. This is the part that works — do not "simplify" it.
-- Weight: `load` 0..4 indexes jump, gravity, terminal velocity, jump cutoff and sink.
-  **Changed anywhere in the water** (hold X, or X+Down to pour) — the rim tile is gone.
-  That removed a whole concept, made the loop self-teaching, and eliminated the deep-water
-  softlock class outright, since you can always pour out and float up.
-- One platform type only. Two that behaved identically was needless muddle.
-- Crust: a floor that fatigues under a heavy body and gives way. Kept because it is the
-  clearest statement of "your weight decides which floors exist".
+So: new `src/`, six files, ~950 lines, nothing in it that a room with platforms does not
+need. No allocator, no world grid, no room format, no entity system.
 
-## Tools
-`tools/genrooms.py` compiles `rooms/world.txt` into the binary and validates edges.
-`tools/traverse.py` static reachability at all five loads. `tools/compose.py` frame usage
-and silhouette repeats. `tools/sweep.py` + `--wander` seeded bots. `--contact FILE`
-renders every room to one sheet. See `tools/TOOLCHAIN.md` for the build gotchas.
+## What is in it
 
-**Every one of these tools has been wrong at least once**, and in Phase 4 they were wrong
-more often than the rooms were — see `parked/rooms-25/BREAKAGE.md` for the list. Reproduce
-a failure in a running build before believing any of them.
+| file | what it holds |
+|---|---|
+| `src/aw.h` | every shared type and constant. 140 lines, the whole surface |
+| `src/room.c` | the map (authored as text, in the file), tile flags, the light, all drawing |
+| `src/player.c` | movement, collision, the body |
+| `src/fx.c` | motes, drips, landing dust. Nothing here is read by a rule |
+| `src/render.c` | palette, 320x180 target, the CRT pass |
+| `src/main.c` | window, fixed timestep, the switches the headless checks need |
+
+Resolution, tile size and the CRT pass are unchanged from before: 320x180, 8px tiles,
+40x22 room, scanline depth modulated per pixel by luminosity, static dither against
+banding. Movement tuning is unchanged too, minus everything load-related.
+
+### The light
+
+The one genuinely new system. Light is baked once by relaxation over the tile grid: a
+mineral seam pushes into the open space beside it, that space pushes into its neighbours
+at 0.796 per step, and stone receives light but never passes it on. The result is
+sampled at tile corners into a 41x23 texture, drawn back over the frame multiplied and
+then again additively, with bilinear doing the smoothing. The body carries a small
+occluded aura of its own.
+
+That is why the room reads as having depth: the far wall is a coursed pattern barely
+distinguishable from the dark, and you only see it where something is lighting it.
+
+## Movement, measured
+
+    tap jump         0.90 tiles
+    3 frames held    1.65
+    6 frames         2.59
+    10 frames        3.53
+    full             4.01
+
+    run              1.45 px/frame, 0.24 accel on the ground, 0.16 in the air
+    turnaround       1.9x accel when pushing against your own momentum
+    coyote           4 frames of grace after walking off an edge
+    buffer           6 frames of jump-press remembered before landing
+    apex             gravity x0.62 while |vy| < 0.70 and the button is held
+
+The room is built to that vocabulary: 2 and 3 tile rises everywhere, no 4s.
+
+## The rules this build is under
+
+- **L5, no text.** There is none in the game and none is planned.
+- **L10, no juice defaults.** No screenshake, no squash and stretch. The body's
+  animation is second-order lag only.
+- **L11.** One room, one screen, locked camera.
+- No combat, no counters, no collectibles, no third verb.
+
+## How it is checked
+
+`tools/probe.py` runs the game headless with a scripted plan and parses the trace.
+`tools/route.py` uses it to check every hop of the room's climb by **searching** input
+timings -- take-off column, when you jump, how long you hold it, when you stop pushing.
+A hop counts as makeable only if some way of playing it lands it.
+
+    tools/build.sh              # web, linux, windows
+    python3 tools/route.py      # every hop; currently "none -- the route closes"
+    ./build/game --wander 6 --frames 400000
+                                # a dumb bot; currently reaches all 94 surfaces
+
+Two bugs were caught this session by tools rather than by luck, and both are the kind
+that look fine from the outside:
+
+1. A mineral seam walled in on all six sides lights nothing and is indistinguishable
+   from one that works. `RoomLoad` now warns.
+2. A map row one character short reads its last column as the string terminator and
+   opens a silent hole in the wall. Hand-editing did exactly that. `RoomLoad` now
+   checks every row's width.
+
+And one tool bug: the wander bot read the tile *at* the feet, which names the empty
+tile above every one-way shelf, so it reported that no bot had ever stood on a shelf
+when they had been standing on them the whole time. Reading half a pixel lower fixed it.
+That is the same shape of error as the shelf bug the user found by playing -- a
+convention borrowed from one context and used in another where it is off by one.
+
+## What is deliberately not here
+
+Water and weight. Room transitions. A second verb. Puzzles. They come back one at a
+time, each after the thing under it has been played and accepted.
+
+## Controls
+
+Arrows or WASD. Z, X, C or Space to jump; hold it longer to go higher. Down to drop
+through a shelf.

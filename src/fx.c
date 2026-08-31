@@ -1,112 +1,135 @@
+// fx.c -- specks. Motes in the air, water finding its way down, dust off a landing.
+// A fixed pool, no allocation, and nothing in here is ever read by a rule.
 #include "aw.h"
 #include <math.h>
+#include <string.h>
 
-static Particle fx[FX_MAX];
-static int fxNext = 0;
-static u32 rngState = 0x2545F491u;
+static Particle pool[FX_MAX];
+static int next;
 
-static float Rnd(void) {   // deterministic; screenshots and scripted plays must repeat
-    rngState ^= rngState << 13; rngState ^= rngState >> 17; rngState ^= rngState << 5;
-    return (float)(rngState & 0xFFFF) / 65535.0f;
+// Deterministic, so two runs of the same scripted playtest produce the same frame.
+static u32 rng = 0x9E3779B9u;
+static float Rnd(void) {
+    rng ^= rng << 13; rng ^= rng >> 17; rng ^= rng << 5;
+    return (float)(rng & 0xFFFFu) / 65535.0f;
 }
 
-void FxReset(void) {
-    for (int i = 0; i < FX_MAX; i++) fx[i].life = 0;
-    fxNext = 0; rngState = 0x2545F491u;
+// Motes live for the whole session and are not part of the pool: the air is always
+// moving, and it should not compete for slots with anything the player caused.
+#define MOTE_N 34
+static struct { f32 x, y, ph, sp; } motes[MOTE_N];
+
+// Where water can come from: stone with open air beneath it.
+#define DRIP_N 64
+static struct { i32 x, y; } drips[DRIP_N];
+static int dripCount;
+
+void FxInit(void) {
+    memset(pool, 0, sizeof pool);
+    next = 0;
+    rng = 0x9E3779B9u;
+    for (int i = 0; i < MOTE_N; i++) {
+        motes[i].x = Rnd() * (RW * TS);
+        motes[i].y = Rnd() * (RH * TS);
+        motes[i].ph = Rnd() * 6.283f;
+        motes[i].sp = 0.16f + Rnd() * 0.30f;
+    }
+    dripCount = 0;
+    for (int y = 0; y < RH - 1 && dripCount < DRIP_N; y++)
+        for (int x = 1; x < RW - 1 && dripCount < DRIP_N; x++)
+            if (TileSolid(TileGet(x, y)) && TileGet(x, y + 1) == T_EMPTY
+                && ((x * 7 + y * 13) % 5) == 0) {
+                drips[dripCount].x = x; drips[dripCount].y = y; dripCount++;
+            }
 }
 
 void FxSpawn(int kind, float x, float y, float vx, float vy, int life) {
-    Particle *p = &fx[fxNext];
-    fxNext = (fxNext + 1) % FX_MAX;      // ring; oldest is overwritten, never allocated
+    Particle *p = &pool[next];
+    next = (next + 1) % FX_MAX;
     p->x = x; p->y = y; p->vx = vx; p->vy = vy;
-    p->life = p->maxLife = (u8)(life > 255 ? 255 : life);
+    p->life = p->maxLife = (u16)life;
     p->kind = (u8)kind;
+    p->seed = (u8)(rng & 0xFF);
 }
 
 void FxBurst(int kind, float x, float y, int n, float spread, float up) {
-    for (int i = 0; i < n; i++) {
-        float a = (Rnd() * 2.0f - 1.0f) * spread;
-        FxSpawn(kind, x, y, a, -up * (0.4f + Rnd() * 0.8f), 18 + (int)(Rnd() * 26));
-    }
+    for (int i = 0; i < n; i++)
+        FxSpawn(kind, x + (Rnd() - 0.5f) * 4.0f, y - Rnd() * 2.0f,
+                (Rnd() - 0.5f) * 2.0f * spread, -Rnd() * up - 0.05f,
+                16 + (int)(Rnd() * 22.0f));
 }
 
 void FxStep(void) {
+    for (int i = 0; i < MOTE_N; i++) {
+        motes[i].ph += 0.013f + motes[i].sp * 0.004f;
+        motes[i].x += sinf(motes[i].ph) * 0.10f;
+        motes[i].y -= motes[i].sp * 0.14f;          // the air in here rises, slowly
+        if (motes[i].y < 0) { motes[i].y = RH * TS; motes[i].x = Rnd() * (RW * TS); }
+    }
+
+    // A drip every so often, from somewhere that has stone over it.
+    if (dripCount && (frameNo % 23) == 0 && Rnd() < 0.55f) {
+        int k = (int)(Rnd() * dripCount);
+        FxSpawn(FX_DRIP, drips[k].x * TS + 2.0f + Rnd() * 4.0f,
+                drips[k].y * TS + TS + 0.5f, 0.0f, 0.0f, 400);
+    }
+
     for (int i = 0; i < FX_MAX; i++) {
-        Particle *p = &fx[i];
+        Particle *p = &pool[i];
         if (!p->life) continue;
         p->life--;
-        p->x += p->vx; p->y += p->vy;
         switch (p->kind) {
-            case FX_DUST:     p->vy += 0.010f; p->vx *= 0.94f; break;
-            case FX_SALT:     p->vy += 0.055f; p->vx *= 0.97f; break;
-            case FX_DROP:     p->vy += 0.090f; break;
-            case FX_SPLINTER: p->vy += 0.075f; p->vx *= 0.99f; break;
+            case FX_DRIP: {
+                p->vy += 0.10f;
+                if (p->vy > 3.2f) p->vy = 3.2f;
+                p->y += p->vy;
+                u8 t = TileAtPx(p->x, p->y + 1.0f);
+                if (TileSolid(t) || TileOneWay(t) || p->y > RH * TS) {
+                    // It lands, and what it does when it lands is all it ever does.
+                    for (int k = 0; k < 3; k++)
+                        FxSpawn(FX_SPLASH, p->x, p->y, (Rnd() - 0.5f) * 1.4f,
+                                -Rnd() * 0.55f - 0.1f, 8 + (int)(Rnd() * 7.0f));
+                    p->life = 0;
+                }
+            } break;
+            case FX_SPLASH:
+            case FX_DUST: {
+                p->vy += (p->kind == FX_SPLASH) ? 0.13f : 0.020f;
+                p->x += p->vx; p->y += p->vy;
+                p->vx *= 0.90f;
+                if (TileSolid(TileAtPx(p->x, p->y))) p->life = 0;
+            } break;
+            default: break;
         }
-        if (p->y > (float)(RH * TS)) p->life = 0;
     }
 }
 
 void FxDraw(void) {
+    for (int i = 0; i < MOTE_N; i++) {
+        // Motes are barely there. In the dark the light pass removes them entirely,
+        // and they only appear where something is lighting the air.
+        int x = (int)motes[i].x, y = ROOM_Y + (int)motes[i].y;
+        if (TileSolid(TileAtPx(motes[i].x, motes[i].y))) continue;
+        DrawRectangle(x, y, 1, 1, (Color){ 128, 124, 150, 255 });
+    }
     for (int i = 0; i < FX_MAX; i++) {
-        Particle *p = &fx[i];
+        Particle *p = &pool[i];
         if (!p->life) continue;
-        float t = (float)p->life / (float)(p->maxLife ? p->maxLife : 1);
-        Color c;
+        int x = (int)p->x, y = ROOM_Y + (int)p->y;
+        float t = (float)p->life / (float)p->maxLife;
         switch (p->kind) {
-            case FX_SALT:     c = palSalt;   break;
-            case FX_DROP:     c = palBrineL; break;
-            case FX_SPLINTER: c = palTimber; break;
-            default:          c = palDust;   break;
-        }
-        // No alpha fade to a soft blur: quantise to three steps so it stays pixel art.
-        if (t < 0.34f)      c = (Color){ c.r / 3, c.g / 3, c.b / 3, 255 };
-        else if (t < 0.67f) c = (Color){ (u8)(c.r * 2 / 3), (u8)(c.g * 2 / 3), (u8)(c.b * 2 / 3), 255 };
-        DrawRectangle((int)p->x, ROOM_Y + (int)p->y, 1, 1, c);
-    }
-}
-
-// ---------------------------------------------------------------- room step
-void RoomStepBegin(void) {
-    for (int y = 0; y < RH; y++)
-        for (int x = 0; x < RW; x++) scratch.loadMap[y][x] = 0;
-}
-
-void BrineDisturb(float px, float strength) {
-    int c = (int)(px / TS);
-    if (c < 0 || c >= RW) return;
-    scratch.surfV[c] += strength;
-    if (c > 0)      scratch.surfV[c - 1] += strength * 0.5f;
-    if (c < RW - 1) scratch.surfV[c + 1] += strength * 0.5f;
-}
-
-void RoomStepEnd(void) {
-    Room *r = CurRoom();
-
-    // Crust fatigue. Stress accumulates only while something load>=2 rests on it, and
-    // knits back when nothing does -- so a room you left recrystallises.
-    for (int y = 0; y < RH; y++) {
-        for (int x = 0; x < RW; x++) {
-            if (r->tiles[y][x] != T_CRUST) continue;
-            if (scratch.loadMap[y][x] >= CRUST_BREAK_LOAD) {
-                if (scratch.stress[y][x] < 255) scratch.stress[y][x]++;
-                if (scratch.stress[y][x] >= CRUST_STRESS_MAX) {
-                    TileBreak(x, y);
-                    scratch.stress[y][x] = 0;
-                    FxBurst(FX_SALT, x * TS + TS * 0.5f, y * TS + TS * 0.5f, 7, 0.55f, 0.55f);
-                }
-            } else if (scratch.stress[y][x] > 0 && (frameNo & 7) == 0) {
-                scratch.stress[y][x]--;
-            }
+            case FX_DRIP:
+                DrawRectangle(x, y, 1, 2, palDrop);
+                break;
+            case FX_SPLASH:
+                DrawRectangle(x, y, 1, 1, palDrop);
+                break;
+            case FX_DUST: {
+                Color c = { 92, 88, 104, 255 };
+                if (t > 0.6f) c = (Color){ 118, 112, 130, 255 };
+                DrawRectangle(x, y, 1, 1, c);
+            } break;
+            default: break;
         }
     }
-
-    // 1D brine surface. Presentational only; no rule reads surfH.
-    for (int x = 0; x < RW; x++) {
-        float l = (x > 0)      ? scratch.surfH[x - 1] : scratch.surfH[x];
-        float rr = (x < RW - 1) ? scratch.surfH[x + 1] : scratch.surfH[x];
-        scratch.surfV[x] += (l + rr - 2.0f * scratch.surfH[x]) * 0.22f;
-        scratch.surfV[x] -= scratch.surfH[x] * 0.010f;
-        scratch.surfV[x] *= 0.955f;
-    }
-    for (int x = 0; x < RW; x++) scratch.surfH[x] += scratch.surfV[x];
 }
