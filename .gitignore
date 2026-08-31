@@ -1,6 +1,7 @@
 build/
+build/*.html
 lib/*.a
-tools/setup.log
-tools/.setup_complete
 node_modules/
 shots/
+tools/.setup_complete
+tools/setup.log

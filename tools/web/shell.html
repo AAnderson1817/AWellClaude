@@ -1,156 +1,212 @@
-<title>Salt Works Navigation</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<title>First Chamber</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&display=swap">
 <style>
-  /* Deliberately single-theme. The subject is a 240p CRT in a dark room; a light
-     palette would misrepresent what is being judged. Every colour is painted. */
-  :root {
-    --ground:  #08080c;
-    --surface: #12111b;
-    --rule:    #26243a;
-    --ink:     #cbc6d9;
-    --dim:     #736e8c;
-    --bone:    #cec5a8;   /* the player's colour: the only warm thing in the world */
-    
-    --water-ok:#2c5a78;
-    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, sans-serif;
-    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--ground); color: var(--ink);
-    font-family: var(--sans); font-size: 14px; line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-  .page { max-width: min(1120px, 100%); margin: 0 auto; padding: 28px 20px 64px; }
-  .wide { max-width: 1302px; margin: 0 auto; }
+/* The page is lit by the same seams the room is. Deliberately single-theme: a game
+   about carrying light into the dark does not get a light mode. Every colour is
+   painted explicitly so the page holds on either host ground. */
+:root {
+  --void:      #06060b;
+  --void-lift: #0d0c15;
+  --stone:     #262435;
+  --stone-lit: #3a3750;
+  --seam:      #e0a85c;
+  --seam-hot:  #ffd88e;
+  --bone:      #d8d2c0;
+  --dim:       #77728a;
+  --frame-max: 1280px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--void);
+  color: var(--bone);
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+/* one soft pool of seam-light behind everything, the same shape the room draws */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58vw 46vh at 50% 38%, rgba(224,168,92,.085), transparent 70%),
+    radial-gradient(40vw 34vh at 12% 88%, rgba(224,168,92,.045), transparent 72%);
+  animation: breathe 19s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { opacity: .82; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } }
 
-  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
-           padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
-  h1 { font-family: var(--cond); font-weight: 700; font-size: 24px; letter-spacing: 0.01em;
-       margin: 0; text-wrap: balance; }
-  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
-             text-transform: uppercase; color: var(--dim); }
+.room {
+  position: relative;
+  height: 100dvh;
+  min-height: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px clamp(16px, 4vw, 44px) 26px;
+}
 
-  /* --- the screen is the hero ------------------------------------------- */
-  .screen { margin: 22px auto 0; position: relative;
-           width: min(1302px, 100%); }
-  .bezel {
-    background: #000; border: 1px solid var(--rule); border-radius: 3px;
-    padding: 10px; display: flex; justify-content: center;
-    box-shadow: 0 0 0 1px #000 inset, 0 24px 60px -30px #000;
-  }
-  canvas { display: block; width: 1280px; max-width: 100%; height: auto;
-           background: #000; outline: none; }
-  .veil {
-    position: absolute; inset: 0; display: grid; place-items: center;
-    background: rgba(4,4,8,0.86); cursor: pointer; border-radius: 3px;
-    transition: opacity .35s ease; font-family: var(--mono);
-    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim);
-  }
-  .veil[hidden] { display: none; }
-  .veil.gone { opacity: 0; pointer-events: none; }
+header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+h1 {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1;
+  letter-spacing: .01em;
+  margin: 0;
+  color: var(--bone);
+  text-wrap: balance;
+}
+h1 em { font-style: italic; color: var(--seam); }
+.sub {
+  font-size: 12px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
 
-  /* --- key + numbers ----------------------------------------------------- */
-  .band { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 34px;
-          margin-top: 26px; align-items: start; }
-  @media (max-width: 760px) { .band { grid-template-columns: 1fr; gap: 26px; } }
+.frame {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.screen {
+  /* Height drives, width follows. Sizing it the other way lets the 16:9 box grow
+     taller than the flex track and push the footer off the bottom of the page. */
+  position: relative;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 16 / 9;
+  max-width: min(100%, var(--frame-max));
+  background: #000;
+  border: 1px solid var(--stone);
+  box-shadow: 0 0 0 1px rgba(224,168,92,.07), 0 30px 90px -30px rgba(0,0,0,.9);
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  outline: none;
+}
+canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--seam); }
 
-  h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
-       text-transform: uppercase; color: var(--dim); font-weight: 500;
-       margin: 0 0 12px; }
+.boot {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  justify-items: center;
+  background: var(--void);
+  transition: opacity .5s ease;
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.boot .vein { width: 46px; height: 2px; background: var(--seam); animation: flicker 1.5s ease-in-out infinite; }
+@keyframes flicker { 0%,100% { opacity: .25; transform: scaleX(.4); } 50% { opacity: 1; transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .boot .vein { animation: none; opacity: .7; } }
+.boot[hidden] { display: none; }
 
-  .keys { display: flex; flex-direction: column; gap: 10px; margin: 0; }
-  .keyrow { display: flex; align-items: center; gap: 10px; }
-  kbd { font-family: var(--mono); font-size: 11px; font-weight: 500;
-        background: var(--surface); border: 1px solid var(--rule); border-bottom-width: 2px;
-        border-radius: 3px; padding: 3px 7px; color: var(--ink); }
-  .keyrow span { color: var(--dim); font-size: 13px; }
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px clamp(24px, 6vw, 72px);
+  align-items: flex-start;
+  border-top: 1px solid var(--stone);
+  padding-top: 14px;
+}
+.block { display: flex; flex-direction: column; gap: 9px; }
+.label {
+  font-size: 10px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.keys { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 12px; color: var(--bone); }
+.keys span { display: inline-flex; align-items: center; gap: 7px; }
+kbd {
+  font: inherit;
+  font-weight: 400;
+  padding: 2px 7px;
+  border: 1px solid var(--stone-lit);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: var(--void-lift);
+  color: var(--bone);
+}
+.keys small { color: var(--dim); font-size: 11px; }
 
-  table { border-collapse: collapse; width: 100%; font-size: 13px; }
-  caption { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
-            text-transform: uppercase; color: var(--dim); padding-bottom: 12px; }
-  th, td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid var(--rule); }
-  th { font-weight: 500; color: var(--dim); }
-  td { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); }
-  td.note { font-family: var(--sans); color: var(--dim); }
-  .tablewrap { overflow-x: auto; }
+/* The measured jump envelope. This is the thing to judge, so it is stated. */
+.arc { display: grid; grid-template-columns: repeat(5, auto); gap: 4px 18px; font-size: 12px; }
+.arc div { font-variant-numeric: tabular-nums; }
+.arc .h { color: var(--dim); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+.arc .v { color: var(--seam); }
+.arc .v::after { content: "t"; color: var(--dim); font-size: 10px; margin-left: 2px; }
 
-  .ask { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--rule);
-         color: var(--ink); }
-  .ask strong { color: var(--bone); font-weight: 500; }
-  .ask p { margin: 0 0 10px; }
-  .ask p:last-child { margin-bottom: 0; color: var(--dim); }
-  @media (prefers-reduced-motion: reduce) { .veil { transition: none; } }
+@media (max-width: 640px) {
+  .arc { grid-template-columns: repeat(3, auto); }
+  footer { gap: 18px; }
+}
 </style>
 
-<div class="wide" style="padding:28px 20px 64px">
-  <header style="max-width:1120px;margin:0 auto">
-    <h1>Salt Works Navigation</h1>
-    <span class="eyebrow">navigation slice &middot; four rooms &middot; movement, water, weight</span>
+<div class="room">
+  <header>
+    <h1>First <em>Chamber</em></h1>
+    <span class="sub">one room &middot; run and jump &middot; nothing else yet</span>
   </header>
 
-  <div class="screen">
-    <div class="bezel"><canvas id="cv" tabindex="0"></canvas></div>
-    <div class="veil" id="veil">loading</div>
+  <div class="frame">
+    <div class="screen">
+      <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+      <div class="boot" id="boot"><div class="vein"></div>lighting the seams</div>
+    </div>
   </div>
 
-  <div class="band" style="max-width:1120px;margin-left:auto;margin-right:auto">
-    <div>
-      <h2>Key</h2>
+  <footer>
+    <div class="block">
+      <div class="label">Controls</div>
       <div class="keys">
-        <div class="keyrow"><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>or A / D &mdash; run</span></div>
-        <div class="keyrow"><kbd>Z</kbd><kbd>Space</kbd><span>jump &mdash; hold for height</span></div>
-        <div class="keyrow"><kbd>&darr;</kbd><span>drop through a plank</span></div>
-        <div class="keyrow"><kbd>&uarr;</kbd><span>swim up</span></div>
-        <div class="keyrow"><kbd>X</kbd><span>in the water &mdash; fill the kettles</span></div>
-        <div class="keyrow"><kbd>X</kbd><kbd>&darr;</kbd><span>in the water &mdash; pour them out</span></div>
+        <span><kbd>&larr;</kbd><kbd>&rarr;</kbd> <small>move</small></span>
+        <span><kbd>Z</kbd><kbd>Space</kbd> <small>jump &mdash; hold longer, go higher</small></span>
+        <span><kbd>&darr;</kbd> <small>drop through a shelf</small></span>
       </div>
-      <h2 style="margin-top:26px">The rooms</h2>
-      <p style="margin:0;color:var(--dim);max-width:34ch">Four, in a loop. A dry yard, a
-      shallow pan you can stand in, a deep pan, and a shaft with water at the bottom so a
-      fall is soft. Nothing to solve &mdash; they exist to give the movement somewhere to
-      happen.</p>
     </div>
-
-    <div class="tablewrap">
-      <table>
-        <caption>Weight &mdash; measured in the build</caption>
-        <thead><tr><th>kettles</th><th>jump clears</th><th>fall cap</th><th>in water</th></tr></thead>
-        <tbody>
-          <tr><th>empty</th><td>4.49 tiles</td><td>2.60</td><td class="note">floats high</td></tr>
-          <tr><th>one</th><td>3.45 tiles</td><td>3.40</td><td class="note">floats low</td></tr>
-          <tr><th>two</th><td>2.68 tiles</td><td>4.30</td><td class="note">sinks</td></tr>
-          <tr><th>three</th><td>1.92 tiles</td><td>5.20</td><td class="note">sinks</td></tr>
-          <tr><th>four</th><td>1.34 tiles</td><td>6.10</td><td class="note">sinks</td></tr>
-        </tbody>
-      </table>
+    <div class="block">
+      <div class="label">Jump, in tiles</div>
+      <div class="arc">
+        <div class="h">tap</div><div class="h">3f</div><div class="h">6f</div><div class="h">10f</div><div class="h">held</div>
+        <div class="v">0.90</div><div class="v">1.65</div><div class="v">2.59</div><div class="v">3.53</div><div class="v">4.01</div>
+      </div>
     </div>
-  </div>
-
-  <div class="ask" style="max-width:1120px;margin-left:auto;margin-right:auto">
-   <div style="max-width:62ch">
-    <p>Stripped back to navigation. The gaff is gone, the twenty-five rooms are parked,
-    and what is left is running, jumping, and what water does to a body that can change
-    what it weighs. <strong>Is this foundation worth building on?</strong></p>
-    <p>Weight is changed wherever you are in the water now &mdash; there is no special
-    tile for it any more. Fill in the shallow pan and feel the jump collapse; get into the
-    deep pan empty and watch how high you sit; fill until you sink, walk the bottom, then
-    pour it out and let it carry you back up.</p>
-  </div>
+  </footer>
 </div>
 
 <script>/*__GAME_JS__*/</script>
 <script>
-  const cv = document.getElementById('cv');
-  const veil = document.getElementById('veil');
+  const cv = document.getElementById('canvas');
+  const boot = document.getElementById('boot');
   window.__ready = false;
-  RL({ canvas: cv, print: () => {}, printErr: () => {} }).then(() => {
-    window.__ready = true;
-    veil.textContent = 'click to play';
-    const start = () => { veil.classList.add('gone'); cv.focus(); };
-    veil.addEventListener('click', start);
-    cv.addEventListener('click', () => cv.focus());
-    setTimeout(start, 1200);
-  });
+  // Arrows and space scroll the host page out from under the room otherwise.
+  addEventListener('keydown', e => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  }, { passive: false });
+  RL({ canvas: cv, print: t => console.log(t), printErr: t => console.warn(t) })
+    .then(m => {
+      window.__mod = m;
+      window.__ready = true;
+      boot.style.opacity = '0';
+      setTimeout(() => { boot.hidden = true; }, 500);
+      cv.focus();
+    })
+    .catch(e => { boot.textContent = 'the room did not open: ' + e; });
+  addEventListener('click', () => cv.focus());
 </script>
