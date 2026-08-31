@@ -1,134 +1,67 @@
-# Animal Well Redux — project state
+# Salt Works — project state
 
-A fresh session should be able to resume from this file plus `claude/DESIGN-LAW.md`
-and `tools/TOOLCHAIN.md`.
+## Where this is
+**Reset to a navigation slice**, after the two-verb build was played and found muddled.
+Four rooms, movement + water + weight, nothing else. The prior state (two verbs, 25
+rooms) is parked on the branch `claude/archive-two-verb-slice` and the tag
+`phase4-two-verbs`; `parked/` holds `gaff.c` and the 25 authored rooms.
 
-## What this is
-A playable vertical slice of an ORIGINAL 2D game built in C/raylib that reproduces the
-*method* of Animal Well, not its content. 25 rooms, two verbs, no text, locked camera,
-320x180. The law is in `claude/DESIGN-LAW.md` and is not negotiable. The research it
-derives from is in `claude/animal-well-research-brief.md`.
+## Why the reset
+The user played the two-verb build and reported: the water is the best thing in it, the
+gaff is incomprehensible ("I don't know what biting corners would do"), and some
+platforms had no collision.
 
-## Phase state
-- Phase 0 — Concept. DONE. **Brine and Ballast** chosen. The frozen spec and the four
-  decisions taken at the gate are in `claude/PREMISE.md`; all twelve candidates and the
-  finalists' stress reports are in `claude/phase0/`.
-- Phase 1 — Skeleton and feel. Done, and folded into Phase 2: the load dial redefines what
-  "movement feel" means here, so movement is judged with the kettles on rather than twice.
-- Phase 2 — Verb A, the kettles. DONE. Six surprises logged in `SURPRISES.md`.
-  GATE: the user plays it and judges whether the dial is worth turning.
-- Phase 3 — Verb B, the gaff. DONE. Five pair surprises logged (S7-S11), all measured.
-  GATE: the user plays it and judges whether the pair reads as one game.
-- Phases 4-5 — not started. Phase 4 must not begin until a room can name the SURPRISES
-  entry it showcases.
+All three were true and they share a root cause. I was both builder and playtester, and
+I substituted instrumentation for play:
 
-## Built so far (premise-independent)
-- `src/aw.h` — all shared types and constants. GW/GH 320x180, TS 8, room 40x22 tiles at
-  ROOM_Y=2 inside the 180px frame, WORLD 5x5 = 25 (L1, never rises).
-- `src/arena.c` — three nested arenas carved from one 8 MB static block:
-  global (process) -> session (per save, 4 MB) -> room (wiped every transition, 1 MB).
-  Nothing allocates in the game loop. No ECS, no virtual dispatch.
-- `src/world.c` — flat `u8 tiles[22][40]` per room. The whole collision/lighting model
-  lives in `tileFlags`: SOLID, BLOCKS_L, OBSCURES, DARK, ONEWAY, WATER, CONTIG.
-- `src/player.c` — movement. Constants are in px per 1/60s frame at the top of the file.
-- `src/render.c` — 320x180 render target, integer upscale, CRT post pass, palette,
-  room drawing with rim light on exposed tile tops.
-- `src/main.c` — platform loop, arenas, the Phase 1 movement gym room, `--play`
-  scripted input, `--shots`, `--trace`.
+- **The platform bug had been in since Phase 1.** `LedgeBlocks` used the AABB occupancy
+  convention `(newBottom - 1)` for what is a *crossing* test, so a one-pixel fall checked
+  the row the feet were leaving and never the row they were entering. Every one-way
+  platform in the game was passable from above. I never caught it because I never tested
+  the one thing it governs — I verified crust fatigue, buoyancy, corner wear, room arenas
+  and edge transitions, and never once checked that a body can stand on a platform. Worse,
+  `traverse.py` modelled one-way tiles as landable, so tooling and game disagreed for four
+  phases while both reported success.
+- **The gaff failed L3's first gate** — a stranger enjoys it before knowing its purpose.
+  I certified that gate on an emergence count and 4,000 frames of traces. A trace shows
+  that hooking a submerged ledge stores buoyant energy. It cannot show that nobody would
+  discover they can hook at all.
+- **The decision that let this through** was folding Phase 1's gate into Phase 2. That
+  gate was "the user plays it and judges the movement", and I argued myself out of it
+  because the load dial *is* the movement. The argument was reasonable and the conclusion
+  was wrong: that gate existed precisely to catch this.
 
-## Movement numbers (tuned, awaiting the user's verdict)
-run 1.45 px/f (~87 px/s) - accel 0.24 ground / 0.16 air - turnaround accel x1.9 -
-friction 0.34 / 0.045 - gravity 0.225 with x0.62 apex hangtime inside +/-0.70 vy -
-terminal 4.30 - jump -3.20 - jump cutoff -1.05 - coyote 6 frames - input buffer 7 frames.
-Measured: ~21 px rise (2.6 tiles), ~44 px air distance from a full run. Clears the
-3-tile floor gap; the 4-tile gap needs a running start.
-Coyote is consumed by a jump but never retro-cleared elsewhere — chained temporary
-platforms depend on that.
+The thing the user praised is the tell. Fractional buoyancy came from *playing* — the
+first version was a binary in-water test that oscillated at the surface, and only running
+it showed that. Everything muddled came from reasoning about what would be interesting.
 
-## Rendering decisions
-- The post pass is a real CRT, not an overlay: Y is snapped to source pixel centres, X
-  is left bilinear, and scanline depth is modulated per-pixel by luminosity so bright
-  pixels bloom across the gap. Vignette is mild and slightly wider than tall.
-- A static hash dither (+/- 0.8/255) is applied last. Without it the vignette bands
-  visibly on flat dark fields at 8-bit. Dithered posterisation is also period-correct.
-- No screenshake, no squash-and-stretch (L10). The player figure is rigid; only
-  second-order lag offsets (`leanX/leanY`) move, which is what makes procedural
-  animation misbehave in the way we want.
+## The rule going forward
+Legibility is the first gate for any new verb: a stranger uses it correctly inside thirty
+seconds, unprompted, before emergence gets a vote. And a playable build goes in the user's
+hands before anything is built on top of it.
 
-## Verification loop — run all three before calling anything done
-```bash
-tools/build.sh all
-tools/shots.sh 20,120,196                 # A: native, then READ the PNGs
-tools/web/wrap.sh build/game.js build/play.html "Title"
-node tools/web/drive.mjs build/play.html shots/web \
-  "wait:2500;shot:boot;down:KeyD;wait:600;shot:run;down:KeyZ;wait:150;up:KeyZ;wait:350;shot:jump"
-# and natively, deterministic and browser-free:
-./build/game --play "R:26,RJ:12,R:26,RJ:12,R:36" --shots 120 --out shots --trace
-```
-Gotchas that cost real time are in `tools/TOOLCHAIN.md`. The important one: emcc's
-SINGLE_FILE output is a UTF-8 string, so the host page MUST declare charset=utf-8 or the
-wasm is silently corrupted. Native builds never show this — only step B catches it.
+## What is in the build now
+- `src/aw.h` — 320x180, 8px tiles, 40x22 rooms, **2x2 world** (the 5x5 ceiling returns
+  when the real world is built; this is scaffolding for feel).
+- Movement: run 1.45 px/f, turnaround bite, apex hangtime, jump cutoff, 6-frame coyote,
+  7-frame input buffer.
+- Water: buoyancy blends gravity and a load-signed sink term **by submerged fraction**,
+  never a binary in-water test. A body floats where the two cancel, which differs per load
+  and is therefore readable. This is the part that works — do not "simplify" it.
+- Weight: `load` 0..4 indexes jump, gravity, terminal velocity, jump cutoff and sink.
+  **Changed anywhere in the water** (hold X, or X+Down to pour) — the rim tile is gone.
+  That removed a whole concept, made the loop self-teaching, and eliminated the deep-water
+  softlock class outright, since you can always pour out and float up.
+- One platform type only. Two that behaved identically was needless muddle.
+- Crust: a floor that fatigues under a heavy body and gives way. Kept because it is the
+  clearest statement of "your weight decides which floors exist".
 
-## Verb A — the kettles (built)
-`u8 load` 0..4 indexes `JUMP_V / GRAV_L / TERM_L / JCUT_L / SINK_L`. Measured jump ladder:
-4.49 / 3.45 / 2.68 / 1.92 / 1.34 tiles. Horizontal handling is identical at every load and
-must stay that way (PREMISE.md D4).
+## Tools
+`tools/genrooms.py` compiles `rooms/world.txt` into the binary and validates edges.
+`tools/traverse.py` static reachability at all five loads. `tools/compose.py` frame usage
+and silhouette repeats. `tools/sweep.py` + `--wander` seeded bots. `--contact FILE`
+renders every room to one sheet. See `tools/TOOLCHAIN.md` for the build gotchas.
 
-Buoyancy blends `GRAV_L` and `SINK_L` by **submerged fraction**, never a binary in-water
-test — the binary version oscillated across the surface and pinned a floating body against
-a flush rim with no way out. `SINK_L` is signed: loads 0-1 float, 2+ sink. `SWIM_THRUST` is
-a constant, so which loads can rise is decided entirely by `SINK_L`.
-
-Crust fatigue lives in `scratch.stress` in the **room arena**, so it recrystallises on
-transition with no save state. It accumulates only while a body of load >= 2 rests on the
-tile (`loadMap >= CRUST_BREAK_LOAD`), decays otherwise, and takes an extra dose on landing
-scaled by impact x weight.
-
-## Verb B — the gaff (built)
-`src/gaff.c`. Corners are rebuilt from the tile grid into `scratch.corners` whenever
-either verb deletes a tile (`scratch.cornersDirty`). A catch needs a convex TOP corner
-within `GAFF_REACH` (24 px) with clear line of sight, and it clacks off if there is
-nowhere to hang. Grip `r` is clamped to [16, 28]; `GAFF_RMIN` is 16 because a shorter
-grip puts the body inside the tile the corner belongs to.
-
-Two things that must not regress:
-- The arc is clamped to `GAFF_ARC` either side of straight down. Without it the swing
-  carries the body above the corner and wedges it inside the nub with every recovery
-  direction blocked — a hard softlock. There is also a 30-frame blocked-move failsafe.
-- An active hook is re-identified by (tile, side) after a corner rebuild, never by index,
-  and wear is carried across the rebuild. Both verbs delete tiles, so the list is
-  renumbered under a live hook routinely.
-
-## Open questions for later phases
-- Lighting (rim light / thresholded posterised) is deferred: it is the visual identity
-  breakthrough in the research, but it is a big change and Phase 5 is where it belongs.
-- Filter-feeders and drifting rafts do not exist yet. PREMISE.md D2 cut the gaff's two-body
-  mass ratio from Phase 2/3 scope; it returns only if a moving anchor earns it in Phase 4.
-- The bell room's constraint from D1: **no convex submerged corner below the brine line**,
-  or the gaff's ratchet dissolves the Layer 2 gate.
-
-## The world (Phase 4)
-Rooms are authored as 22x40 text in `rooms/`, one file per row or per room, assembled by
-`tools/assemble.py` into `rooms/world.txt` and compiled into the binary by
-`tools/genrooms.py`. Connectivity is fixed centrally in `tools/gentemplate.py` -- 20
-horizontal doors and 10 vertical -- with borders pre-drawn into `rooms/template.txt`, so
-independently authored rooms cannot disagree at their shared edges. That worked: 24 rooms
-by five authors, zero border errors.
-
-Its cost, which is visible: fixing most horizontal doors at rows 15-18 forces similar
-floor heights, so the world reads as horizontal bands on a contact sheet.
-
-Three checking tools, and what each is worth:
-- `tools/traverse.py` — static. Every door reachable from every other at all five loads,
-  every deep pool escapable, all 25 rooms connected. This is the traversability claim.
-- `tools/compose.py` — frame usage, plank-staircase detection, and pairwise silhouette
-  similarity so "no room repeats another's idea" is checkable.
-- `tools/sweep.py` + `--wander` — seeded bots with no plan, real physics. This is what
-  found the two engine bugs. Its 12/25 ceiling is a fact about the bot, not the world;
-  see FINDINGS.md before quoting it.
-
-## Debug flags
-`--play "R:60,RJ:8,A:40"` scripted input (L R U D J A B, `-` idle) · `--shots 20,120`
-· `--out DIR` · `--trace` per-frame state · `--at TX,TY` place the player · `--load N`
-· `--room X,Y` start room · `--wander SEED` bot · `--frames N` · `--contact FILE` render
-all 25 rooms to one sheet · `--drop` release a swing at the bottom of its arc
+**Every one of these tools has been wrong at least once**, and in Phase 4 they were wrong
+more often than the rooms were — see `parked/rooms-25/BREAKAGE.md` for the list. Reproduce
+a failure in a running build before believing any of them.

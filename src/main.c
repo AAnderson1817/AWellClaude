@@ -146,10 +146,6 @@ static void Sim(void) {
     RoomStepEnd();
     FxStep();
     RoomTransition();
-    // Both verbs delete tiles, and corners are derived from tiles. Rebuilding here is
-    // the third shared line of the coupling: crust that fails under weight manufactures
-    // the hooks the gaff needs, and a sheared nub exposes its neighbours.
-    if (scratch.cornersDirty) { BuildCorners(); scratch.cornersDirty = 0; }
 }
 
 static void Frame(void) {
@@ -169,17 +165,15 @@ static void Frame(void) {
     if (!noDraw) {
         RenderBeginRoom();
             DrawRoom(CurRoom());
-            GaffDraw();
-            PlayerDraw();
+                PlayerDraw();
             FxDraw();
         RenderEndRoomAndPresent();
     }
 
     if (dbgTrace)
-        printf("f=%4ld r=%d,%d x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d rim=%d sub=%d hook=%d corners=%d\n",
+        printf("f=%4ld r=%d,%d x=%6.2f y=%6.2f vx=%6.3f vy=%6.3f g=%d load=%d sub=%d\n",
                frameNo, world.cx, world.cy, player.x, player.y, player.vx, player.vy,
-               player.onGround, player.load, player.atRim, player.submerged,
-               player.hooked, (int)scratch.cornerCount);
+               player.onGround, player.load, player.submerged);
 
     for (int i = 0; i < dbgShotCount; i++) {
         if (dbgShotFrames[i] == (int)frameNo) {
@@ -216,8 +210,7 @@ int main(int argc, char **argv) {
             char *t = strtok(NULL, ","); if (t) startTy = atoi(t);
         } else if (!strcmp(argv[i], "--load") && i + 1 < argc) {
             startLoad = atoi(argv[++i]);
-        } else if (!strcmp(argv[i], "--drop")) {
-            extern int dbgReleaseAtBottom; dbgReleaseAtBottom = 1;
+        } else if (0) {
         } else if (!strcmp(argv[i], "--wander") && i + 1 < argc) {
             extern int wanderSeed; wanderSeed = atoi(argv[++i]);
             dbgFixedStep = 1; visitReport = 1; noDraw = 1;
@@ -248,7 +241,6 @@ int main(int argc, char **argv) {
     world.cx = startRx; world.cy = startRy;
     RoomArenaFresh();
     FxReset();
-    BuildCorners();
     // P marks the tile the player stands IN: feet at that tile's bottom edge.
     int ptx = (startTx >= 0 ? startTx : START_TILE_X);
     int pty = (startTy >= 0 ? startTy : START_TILE_Y);

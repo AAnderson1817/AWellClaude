@@ -8,15 +8,15 @@ world boundaries.
 """
 import sys, re, os
 
-W, H = 5, 5
+W, H = 2, 2
 RW, RH = 40, 22
 
 TILES = {
     '.': 'T_EMPTY',  '#': 'T_ROCK',   'X': 'T_DARK',   '-': 'T_LEDGE',
-    'T': 'T_TIMBER', '~': 'T_BRINE',  '=': 'T_CRUST',  'R': 'T_RIM',
-    ',': 'T_GRASS',  'B': 'T_BELL',
+    'T': 'T_TIMBER', '~': 'T_BRINE',  '=': 'T_CRUST',  
+    ',': 'T_GRASS',
 }
-SOLIDISH = set('#XRB')          # blocks a body outright
+SOLIDISH = set('#X')          # blocks a body outright
 OPEN     = set('.-T~=,')       # a body can occupy or pass
 
 def die(msg):

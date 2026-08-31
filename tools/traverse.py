@@ -9,9 +9,9 @@ it flags may still be fine via a hook. It over-reports rather than under-reports
 import sys, re
 from collections import deque
 
-W = H = 5
+W = H = 2
 RW, RH = 40, 22
-SOLID = set('#XR=B')          # blocks a body
+SOLID = set('#X=')          # blocks a body
 ONEWAY = set('-T')            # solid from above only
 BRINE = set('~')
 PASS  = set('.,~-T')          # a body can be inside these
@@ -58,12 +58,9 @@ def body_fits(rooms, rm, c, r):
     return passable(rooms, rm, c, r) and passable(rooms, rm, c, r - 1)
 
 def near_rim(rooms, rm, c, r):
-    """A body overlapping a rim tile can fill or tip out, i.e. change its own load."""
-    for dc in (-1, 0, 1):
-        for dr in (-1, 0, 1, 2):
-            cc, rr = c + dc, r + dr
-            if 0 <= cc < RW and 0 <= rr < RH and rooms[rm][rr][cc] == 'R': return True
-    return False
+    """Weight is changed wherever you are in the water -- there is no special tile for
+    it any more, so any brine cell is a place you can fill or pour."""
+    return brine(rooms, rm, c, r) or (r + 1 < RH and brine(rooms, rm, c, r + 1))
 
 def moves(rooms, rm, load, c, r):
     """Every tile a body at (c,r) with this load can get to in one step. The movement
@@ -217,8 +214,8 @@ def main():
         cur = q.popleft()
         for n in adj[cur]:
             if n not in seen: seen.add(n); q.append(n)
-    print(f"\nrooms reachable from the start, by doors alone: {len(seen)}/25")
-    if len(seen) < 25:
+    print(f"\nrooms reachable from the start, by doors alone: {len(seen)}/{W*H}")
+    if len(seen) < W * H:
         miss = sorted(set((x, y) for y in range(H) for x in range(W)) - seen)
         print("  unreachable:", miss); issues.append(f"unreachable rooms: {miss}")
 

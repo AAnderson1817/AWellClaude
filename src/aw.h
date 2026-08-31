@@ -21,8 +21,10 @@ typedef float    f32;
 #define RH 22           // room height in tiles  (22*8 = 176)
 #define ROOM_Y 2        // room is centred in the 180px frame: 2px band top & bottom
 
-#define WORLD_W 5       // L1: the ceiling. 5x5 = 25 rooms. This never rises.
-#define WORLD_H 5
+// Navigation slice: four rooms, enough to give movement somewhere to happen. The 5x5
+// ceiling from L1 returns when the real world is built -- this is scaffolding for feel.
+#define WORLD_W 2
+#define WORLD_H 2
 #define ROOM_COUNT (WORLD_W * WORLD_H)
 
 #define DT (1.0f / 60.0f)
@@ -49,7 +51,6 @@ enum {
     TF_ONEWAY   = 1 << 4,   // solid only from above
     TF_WATER    = 1 << 5,
     TF_CONTIG   = 1 << 6,   // autotiles against its own kind
-    TF_RIM      = 1 << 7,   // a pan rim: the kettles can be filled or emptied here
 };
 
 enum {
@@ -60,9 +61,7 @@ enum {
     T_BRINE,        // deep brine: buoyancy is signed by load
     T_GRASS,        // decorative, non-solid
     T_CRUST,        // salt crust: holds a light body, shatters under a heavy one
-    T_RIM,          // pan rim, solid; fill and empty the kettles here
     T_TIMBER,       // collapsing scaffold: one-way, and it is what the world is roofed with
-    T_BELL,         // the diving bell. Layer 2 hook: visible in minute one, inert until the end.
     T_TILE_KINDS
 };
 
@@ -80,20 +79,11 @@ typedef struct {
 
 // Room-arena scratch. Wiped on every transition, so crust recrystallises when you
 // come back and no save state is needed to express that.
-// A convex top corner of a solid tile: the only thing the gaff can bite.
-// Derived from the tile grid, which is why both verbs deleting tiles is a coupling
-// and not a coincidence.
-typedef struct { i32 px, py; i32 tx, ty; u8 side; u8 worn; } Corner;
-#define CORNER_MAX 256
-
 typedef struct {
     u8  loadMap[RH][RW];    // cleared each frame; bodies stamp (1 + their load)
     u8  stress[RH][RW];     // crust fatigue
     f32 surfH[RW], surfV[RW];  // 1D brine surface wave, one column per tile
     u8  broken[RH][RW];     // tiles destroyed by either verb THIS visit
-    Corner corners[CORNER_MAX];
-    i32 cornerCount;
-    i32 cornersDirty;
 } RoomScratch;
 
 // Room-scope state lives IN the room arena, not in a global that merely gets cleared.
@@ -113,9 +103,8 @@ typedef struct {
 extern World world;
 static inline Room *RoomAt(int x, int y) { return &world.rooms[y * WORLD_W + x]; }
 static inline Room *CurRoom(void)        { return RoomAt(world.cx, world.cy); }
-// Level data is immutable. Everything either verb destroys is recorded in the room
-// arena instead, so it all comes back when you leave and return -- which is what the
-// premise means by the crust recrystallising, and it costs no save state.
+// Level data is immutable. Anything destroyed is recorded in the room arena instead,
+// so it comes back when you leave and return, and costs no save state.
 static inline u8 TileGet(int tx, int ty) {
     // Just outside the room is open when a room lies that way and solid when it does
     // not, so a body can step across a shared edge but the world's rim is rock. The
@@ -130,7 +119,6 @@ static inline u8 TileGet(int tx, int ty) {
 static inline void TileBreak(int tx, int ty) {
     if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return;
     scratch.broken[ty][tx] = 1;
-    scratch.cornersDirty = 1;
 }
 u8 TileAtPx(float px, float py);   // world pixel -> tile id in the current room
 void LoadWorld(void);
@@ -148,44 +136,26 @@ typedef struct {
     int coyote;             // frames of ground-memory remaining
     int jumpBuf;            // frames of buffered jump remaining
     int jumpHeld;
-    int inWater;
     f32 animT;              // procedural animation clock
     f32 leanX, leanY;       // second-order lag, drives the procedural pass
 
-    // --- Verb A: the kettles ---------------------------------------------
-    u8  load;               // 0..4 kettles' worth of brine. The whole verb.
-    i32 fillTimer;          // frames of the current fill/empty action
-    int atRim;              // a TF_RIM tile overlaps the body this frame
-    int submerged;          // body centre is inside brine
-    i32 waterY;             // room-pixel y of the brine line cutting the body, or -1
-    f32 sloshX, sloshY;     // second-order lag of the liquid inside the kettles
-    f32 yokeAng;            // yoke swing, lags the body. Never squash-and-stretch.
-    i32 landImpact;         // frames left of the last landing's dust
-
-    // --- Verb B: the gaff -------------------------------------------------
-    i32 hooked;             // index into scratch.corners, or -1
-    f32 theta;              // 0 is straight below the corner
-    f32 omega;              // angular velocity, rad/frame
-    f32 r;                  // grip length, clamped
-    i32 pivotFrames;        // for corner wear
-    i32 clack;              // frames left of a failed catch
-    i32 hookHeldPrev;
-    i32 stuck;
-    i32 hookTx, hookTy;     // the corner's identity, which survives a rebuild
-    u8  hookSide;           // its index does not
+    // --- weight ------------------------------------------------------------
+    // The one thing beyond running and jumping. It only touches the gravity axis:
+    // how high you jump, how fast you fall, and whether you float or sink.
+    u8  load;               // 0..4 kettles of brine
+    i32 fillTimer;          // frames into the current fill or pour
+    i32 submerged;          // any part of the body under the surface
+    i32 waterY;             // room-pixel y of the waterline cutting the body, or -1
+    f32 sloshX, sloshY;     // second-order lag of the liquid, so it keeps moving
+    f32 yokeAng;            // the yoke lags your turns. Never squash-and-stretch.
+    i32 landImpact;
 } Player;
 
-#define GAFF_REACH   24.0f
-#define GAFF_RMIN    16.0f
-#define GAFF_RMAX    28.0f
-#define CORNER_WEAR_MAX 32
-#define GAFF_ARC     1.48f   // radians either side of straight-down; never above the corner
 
 #define LOAD_MAX 4
 
-// Weight touches the gravity axis only (D4). Run speed, acceleration, friction and
-// turnaround are identical at every load -- the moment weight changes horizontal
-// handling it starts doing the gaff's job.
+// Weight touches the gravity axis only. Run speed, acceleration, friction and
+// turnaround are identical at every load.
 extern const f32 JUMP_V[LOAD_MAX + 1];
 extern const f32 GRAV_L[LOAD_MAX + 1];
 extern const f32 TERM_L[LOAD_MAX + 1];
@@ -218,10 +188,6 @@ void FxStep(void);
 void FxDraw(void);
 
 // ---------------------------------------------------------------- room step
-void BuildCorners(void);
-void GaffStep(void);
-void GaffDraw(void);
-
 void RoomStepBegin(void);   // clears loadMap
 void RoomStepEnd(void);     // crust fatigue, brine surface wave
 void BrineDisturb(float px, float strength);

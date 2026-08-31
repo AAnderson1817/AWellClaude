@@ -13,9 +13,7 @@ const u8 tileFlags[T_TILE_KINDS] = {
     [T_BRINE]  = TF_WATER,
     [T_GRASS]  = 0,
     [T_CRUST]  = TF_SOLID | TF_CONTIG,
-    [T_RIM]    = TF_SOLID | TF_BLOCKS_L | TF_RIM,
     [T_TIMBER] = TF_ONEWAY,
-    [T_BELL]   = TF_SOLID | TF_BLOCKS_L,
 };
 
 u8 TileAtPx(float px, float py) {
@@ -47,10 +45,6 @@ void EnterRoom(int nx, int ny) {
     world.cx = nx; world.cy = ny;
     RoomArenaFresh();
     FxReset();
-    player.hooked = -1;
-    player.omega = 0.0f;
-    player.pivotFrames = 0;
-    BuildCorners();
 }
 
 int RoomTransition(void) {

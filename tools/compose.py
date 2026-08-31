@@ -23,8 +23,8 @@ if cur: rooms[cur] = lines
 
 print("room    top(1-7)  mid(8-14)  bot(15-20)   fill%  gap  verdict")
 worst = []
-for y in range(5):
-    for x in range(5):
+for y in range(H):
+    for x in range(W):
         g = rooms[(x, y)]
         def band(a, b):
             return sum(1 for r in range(a, b + 1) for c in range(1, RW - 1) if g[r][c] != '.')

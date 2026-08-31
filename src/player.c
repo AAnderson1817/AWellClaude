@@ -172,45 +172,26 @@ static void StampLoad(void) {
 }
 
 // ---------------------------------------------------------------- kettles
-// A lip you are standing against is a lip you can use. Testing only the tiles the body
-// overlaps means a body pressed flat against a rim is one pixel short of reaching it,
-// which is invisible, maddening, and was making the first room's pan a trap.
-static int NearRim(void) {
-    int tx0 = (int)floorf(player.x / TS) - 1, tx1 = (int)floorf((player.x + player.w - 1) / TS) + 1;
-    int ty0 = (int)floorf(player.y / TS) - 1, ty1 = (int)floorf((player.y + player.h) / TS) + 1;
-    for (int ty = ty0; ty <= ty1; ty++)
-        for (int tx = tx0; tx <= tx1; tx++)
-            if (tileFlags[TileGet(tx, ty)] & TF_RIM) return 1;
-    return 0;
-}
-
+// Weight changes where you are, not where the game says you may. Stand in the brine
+// and hold the button: the kettles fill and you get heavier. Hold it with Down and you
+// pour them out. There is no special tile for it -- the water is the tile.
 static void KettleStep(void) {
-    player.atRim = NearRim();
-    // Standing at a rim stirs the brine beside it. Solves nothing; it is only the
-    // world admitting you are there.
-    if (player.atRim && player.onGround && (frameNo % 14) == 0)
-        BrineDisturb(player.x + player.w * 0.5f + player.facing * 10.0f,
-                     0.05f + player.load * 0.02f);
-
-    int want = in.a && player.atRim;
-    if (!want) { player.fillTimer = 0; }
-    else {
-        player.fillTimer++;
-        if (player.fillTimer >= FILL_FRAMES) {
-            player.fillTimer = 0;
-            if (in.down) {                       // tip the kettles out over the rim
-                if (player.load > 0) {
-                    player.load--;
-                    FxBurst(FX_DROP, player.x + player.w * 0.5f, player.y + player.h - 2, 9, 0.5f, 0.25f);
-                    BrineDisturb(player.x + player.w * 0.5f, 0.45f);
-                }
-            } else {
-                if (player.load < LOAD_MAX) {
-                    player.load++;
-                    FxBurst(FX_DROP, player.x + player.w * 0.5f, player.y + player.h - 4, 5, 0.35f, 0.18f);
-                }
-            }
+    int want = in.a && player.submerged;
+    if (!want) { player.fillTimer = 0; return; }
+    player.fillTimer++;
+    if (player.fillTimer < FILL_FRAMES) return;
+    player.fillTimer = 0;
+    float cx = player.x + player.w * 0.5f;
+    if (in.down) {
+        if (player.load > 0) {
+            player.load--;
+            FxBurst(FX_DROP, cx, player.y + player.h - 2, 9, 0.5f, 0.25f);
+            BrineDisturb(cx, 0.45f);
         }
+    } else if (player.load < LOAD_MAX) {
+        player.load++;
+        FxBurst(FX_DROP, cx, player.y + player.h - 4, 5, 0.35f, 0.18f);
+        BrineDisturb(cx, 0.25f);
     }
 }
 
@@ -221,7 +202,6 @@ void PlayerInit(float x, float y) {
     player.w = 6; player.h = 12;
     player.facing = 1;
     player.load = 0;
-    player.hooked = -1;
 }
 
 void PlayerStep(void) {
@@ -249,24 +229,6 @@ void PlayerStep(void) {
     else if (player.jumpBuf > 0) player.jumpBuf--;
 
     KettleStep();
-    GaffStep();
-    if (player.hooked >= 0) {
-        // Hanging replaces free movement. The kettles still work -- you can fill or
-        // tip while on the hook if a rim is in reach, which is how D1's ratchet and
-        // the deep-pan fill are meant to interact.
-        player.hookHeldPrev = in.b;
-        StampLoad();
-        player.animT += 0.05f;
-        player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;
-        player.leanY += (player.vy * 0.35f - player.leanY) * 0.18f;
-        float sl = 0.26f - L * 0.045f;
-        player.sloshX += (player.vx * (0.5f + L * 0.55f) - player.sloshX) * sl;
-        player.sloshY += (player.vy * (0.2f + L * 0.30f) - player.sloshY) * (sl * 0.8f);
-        player.yokeAng += (-player.vx * 0.11f * (1.0f + L * 0.4f) - player.yokeAng) * 0.14f;
-        if (player.landImpact > 0) player.landImpact--;
-        return;
-    }
-    player.hookHeldPrev = in.b;
 
     // ---- horizontal: identical at every load (D4)
     int dir = in.right - in.left;
@@ -321,10 +283,8 @@ void PlayerStep(void) {
         if (player.vy > TERM_L[L]) player.vy = TERM_L[L];
     }
 
-    if (player.hooked < 0) {
-        MoveX(player.vx);
-        MoveY(player.vy);
-    }
+    MoveX(player.vx);
+    MoveY(player.vy);
     StampLoad();
 
     // ---- procedural animation. Lag only: no squash, no stretch (L10).
