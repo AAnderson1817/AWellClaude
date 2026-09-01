@@ -159,9 +159,9 @@ static void Frame(void) {
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d bnc=%d\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d\n",
                frameNo, player.x, player.y, player.vx, player.vy,
-               player.onGround, player.airFrames, player.coyote, player.jumpBuf, player.bounces);
+               player.onGround, player.airFrames, player.coyote, player.jumpBuf);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {

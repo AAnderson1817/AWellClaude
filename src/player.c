@@ -21,10 +21,9 @@ Player player;
 #define COYOTE      6          // frames you may still jump after walking off
 #define BUFFER      7          // frames a jump press is remembered before landing
 
-// Off a bulb. Rise above the dome's crown: 5.5, 7 and 9 tiles for the first, second
-// and third consecutive landing. A full jump is 4, so even the first is a place you
-// could not otherwise get to, and the third is most of the room.
-static const float BOUNCE_V[BOUNCE_MAX] = { -4.03f, -4.55f, -5.16f };
+// Off a bulb: about 5.2 tiles above the dome's crown, every time. A full jump is 4,
+// so it is a place you could not otherwise get to, and it is the same place each time.
+#define BOUNCE_V   -4.03f
 
 // ---------------------------------------------------------------- collision
 static int RectHitsSolid(float x, float y, int w, int h) {
@@ -74,17 +73,13 @@ static void MoveY(float dy) {
         if (step > 0) {
             int b = BulbCrossed(player.y + player.h, ny + player.h, player.x, player.w);
             if (b >= 0) {
-                int lvl = player.bounces < BOUNCE_MAX ? player.bounces : BOUNCE_MAX - 1;
                 player.y = (float)(bulbs[b].y - BULB_H) - player.h;
-                player.vy = BOUNCE_V[lvl];
+                player.vy = BOUNCE_V;
                 player.launched = 1;
                 player.jumpHeld = 0;
-                if (player.bounces < BOUNCE_MAX) player.bounces++;
                 bulbs[b].squash = 9;
                 bulbs[b].flash  = 22;
-                bulbs[b].level  = player.bounces;
-                FxBurst(FX_DUST, (float)bulbs[b].x, (float)(bulbs[b].y - BULB_H),
-                        3 + 3 * player.bounces, 1.1f, 0.22f);
+                FxBurst(FX_DUST, (float)bulbs[b].x, (float)(bulbs[b].y - BULB_H), 6, 1.1f, 0.22f);
                 return;
             }
         }
@@ -102,7 +97,6 @@ static void MoveY(float dy) {
                     player.landImpact = 7;
                 }
                 player.onGround = 1; player.coyote = COYOTE;
-                player.bounces = 0;           // touching ground ends the chain
             }
             player.vy = 0;
             return;
@@ -126,7 +120,7 @@ void PlayerStep(void) {
         (!in.down && LedgeBlocks(player.y + player.h, player.y + 1, player.w, player.h)))
         player.onGround = 1;
 
-    if (player.onGround) { player.coyote = COYOTE; player.airFrames = 0; player.bounces = 0; }
+    if (player.onGround) { player.coyote = COYOTE; player.airFrames = 0; }
     else { if (player.coyote > 0) player.coyote--; player.airFrames++; }
 
     if (in.jumpPressed) player.jumpBuf = BUFFER;

@@ -9,7 +9,7 @@ import subprocess, sys, re, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINE = re.compile(r"f=\s*(\d+) x=\s*([-\d.]+) y=\s*([-\d.]+) vx=\s*([-\d.]+) "
-                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) bnc=(\d+)")
+                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+)")
 
 def run(plan, at=None, frames=None):
     cmd = [os.path.join(ROOT, "build", "game"), "--play", plan, "--trace", "--nodraw"]
@@ -18,10 +18,10 @@ def run(plan, at=None, frames=None):
     out = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT).stdout
     rows = []
     for m in LINE.finditer(out):
-        f, x, y, vx, vy, g, a, c, b, n = m.groups()
+        f, x, y, vx, vy, g, a, c, b = m.groups()
         rows.append(dict(f=int(f), x=float(x), y=float(y), vx=float(vx),
                          vy=float(vy), ground=int(g), air=int(a),
-                         coy=int(c), buf=int(b), bnc=int(n)))
+                         coy=int(c), buf=int(b)))
     return rows
 
 def last(rows):  return rows[-1] if rows else None

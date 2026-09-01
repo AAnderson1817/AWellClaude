@@ -72,13 +72,12 @@ int  RoomStartTy(void);
 
 // ---------------------------------------------------------------- bulbs
 // A dome you land on and leave faster than you arrived. Not solid: you walk through
-// it, you cannot stand on it, it only answers a fall. Each landing without touching
-// ground in between throws you higher, and the third is as high as it goes.
+// it, you cannot stand on it, it only answers a fall. Every landing throws you the
+// same height -- higher than you can jump, and always the same.
 #define BULB_MAX 8
 #define BULB_W   12
 #define BULB_H   6
-#define BOUNCE_MAX 3
-typedef struct { i32 x, y; i32 squash; i32 flash; i32 level; } Bulb;   // x,y: base centre, room px
+typedef struct { i32 x, y; i32 squash; i32 flash; } Bulb;   // x,y: base centre, room px
 extern Bulb bulbs[BULB_MAX];
 extern int  bulbCount;
 void BulbsStep(void);
@@ -97,7 +96,6 @@ typedef struct {
     int jumpHeld;
     int airFrames;
     int landImpact;
-    int bounces;            // consecutive bulb landings, 0..BOUNCE_MAX
     int launched;           // rising off a bulb: the jump cut does not apply
     f32 animT;
     f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.

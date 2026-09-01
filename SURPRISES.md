@@ -164,6 +164,13 @@ Room: TBD.
 ---
 
 ## S12 — Holding Down carries a bounce chain through a shelf
+**Retired.** The escalating chain was removed at the user's request the same day, so
+there is no longer a count for the pass-through to carry. The pass itself still happens
+— Down held, you fall through the shelf onto the bulb and bounce again — but every bounce
+is now the same height, so nothing is gained by it. Kept as written because it was
+observed, and because the shape of it (two rules written alone, meeting) is the kind of
+thing this file is for.
+
 Observed, from-scratch room, bulb at (24,19) under the row-16 shelf. The first bounce
 (5.2 tiles) crosses the shelf and lands on it, ending the chain at one. With Down held
 the body passes the shelf both ways, lands on the bulb again, and the chain runs to three

@@ -191,13 +191,11 @@ static void AddAura(void) {
 void LightStep(void) {
     memcpy(lnow, lstat, sizeof lnow);
     AddAura();
-    // A bulb that has just been landed on throws light for a moment, more for a
-    // higher bounce. That is how the count is shown: not a number, a brighter room.
+    // A bulb that has just been landed on throws light for a moment.
     for (int i = 0; i < bulbCount; i++)
         if (bulbs[i].flash > 0) {
             f32 t = bulbs[i].flash / 22.0f;
-            AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f, 3.2f + bulbs[i].level * 1.1f,
-                     t * (0.30f + 0.28f * bulbs[i].level));
+            AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f, 4.2f, t * 0.55f);
         }
     // The grid is sampled at tile CORNERS: (RW+1) x (RH+1) values, drawn back over
     // the room half a tile out on every side so each texel centre lands exactly on

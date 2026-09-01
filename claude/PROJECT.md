@@ -75,20 +75,17 @@ The room is built to that vocabulary: 2 and 3 tile rises everywhere, no 4s.
 
 A 12x6 dome authored with `o` in the map, sitting on a tile floor. Not solid: you walk
 through it, cannot stand on it, and it only answers a fall -- the same crossing test a
-shelf uses, in `BulbCrossed`. Landing throws you up; consecutive landings without
-touching ground throw you higher; the third is the cap.
+shelf uses, in `BulbCrossed`. Landing throws you 5.2 tiles above the crown, every time
+(a full jump is 4.0). It flashes and compresses for a few frames; the pad deforms, the
+body never does (L10). A bounce is the bulb's, so the jump cut does not apply to it
+(`player.launched`).
 
-    1st landing   5.2 tiles above the crown
-    2nd           6.7
-    3rd           8.7        (a full jump is 4.0)
+It was first built with an escalating chain (5.2 / 6.7 / 8.7 over three consecutive
+landings). The user asked for that to be removed; the constant bounce is what stands.
 
-The count is shown, not counted: the bulb flashes brighter and throws more light for a
-higher bounce, and compresses for a few frames. The pad deforms; the body never does
-(L10). Touching stone or a shelf resets the chain. A bounce is the bulb's, so the jump
-cut does not apply to it (`player.launched`).
-
-Placement: one under the row-12 shelf (the third bounce lands you on it), one under the
-row-16 shelf (see SURPRISES S12).
+Placement: one on the left floor under the row-12 shelf -- a bounce and a nudge left
+reaches the row-15 shelf -- and one on the right floor under the row-16 shelf, which a
+bounce lands you on.
 
 ## The rules this build is under
 
@@ -133,5 +130,4 @@ time, each after the thing under it has been played and accepted.
 ## Controls
 
 Arrows or WASD. Z, X, C or Space to jump; hold it longer to go higher. Down to drop
-through a shelf. Land on a bulb to bounce; land on it again before touching ground to
-bounce higher.
+through a shelf. Land on a bulb to bounce.
