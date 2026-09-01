@@ -22,9 +22,9 @@ Player player;
 #define BUFFER      7          // frames a jump press is remembered before landing
 
 // Off a bulb: about 5.2 tiles above the dome's crown. A full jump is 4, so it is a
-// place you could not otherwise get to. Meet it with the button and it is 6.
+// place you could not otherwise get to. Meet it with the button and it is 6.2.
 #define BOUNCE_V   -4.03f
-#define BOUNCE_TIMED_V -4.32f
+#define BOUNCE_TIMED_V -4.39f
 #define BOUNCE_LIFT (BOUNCE_TIMED_V - BOUNCE_V)   // added to a bounce already in the air
 
 // ---------------------------------------------------------------- collision
