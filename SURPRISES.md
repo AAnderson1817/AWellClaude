@@ -163,6 +163,15 @@ Room: TBD.
 
 ---
 
+## S12 — Holding Down carries a bounce chain through a shelf
+Observed, from-scratch room, bulb at (24,19) under the row-16 shelf. The first bounce
+(5.2 tiles) crosses the shelf and lands on it, ending the chain at one. With Down held
+the body passes the shelf both ways, lands on the bulb again, and the chain runs to three
+— 8.7 tiles, above where the shelf could ever have put you. Nothing was written for this:
+the shelf's drop-through and the bulb's crossing test were each written alone, and the
+chain reset only ever knew about touching ground. Measured: no input, max chain 1, ends on
+the shelf; Down held, max chain 3.
+
 ## Not logged, and why
 - "Load 2 can almost hold station against buoyancy." Predicted from the constants
   (SINK 0.22 vs SWIM 0.17), **not observed** — in the deep pan load 2 sank the full five

@@ -120,6 +120,7 @@ void InputPoll(void) {
 static void Sim(void) {
     InputPoll();
     PlayerStep();
+    BulbsStep();
     FxStep();
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
@@ -149,6 +150,7 @@ static void Frame(void) {
         LightStep();
         RenderBegin();
             RoomDraw();
+            BulbsDraw();
             PlayerDraw();
             FxDraw();
             LightDraw();
@@ -157,9 +159,9 @@ static void Frame(void) {
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d bnc=%d\n",
                frameNo, player.x, player.y, player.vx, player.vy,
-               player.onGround, player.airFrames, player.coyote, player.jumpBuf);
+               player.onGround, player.airFrames, player.coyote, player.jumpBuf, player.bounces);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {

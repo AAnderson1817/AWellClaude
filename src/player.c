@@ -21,6 +21,11 @@ Player player;
 #define COYOTE      6          // frames you may still jump after walking off
 #define BUFFER      7          // frames a jump press is remembered before landing
 
+// Off a bulb. Rise above the dome's crown: 5.5, 7 and 9 tiles for the first, second
+// and third consecutive landing. A full jump is 4, so even the first is a place you
+// could not otherwise get to, and the third is most of the room.
+static const float BOUNCE_V[BOUNCE_MAX] = { -4.03f, -4.55f, -5.16f };
+
 // ---------------------------------------------------------------- collision
 static int RectHitsSolid(float x, float y, int w, int h) {
     int tx0 = (int)floorf(x / TS), tx1 = (int)floorf((x + w - 1) / TS);
@@ -66,6 +71,23 @@ static void MoveY(float dy) {
     while (fabsf(rem) > 0.0001f) {
         float step = rem > 1.0f ? 1.0f : (rem < -1.0f ? -1.0f : rem);
         float ny = player.y + step;
+        if (step > 0) {
+            int b = BulbCrossed(player.y + player.h, ny + player.h, player.x, player.w);
+            if (b >= 0) {
+                int lvl = player.bounces < BOUNCE_MAX ? player.bounces : BOUNCE_MAX - 1;
+                player.y = (float)(bulbs[b].y - BULB_H) - player.h;
+                player.vy = BOUNCE_V[lvl];
+                player.launched = 1;
+                player.jumpHeld = 0;
+                if (player.bounces < BOUNCE_MAX) player.bounces++;
+                bulbs[b].squash = 9;
+                bulbs[b].flash  = 22;
+                bulbs[b].level  = player.bounces;
+                FxBurst(FX_DUST, (float)bulbs[b].x, (float)(bulbs[b].y - BULB_H),
+                        3 + 3 * player.bounces, 1.1f, 0.22f);
+                return;
+            }
+        }
         int blocked = RectHitsSolid(player.x, ny, player.w, player.h);
         if (!blocked && step > 0 && !in.down)
             blocked = LedgeBlocks(player.y + player.h, ny, player.w, player.h);
@@ -80,6 +102,7 @@ static void MoveY(float dy) {
                     player.landImpact = 7;
                 }
                 player.onGround = 1; player.coyote = COYOTE;
+                player.bounces = 0;           // touching ground ends the chain
             }
             player.vy = 0;
             return;
@@ -103,7 +126,7 @@ void PlayerStep(void) {
         (!in.down && LedgeBlocks(player.y + player.h, player.y + 1, player.w, player.h)))
         player.onGround = 1;
 
-    if (player.onGround) { player.coyote = COYOTE; player.airFrames = 0; }
+    if (player.onGround) { player.coyote = COYOTE; player.airFrames = 0; player.bounces = 0; }
     else { if (player.coyote > 0) player.coyote--; player.airFrames++; }
 
     if (in.jumpPressed) player.jumpBuf = BUFFER;
@@ -133,7 +156,9 @@ void PlayerStep(void) {
         FxBurst(FX_DUST, player.x + player.w * 0.5f, player.y + player.h, 4, 0.5f, 0.10f);
     }
     if (!in.jump) player.jumpHeld = 0;
-    if (!player.jumpHeld && player.vy < JUMP_CUT) player.vy = JUMP_CUT;
+    if (player.vy >= 0) player.launched = 0;
+    // The cut belongs to a jump you chose the length of. A bounce is the bulb's.
+    if (!player.launched && !player.jumpHeld && player.vy < JUMP_CUT) player.vy = JUMP_CUT;
 
     float g = GRAV;
     if (player.jumpHeld && fabsf(player.vy) < APEX_BAND) g *= GRAV_APEX;

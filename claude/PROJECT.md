@@ -2,7 +2,10 @@
 
 ## Where this is
 
-**Rebuilt from scratch as a single room.** Running and jumping, nothing else.
+**Rebuilt from scratch as a single room.** Running and jumping, plus two bulbs.
+
+The user played the from-scratch room and asked to keep it as the base. First addition
+on top of it: the bulb (below).
 
 The previous build (two verbs, four rooms, water and weight) is parked. The one before
 that (two verbs, 25 rooms) is on the branch `claude/archive-two-verb-slice` and the tag
@@ -68,6 +71,25 @@ distinguishable from the dark, and you only see it where something is lighting i
 
 The room is built to that vocabulary: 2 and 3 tile rises everywhere, no 4s.
 
+### The bulb
+
+A 12x6 dome authored with `o` in the map, sitting on a tile floor. Not solid: you walk
+through it, cannot stand on it, and it only answers a fall -- the same crossing test a
+shelf uses, in `BulbCrossed`. Landing throws you up; consecutive landings without
+touching ground throw you higher; the third is the cap.
+
+    1st landing   5.2 tiles above the crown
+    2nd           6.7
+    3rd           8.7        (a full jump is 4.0)
+
+The count is shown, not counted: the bulb flashes brighter and throws more light for a
+higher bounce, and compresses for a few frames. The pad deforms; the body never does
+(L10). Touching stone or a shelf resets the chain. A bounce is the bulb's, so the jump
+cut does not apply to it (`player.launched`).
+
+Placement: one under the row-12 shelf (the third bounce lands you on it), one under the
+row-16 shelf (see SURPRISES S12).
+
 ## The rules this build is under
 
 - **L5, no text.** There is none in the game and none is planned.
@@ -111,4 +133,5 @@ time, each after the thing under it has been played and accepted.
 ## Controls
 
 Arrows or WASD. Z, X, C or Space to jump; hold it longer to go higher. Down to drop
-through a shelf.
+through a shelf. Land on a bulb to bounce; land on it again before touching ground to
+bounce higher.

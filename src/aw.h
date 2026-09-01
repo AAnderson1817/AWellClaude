@@ -43,6 +43,7 @@ enum {
     T_LEDGE,                // one-way shelf
     T_VEIN,                 // stone with a lit mineral seam running through it
     T_MOSS,                 // hanging growth; not solid, not anything
+    T_BULB,                 // authoring only: where a bulb sits. Becomes T_EMPTY + a Bulb
     T_KINDS
 };
 
@@ -69,6 +70,21 @@ void LightDraw(void);       // multiply the room by it
 int  RoomStartTx(void);
 int  RoomStartTy(void);
 
+// ---------------------------------------------------------------- bulbs
+// A dome you land on and leave faster than you arrived. Not solid: you walk through
+// it, you cannot stand on it, it only answers a fall. Each landing without touching
+// ground in between throws you higher, and the third is as high as it goes.
+#define BULB_MAX 8
+#define BULB_W   12
+#define BULB_H   6
+#define BOUNCE_MAX 3
+typedef struct { i32 x, y; i32 squash; i32 flash; i32 level; } Bulb;   // x,y: base centre, room px
+extern Bulb bulbs[BULB_MAX];
+extern int  bulbCount;
+void BulbsStep(void);
+void BulbsDraw(void);
+int  BulbCrossed(float oldBottom, float newBottom, float x, int w);   // index or -1
+
 // ---------------------------------------------------------------- the body
 typedef struct {
     f32 x, y;               // top-left of the hitbox, in room pixels
@@ -81,6 +97,8 @@ typedef struct {
     int jumpHeld;
     int airFrames;
     int landImpact;
+    int bounces;            // consecutive bulb landings, 0..BOUNCE_MAX
+    int launched;           // rising off a bulb: the jump cut does not apply
     f32 animT;
     f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.
     i32 blink;
@@ -118,7 +136,7 @@ extern RenderTexture2D screenRT;
 // ---------------------------------------------------------------- palette
 extern Color palVoid, palBack, palBackLit, palRock, palRockDeep, palRockLit;
 extern Color palLedge, palLedgeLit, palVein, palVeinHot, palMoss;
-extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop;
+extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop, palBulb, palBulbLit, palBulbDeep;
 
 // ---------------------------------------------------------------- debug
 extern long frameNo;

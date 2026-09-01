@@ -24,6 +24,9 @@ Color palSkinDeep = { 150, 143, 128, 255 };
 Color palEye      = { 236, 244, 255, 255 };
 Color palPupil    = {  22,  20,  32, 255 };
 Color palDrop     = { 130, 168, 196, 255 };
+Color palBulb     = { 156, 104, 148, 255 };   // something grown, not cut
+Color palBulbLit  = { 224, 178, 214, 255 };
+Color palBulbDeep = {  92,  58,  90, 255 };
 
 // Not an overlay: scanline depth is modulated per pixel by luminosity, so a bright
 // pixel blooms across the gap and a dark one sinks into it. X stays bilinear, Y is

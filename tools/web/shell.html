@@ -147,6 +147,7 @@ kbd {
 
 /* The measured jump envelope. This is the thing to judge, so it is stated. */
 .arc { display: grid; grid-template-columns: repeat(5, auto); gap: 4px 18px; font-size: 12px; }
+.arc.three { grid-template-columns: repeat(3, auto); }
 .arc div { font-variant-numeric: tabular-nums; }
 .arc .h { color: var(--dim); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
 .arc .v { color: var(--seam); }
@@ -161,7 +162,7 @@ kbd {
 <div class="room">
   <header>
     <h1>First <em>Chamber</em></h1>
-    <span class="sub">one room &middot; run and jump &middot; nothing else yet</span>
+    <span class="sub">one room &middot; run, jump, and two bulbs</span>
   </header>
 
   <div class="frame">
@@ -185,6 +186,13 @@ kbd {
       <div class="arc">
         <div class="h">tap</div><div class="h">3f</div><div class="h">6f</div><div class="h">10f</div><div class="h">held</div>
         <div class="v">0.90</div><div class="v">1.65</div><div class="v">2.59</div><div class="v">3.53</div><div class="v">4.01</div>
+      </div>
+    </div>
+    <div class="block">
+      <div class="label">Off a bulb, in tiles</div>
+      <div class="arc three">
+        <div class="h">1st</div><div class="h">2nd</div><div class="h">3rd</div>
+        <div class="v">5.2</div><div class="v">6.7</div><div class="v">8.7</div>
       </div>
     </div>
   </footer>

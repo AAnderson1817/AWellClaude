@@ -12,9 +12,10 @@ const u8 tileFlags[T_KINDS] = {
     [T_LEDGE] = TF_ONEWAY,
     [T_VEIN]  = TF_SOLID | TF_OPAQUE | TF_EMIT,
     [T_MOSS]  = 0,
+    [T_BULB]  = 0,
 };
 
-// '#' stone   '-' one-way shelf   '*' lit seam   ',' growth   'P' where you begin
+// '#' stone   '-' one-way shelf   '*' lit seam   ',' growth   'o' bulb   'P' where you begin
 static const char *MAP[RH] = {
     "########################################",
     "#...#.#.###..#..#...#.#*#...#..#..###..#",
@@ -35,13 +36,15 @@ static const char *MAP[RH] = {
     "####..............###.----....##########",
     "#####.............###.........*#########",
     "#####*............###.........##########",
-    "######..P...,...,.####...,.##.##########",
+    "######..P...o...,.####..o,.##.##########",
     "########################################",
     "########################################",
 };
 
 u8 tiles[RH][RW];
 static int startTx = 8, startTy = 19;
+Bulb bulbs[BULB_MAX];
+int  bulbCount;
 
 int RoomStartTx(void) { return startTx; }
 int RoomStartTy(void) { return startTy; }
@@ -87,6 +90,11 @@ static void LightBake(void) {
                     if (lstat[ny][nx] < 1.0f) lstat[ny][nx] = 1.0f;
                 }
         }
+    for (int i = 0; i < bulbCount; i++) {
+        int bx = bulbs[i].x / TS, by = (bulbs[i].y - 1) / TS;
+        if (bx >= 0 && bx < RW && by >= 0 && by < RH && !Opaque(bx, by) && lstat[by][bx] < 0.42f)
+            lstat[by][bx] = 0.42f;
+    }
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
             if (!(tileFlags[tiles[y][x]] & TF_EMIT)) continue;
@@ -150,10 +158,8 @@ static void LightBake(void) {
 
 // The body carries a little light of its own -- enough to find yourself by, not
 // enough to see the room with. Occluded properly, or it shines through walls.
-static void AddAura(void) {
-    const f32 R = 4.6f, PEAK = 0.42f;
-    f32 cx = (player.x + player.w * 0.5f) / TS;
-    f32 cy = (player.y + player.h * 0.5f) / TS;
+static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK) {
+    f32 cx = px / TS, cy = py / TS;
     int x0 = (int)(cx - R) - 1, x1 = (int)(cx + R) + 1;
     int y0 = (int)(cy - R) - 1, y1 = (int)(cy + R) + 1;
     if (x0 < 0) x0 = 0;
@@ -178,9 +184,21 @@ static void AddAura(void) {
         }
 }
 
+static void AddAura(void) {
+    AddPoint(player.x + player.w * 0.5f, player.y + player.h * 0.5f, 4.6f, 0.42f);
+}
+
 void LightStep(void) {
     memcpy(lnow, lstat, sizeof lnow);
     AddAura();
+    // A bulb that has just been landed on throws light for a moment, more for a
+    // higher bounce. That is how the count is shown: not a number, a brighter room.
+    for (int i = 0; i < bulbCount; i++)
+        if (bulbs[i].flash > 0) {
+            f32 t = bulbs[i].flash / 22.0f;
+            AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f, 3.2f + bulbs[i].level * 1.1f,
+                     t * (0.30f + 0.28f * bulbs[i].level));
+        }
     // The grid is sampled at tile CORNERS: (RW+1) x (RH+1) values, drawn back over
     // the room half a tile out on every side so each texel centre lands exactly on
     // its corner. Bilinear does the rest, and the falloff comes out smooth.
@@ -245,6 +263,13 @@ void RoomLoad(void) {
                 case '-': t = T_LEDGE; break;
                 case '*': t = T_VEIN;  break;
                 case ',': t = T_MOSS;  break;
+                case 'o':
+                    if (bulbCount < BULB_MAX) {
+                        bulbs[bulbCount].x = x * TS + TS / 2;
+                        bulbs[bulbCount].y = (y + 1) * TS;       // base on the tile floor
+                        bulbCount++;
+                    }
+                    break;
                 case 'P': startTx = x; startTy = y; break;
                 default: break;
             }
@@ -377,5 +402,51 @@ void RoomDraw(void) {
                 default: break;
             }
         }
+    }
+}
+
+// ---------------------------------------------------------------- bulbs
+int BulbCrossed(float oldBottom, float newBottom, float x, int w) {
+    for (int i = 0; i < bulbCount; i++) {
+        float top = (float)(bulbs[i].y - BULB_H);
+        // Same crossing test as a shelf: the feet pass through the dome's top edge
+        // this step, and the body overlaps the dome's width.
+        if (oldBottom <= top + 0.001f && newBottom > top
+            && x < bulbs[i].x + BULB_W / 2 && x + w > bulbs[i].x - BULB_W / 2)
+            return i;
+    }
+    return -1;
+}
+
+void BulbsStep(void) {
+    for (int i = 0; i < bulbCount; i++) {
+        if (bulbs[i].squash > 0) bulbs[i].squash--;
+        if (bulbs[i].flash  > 0) bulbs[i].flash--;
+    }
+}
+
+// A dome. Drawn as rows of an ellipse so it can be pressed flatter for a few frames
+// after a landing -- the pad deforms, the body never does.
+void BulbsDraw(void) {
+    for (int i = 0; i < bulbCount; i++) {
+        Bulb *b = &bulbs[i];
+        int press = b->squash > 0 ? (b->squash > 5 ? 2 : 1) : 0;
+        int H = BULB_H - press;
+        int hw = BULB_W / 2 + press;
+        int base = ROOM_Y + b->y;
+        for (int r = 0; r < H; r++) {
+            float h = (r + 0.5f) / (float)H;            // 0 at base .. 1 at crown
+            float q = 1.0f - h * h;
+            int half = (int)(hw * sqrtf(q > 0 ? q : 0) + 0.5f);
+            if (half < 1) half = 1;
+            int y = base - 1 - r;
+            Color c = palBulb;
+            if (r == H - 1) c = palBulbLit;             // the crown catches everything
+            if (r == 0)     c = palBulbDeep;
+            DrawRectangle(b->x - half, y, half * 2, 1, c);
+        }
+        // a lit fleck near the crown, offset to one side: it is round, not flat
+        DrawRectangle(b->x - 2, base - H + 1, 2, 1, palBulbLit);
+        DrawRectangle(b->x + 1, base - 2, 1, 1, palBulbDeep);
     }
 }
