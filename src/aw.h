@@ -73,11 +73,14 @@ int  RoomStartTy(void);
 // ---------------------------------------------------------------- bulbs
 // A dome you land on and leave faster than you arrived. Not solid: you walk through
 // it, you cannot stand on it, it only answers a fall. Every landing throws you the
-// same height -- higher than you can jump, and always the same.
+// same height -- higher than you can jump. Press jump as you meet it and it throws
+// you a little higher still: the press counts from a few frames before contact to a
+// few frames after, the way a spring in any platformer worth the name does.
 #define BULB_MAX 8
 #define BULB_W   12
 #define BULB_H   6
-typedef struct { i32 x, y; i32 squash; i32 flash; } Bulb;   // x,y: base centre, room px
+#define BULB_LATE 4                  // frames after contact a press still counts
+typedef struct { i32 x, y; i32 squash; i32 flash; i32 timed; } Bulb;   // x,y: base centre, room px
 extern Bulb bulbs[BULB_MAX];
 extern int  bulbCount;
 void BulbsStep(void);
@@ -97,6 +100,8 @@ typedef struct {
     int airFrames;
     int landImpact;
     int launched;           // rising off a bulb: the jump cut does not apply
+    int bulbGrace;          // frames left in which a late press still lifts the bounce
+    int lastBulb;
     f32 animT;
     f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.
     i32 blink;

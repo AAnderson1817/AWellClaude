@@ -21,9 +21,11 @@ Player player;
 #define COYOTE      6          // frames you may still jump after walking off
 #define BUFFER      7          // frames a jump press is remembered before landing
 
-// Off a bulb: about 5.2 tiles above the dome's crown, every time. A full jump is 4,
-// so it is a place you could not otherwise get to, and it is the same place each time.
+// Off a bulb: about 5.2 tiles above the dome's crown. A full jump is 4, so it is a
+// place you could not otherwise get to. Meet it with the button and it is 6.
 #define BOUNCE_V   -4.03f
+#define BOUNCE_TIMED_V -4.32f
+#define BOUNCE_LIFT (BOUNCE_TIMED_V - BOUNCE_V)   // added to a bounce already in the air
 
 // ---------------------------------------------------------------- collision
 static int RectHitsSolid(float x, float y, int w, int h) {
@@ -73,13 +75,21 @@ static void MoveY(float dy) {
         if (step > 0) {
             int b = BulbCrossed(player.y + player.h, ny + player.h, player.x, player.w);
             if (b >= 0) {
+                // A press in the last few frames is the buffered jump; here it is the
+                // timed bounce instead, and it is spent so it cannot also be a jump.
+                int timed = player.jumpBuf > 0;
                 player.y = (float)(bulbs[b].y - BULB_H) - player.h;
-                player.vy = BOUNCE_V;
+                player.vy = timed ? BOUNCE_TIMED_V : BOUNCE_V;
                 player.launched = 1;
                 player.jumpHeld = 0;
+                player.jumpBuf = 0;
+                player.bulbGrace = timed ? 0 : BULB_LATE;
+                player.lastBulb = b;
                 bulbs[b].squash = 9;
-                bulbs[b].flash  = 22;
-                FxBurst(FX_DUST, (float)bulbs[b].x, (float)(bulbs[b].y - BULB_H), 6, 1.1f, 0.22f);
+                bulbs[b].flash  = timed ? 26 : 22;
+                bulbs[b].timed  = timed;
+                FxBurst(FX_DUST, (float)bulbs[b].x, (float)(bulbs[b].y - BULB_H),
+                        timed ? 11 : 6, timed ? 1.5f : 1.1f, 0.22f);
                 return;
             }
         }
@@ -125,6 +135,21 @@ void PlayerStep(void) {
 
     if (in.jumpPressed) player.jumpBuf = BUFFER;
     else if (player.jumpBuf > 0) player.jumpBuf--;
+
+    // A press just after leaving a bulb lifts the bounce you are already on. Adding
+    // the difference now gives the same arc as having left with it -- a body a few
+    // pixels behind an identical curve, which nobody can see.
+    if (player.bulbGrace > 0) {
+        player.bulbGrace--;
+        if (in.jumpPressed) {
+            player.vy += BOUNCE_LIFT;
+            player.jumpBuf = 0;
+            player.bulbGrace = 0;
+            Bulb *b = &bulbs[player.lastBulb];
+            b->flash = 26; b->timed = 1;
+            FxBurst(FX_DUST, (float)b->x, (float)(b->y - BULB_H), 6, 1.5f, 0.30f);
+        }
+    }
 
     // ---- horizontal
     int dir = in.right - in.left;

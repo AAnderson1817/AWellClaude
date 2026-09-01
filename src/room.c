@@ -191,11 +191,13 @@ static void AddAura(void) {
 void LightStep(void) {
     memcpy(lnow, lstat, sizeof lnow);
     AddAura();
-    // A bulb that has just been landed on throws light for a moment.
+    // A bulb that has just been landed on throws light for a moment; more, and further,
+    // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
         if (bulbs[i].flash > 0) {
-            f32 t = bulbs[i].flash / 22.0f;
-            AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f, 4.2f, t * 0.55f);
+            f32 t = bulbs[i].flash / (bulbs[i].timed ? 26.0f : 22.0f);
+            AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f,
+                     bulbs[i].timed ? 5.4f : 4.2f, t * (bulbs[i].timed ? 0.90f : 0.55f));
         }
     // The grid is sampled at tile CORNERS: (RW+1) x (RH+1) values, drawn back over
     // the room half a tile out on every side so each texel centre lands exactly on
