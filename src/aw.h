@@ -59,15 +59,18 @@ static inline int TileWater(u8 t)  { return (tileFlags[t] & TF_WATER)  != 0; }
 // as text in room.c and read once at startup; nothing streams from disk, and nothing
 // writes to it at runtime. `tiles` holds the room you are in.
 #define ROOM_COUNT 2
-extern u8  tiles[RH][RW];
+extern u8  tiles[RH][RW];                  // the room you are in
+extern u8  roomTiles[ROOM_COUNT][RH][RW];  // every room, parsed once
 extern int roomIdx;
 
-// Past the side walls is stone. Past the top or bottom is open only where a room lies
-// that way -- the authored border row still decides where you can actually pass.
+// Past the side walls is stone. Past the top or bottom is THE NEXT ROOM'S TILES, not
+// open air: a body straddling the seam collides with what is really there. Without
+// this, a shelf just inside the next room did not exist until the room switched, and
+// by then you were below it -- which is what "I fell straight through A1" was.
 static inline u8 TileGet(int tx, int ty) {
     if (tx < 0 || tx >= RW) return T_ROCK;
-    if (ty < 0)   return roomIdx > 0              ? T_EMPTY : T_ROCK;
-    if (ty >= RH) return roomIdx < ROOM_COUNT - 1 ? T_EMPTY : T_ROCK;
+    if (ty < 0)   return (roomIdx > 0 && ty >= -RH) ? roomTiles[roomIdx - 1][ty + RH][tx] : T_ROCK;
+    if (ty >= RH) return (roomIdx < ROOM_COUNT - 1 && ty < 2 * RH) ? roomTiles[roomIdx + 1][ty - RH][tx] : T_ROCK;
     return tiles[ty][tx];
 }
 u8 TileAtPx(float px, float py);

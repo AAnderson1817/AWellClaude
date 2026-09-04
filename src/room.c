@@ -38,18 +38,18 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "####..----........###.........##########",
         "####..............###.----....##########",
         "#####.............###.........*#########",
-        "#####*............###.........##########",
-        "######..P...o...,.####..o,.##.##########",
-        "######################--################",
-        "######################..################",
+        "#####*............###.......o.##########",
+        "######..P...o...,.###....,.##.##########",
+        "#####################------#############",
+        "#####################......#############",
     },
     { // 1: below it, flooded
-        "####################*#..################",
-        "#..##...#...,#........--.....,.##...#..#",
+        "####################*......#############",
+        "#..##...#...,#.......------..,.##...#..#",
         "#......................................#",
-        "#................-----..-----..........#",
+        "#...............------....------.......#",
         "#......................................#",
-        "#.....,..-----............-----.,......#",
+        "#.....,..-----.............-----,......#",
         "#..##*##.......................##*##...#",
         "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
         "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
@@ -70,6 +70,7 @@ static const char *MAPS[ROOM_COUNT][RH] = {
 };
 
 u8  tiles[RH][RW];
+u8  roomTiles[ROOM_COUNT][RH][RW];
 int  roomIdx;
 static int startTx = 8, startTy = 19;
 Bulb bulbs[BULB_MAX];
@@ -288,7 +289,7 @@ void LightDraw(void) {
 }
 
 // ---------------------------------------------------------------- load
-static void ParseRoom(int idx) {
+static void ParseRoom(int idx, u8 dst[RH][RW]) {
     bulbCount = 0;
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {
@@ -311,7 +312,7 @@ static void ParseRoom(int idx) {
                 case 'P': startTx = x; startTy = y; break;
                 default: break;
             }
-            tiles[y][x] = t;
+            dst[y][x] = t;
         }
     }
 }
@@ -322,7 +323,7 @@ static void FindSurfaces(void);
 
 void RoomEnter(int idx) {
     roomIdx = idx;
-    ParseRoom(idx);
+    ParseRoom(idx, tiles);          // sets the bulbs for this room too
     FindSurfaces();
     LightBake();
     memset(surfH, 0, sizeof surfH);
@@ -348,20 +349,30 @@ void RoomLoad(void) {
     SetTextureWrap(lightTex, TEXTURE_WRAP_CLAMP);
     SetTextureFilter(glowTex, TEXTURE_FILTER_BILINEAR);
     SetTextureWrap(glowTex, TEXTURE_WRAP_CLAMP);
-    ParseRoom(0);               // finds P
+    for (int r = 0; r < ROOM_COUNT; r++) ParseRoom(r, roomTiles[r]);   // room 0 last finds P
+    ParseRoom(0, roomTiles[0]);
     RoomEnter(0);
 }
 
-// The body has gone off the top or the bottom. Positions are continuous across the
-// seam (y shifts by exactly one room), so nothing about the motion changes but the
-// walls around it.
+// The body has crossed the top or the bottom. Positions are continuous across the seam
+// (y shifts by exactly one room), so nothing about the motion changes but the walls
+// around it -- and since TileGet already sees the next room's tiles, nothing about the
+// collision changes either.
+//
+// Down switches when the CENTRE crosses: a body that lands on a shelf just inside the
+// lower room, head still through the seam, must be shown in the room its feet are in.
+// Up switches only when the centre is UP_MARGIN past the seam: a jump that merely pokes
+// into the room above and comes back down -- every plain jump from A2 to A1 does --
+// would otherwise cut the camera to the upper room for a few frames and back.
+#define UP_MARGIN 16.0f
 int RoomTransition(void) {
-    if (player.y >= RH * TS && roomIdx < ROOM_COUNT - 1) {
+    float cy = player.y + player.h * 0.5f;
+    if (cy >= RH * TS && roomIdx < ROOM_COUNT - 1) {
         RoomEnter(roomIdx + 1);
         player.y -= RH * TS;
         return 1;
     }
-    if (player.y + player.h <= 0 && roomIdx > 0) {
+    if (cy < -UP_MARGIN && roomIdx > 0) {
         RoomEnter(roomIdx - 1);
         player.y += RH * TS;
         return 1;

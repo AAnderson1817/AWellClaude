@@ -33,6 +33,20 @@ def shaft_up():
     return "J from the throat: room %d, row %.0f" % (e["room"], (e["y"] + 11) / 8) \
         if e["room"] == 0 and e["ground"] and round((e["y"] + 11) / 8) == 20 else None
 
+# The two complaints from play. A plain vertical jump from the end of A2 or A3 must
+# land on A1 -- no run-up, no steering. And a jump from A1 that fails to reach the
+# floor above must come back down ONTO A1, not through it into the water; only Down
+# held takes you through.
+def standing_jump_to_throat(col):
+    e = run("-:6,J:20,-:60", at=(col, 2), room=1)[-1]
+    ok = e["room"] == 1 and e["ground"] and round((e["y"] + 11) / 8) == 1
+    return "J from (%d,2): on A1" % col if ok else None
+def failed_exit_lands_on_throat():
+    e = run("-:6,J:6,-:80", at=(22, 0), room=1)[-1]
+    if not (e["room"] == 1 and e["ground"] and round((e["y"] + 11) / 8) == 1 and not e["wet"]): return None
+    w = run("-:6,J:6,-:6,D:120", at=(22, 0), room=1)[-1]
+    return "short jump: back on A1; with Down held: in the water" if w["wet"] else None
+
 ROUTE = [
  ("A  floor           -> lower left step",   range(6, 10), 19, 18, range(4, 6),   -1),
  ("B  lower step      -> the lip (4,17)",    range(4, 6),  17, 17, range(4, 5),   -1),
@@ -60,12 +74,15 @@ FLOODED = [
  ("W1 water -> left island",                     lambda: water_to("L", range(3, 8))),
  ("W2 water -> right island",                    lambda: water_to("R", range(31, 36))),
  ("W3 left island -> shelf row 5",               lambda: reach(range(3, 8),   5, 5, range(9, 14),  +1, room=1)),
- ("W4 shelf row 5 -> shelf row 3",               lambda: reach(range(9, 14),  4, 3, range(17, 22), +1, room=1)),
- ("W5 shelf row 3 -> the throat shelf",          lambda: reach(range(17, 22), 2, 1, range(22, 24), +1, room=1)),
- ("W6 right island -> shelf row 5 (rt)",         lambda: reach(range(31, 36), 5, 5, range(26, 31), -1, room=1)),
- ("W7 shelf row 5 (rt) -> shelf row 3 (rt)",     lambda: reach(range(26, 31), 4, 3, range(24, 29), -1, room=1)),
- ("W8 shelf row 3 (rt) -> the throat shelf",     lambda: reach(range(24, 29), 2, 1, range(22, 24), -1, room=1)),
+ ("W4 shelf row 5 -> shelf row 3",               lambda: reach(range(9, 14),  4, 3, range(16, 22), +1, room=1)),
+ ("W5 shelf row 3 -> the throat shelf",          lambda: reach(range(16, 22), 2, 1, range(21, 27), +1, room=1)),
+ ("W6 right island -> shelf row 5 (rt)",         lambda: reach(range(31, 36), 5, 5, range(27, 32), -1, room=1)),
+ ("W7 shelf row 5 (rt) -> shelf row 3 (rt)",     lambda: reach(range(27, 32), 4, 3, range(26, 32), -1, room=1)),
+ ("W8 shelf row 3 (rt) -> the throat shelf",     lambda: reach(range(26, 32), 2, 1, range(21, 27), -1, room=1)),
  ("W9 the shaft, up (jump from the throat)",     shaft_up),
+ ("W10 standing jump, end of A2 -> A1",          lambda: standing_jump_to_throat(21)),
+ ("W11 standing jump, end of A3 -> A1",          lambda: standing_jump_to_throat(26)),
+ ("W12 failed exit lands back on A1",            failed_exit_lands_on_throat),
 ]
 
 def check(h):
