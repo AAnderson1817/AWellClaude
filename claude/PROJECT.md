@@ -97,37 +97,46 @@ bounce lands you on.
 
 ### The flooded room
 
-Reached through a shaft in the chamber's floor at cols 22-23: a one-way shelf set into
-the floor, over an opening in the border. Walk over it like floor; press Down on it and
-you fall seven tiles into water. The water is the buoyancy from the earlier build,
-carried over unchanged: gravity and buoyancy blended by how much of the body is under,
-so it floats a quarter submerged and settles instead of bobbing. Jump or Up held swims
-you upward; a tap of jump while floating is a smaller jump off the surface (2.5 tiles,
-0.8 of a real one). Out of the water onto an island, then shelves, then a shelf set in
-the shaft's throat, then one jump puts you back on the floor above.
+Reached through the shaft: the whole floor between the pillar and the lip (cols 21-26)
+is a one-way shelf over an opening in the border -- a grate. Walk over it like floor;
+press Down on it and you fall seven tiles into water. Tap Down and you stop on the shelf
+set across the chimney's throat one room down; hold it and you go all the way. The
+water is the buoyancy from the earlier build, carried over unchanged: gravity and
+buoyancy blended by how much of the body is under, so it floats a quarter submerged and
+settles instead of bobbing. Jump or Up held swims you upward; a tap of jump while
+floating is a smaller jump off the surface (2.5 tiles, 0.8 of a real one). Out of the
+water onto an island, then shelves, then the shelf across the chimney's throat (A1),
+then one jump puts you back on the grate above. The approach shelves A2 and A3 each poke
+one tile into the chimney, so a plain vertical jump from their end lands on A1 -- no
+run-up, no steering into a slot under a ceiling. That was the first thing the user found
+frustrating, and it was geometry.
 
 Rooms are stacked; positions are continuous across the seam (y shifts by one room), so
-nothing about the motion changes at the cut. Outside a room is stone at the sides and
-open at top and bottom only where a room lies that way -- the authored border row still
-decides where you can pass. Entering a room rebuilds its tiles, bulbs, baked light,
-surface and specks; nothing carries over but you.
+nothing about the motion changes at the cut. Outside a room is stone at the sides, and
+past the top or bottom is the NEXT ROOM'S TILES: a body straddling the seam collides
+with what is really there. (The first version treated the rows beyond as open air, so a
+shelf just inside the next room did not exist until the room switched -- "I fell
+straight through A1". The second thing the user found.) Entering a room rebuilds its
+tiles, bulbs, baked light, surface and specks; nothing carries over but you.
+
+Which room is shown: down switches when the body's centre crosses the seam, so a body
+landing on A1 from above is shown in the room its feet are in. Up switches only when
+the centre is 16px past the seam, because a plain jump from A2 to A1 pokes 13px into
+the room above at its apex and would otherwise flash the camera there and back. The
+cost: for those few frames the body is above the top edge and not drawn.
 
 Light under water dies faster (x0.90 per step) and goes cold (red x0.6, green x0.9),
 so the seams on the flooded floor and the pillar under the surface read as things you
 can see and cannot reach. You cannot: you are too light to dive. That is deliberate and
 it is the seed of the weight verb, if it comes back.
 
-One geometry fact worth knowing: a body straddling the seam between rooms sees only
-the room it is in, and the rows beyond the edge as open. So the throat shelf (room 1,
-row 1) is never met from above -- you always fall past it into the water -- and is a
-landing on the way up only. That is the behaviour wanted; it is noted because it looks
-like a bug from the map.
-
     measured   float 23% under, settles within 0.5px
                surface jump 2.49 tiles; swim up lifts you clear of the water
                shaft down: Down on the shelf -> floating in room 1
                shaft up: one jump from the throat shelf -> on the shelf above
-               ten flooded-room hops close by search (tools/route.py, W0-W9)
+               thirteen flooded-room checks close by search (tools/route.py, W0-W12):
+               the hops, the shaft both ways, standing jumps from A2/A3 onto A1, a
+               failed exit from A1 landing back on A1 (through it only with Down held)
 
 ### Debug tags
 
@@ -138,8 +147,8 @@ of the game -- it exists so a conversation can say "B3" instead of "the third sh
 from the left, the short one". `--labels` also prints the table:
 
     R0 A1 shelf row  4 cols 19-23
-    R0 C5 shelf row 20 cols 22-23      <- the shaft
-    R1 A1 shelf row  1 cols 22-23      <- the throat shelf
+    R0 C4 shelf row 20 cols 21-26      <- the grate over the shaft
+    R1 A1 shelf row  1 cols 21-26      <- the shelf across the chimney's throat
     R1 A8 stone row 12 cols 18-20      <- the pillar under the surface
 
 Letters that read as digits at 3x5 (I, O, S, Z) are skipped.
