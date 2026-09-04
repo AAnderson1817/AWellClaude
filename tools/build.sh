@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 # Build the slice. Usage: tools/build.sh [web|linux|win|all]   (default: all)
-set -e
-ROOT=/home/user/AWellClaude
-RAYLIB=/home/claude/raylib/src
-export EMSDK=/home/claude/emsdk
-export PATH="$EMSDK:$EMSDK/upstream/emscripten:$PATH"
-for d in "$EMSDK"/node/*/bin; do [ -d "$d" ] && export PATH="$d:$PATH"; done
+set -euo pipefail
+source "$(dirname -- "${BASH_SOURCE[0]}")/env.sh"
 
-cd "$ROOT"
+cd "$AWELL_ROOT"
 mkdir -p build
 
 TARGET="${1:-all}"
@@ -15,19 +11,19 @@ SRC=(src/*.c)
 
 build_linux() {
   echo ">> linux"
-  gcc "${SRC[@]}" -o build/game -I"$RAYLIB" lib/libraylib_linux.a \
+  "${CC:-gcc}" "${SRC[@]}" -o build/game -I"$RAYLIB" "$AWELL_LIB_DIR/libraylib_linux.a" \
     -lGL -lm -lpthread -ldl -lrt -lX11 -O2 -Wall -Wno-unused-function
 }
 build_web() {
   echo ">> web"
-  emcc "${SRC[@]}" -o build/game.js -I"$RAYLIB" lib/libraylib_web.a \
+  emcc "${SRC[@]}" -o build/game.js -I"$RAYLIB" "$AWELL_LIB_DIR/libraylib_web.a" \
     -Os -DPLATFORM_WEB -s USE_GLFW=3 -s ASYNCIFY -s SINGLE_FILE=1 \
     -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s EXPORT_NAME=RL -s ENVIRONMENT=web
 }
 build_win() {
   echo ">> win"
   x86_64-w64-mingw32-gcc "${SRC[@]}" -o build/game.exe -I"$RAYLIB" \
-    lib/libraylib_win.a -lopengl32 -lgdi32 -lwinmm -static -static-libgcc -O2 -mwindows
+    "$AWELL_LIB_DIR/libraylib_win.a" -lopengl32 -lgdi32 -lwinmm -static -static-libgcc -O2 -mwindows
 }
 
 case "$TARGET" in

@@ -149,7 +149,7 @@ extern const char *dbgOutDir;
 // A tiny deterministic hash, used for tile texture and for the specks. Same seed,
 // same room, every run -- so a screenshot is a fact and not a coincidence.
 static inline u32 Hash2(int x, int y) {
-    u32 h = (u32)(x * 374761393) + (u32)(y * 668265263);
+    u32 h = (u32)x * 374761393u + (u32)y * 668265263u;
     h = (h ^ (h >> 13)) * 1274126177u;
     return h ^ (h >> 16);
 }

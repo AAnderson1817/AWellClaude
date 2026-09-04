@@ -112,7 +112,9 @@ void InputPoll(void) {
     int jump = IsKeyDown(KEY_Z) || IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_K)
             || IsKeyDown(KEY_X) || IsKeyDown(KEY_C);
     in.jump = jump;
-    in.jumpPressed = jump && !prevJump;
+    // A render frame may have no physics tick. Keep its press (even if released
+    // before the next tick) until PlayerStep has consumed it.
+    in.jumpPressed |= jump && !prevJump;
     prevJump = jump;
 }
 
@@ -120,6 +122,7 @@ void InputPoll(void) {
 static void Sim(void) {
     InputPoll();
     PlayerStep();
+    in.jumpPressed = 0;
     BulbsStep();
     FxStep();
     if (wanderSeed && player.onGround) {

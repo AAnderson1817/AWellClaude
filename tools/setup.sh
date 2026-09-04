@@ -1,50 +1,55 @@
 #!/usr/bin/env bash
-# One-time toolchain setup for the Animal Well Redux slice.
-# Idempotent-ish: skips steps whose outputs already exist.
-set -x
-LOG=/home/user/AWellClaude/tools/setup.log
+# Debian/Ubuntu toolchain setup. Overrides are documented in TOOLCHAIN.md.
+set -euo pipefail
+source "$(dirname -- "${BASH_SOURCE[0]}")/env.sh"
+LOG="$AWELL_ROOT/tools/setup.log"
 exec >>"$LOG" 2>&1
+# A failed rerun must not leave an old success marker behind.
+rm -f "$AWELL_ROOT/tools/.setup_complete"
 echo "=== setup start $(date -u) ==="
 
-export DEBIAN_FRONTEND=noninteractive
-
-if ! dpkg -s mingw-w64 >/dev/null 2>&1; then
-  apt-get update -qq
-  apt-get install -y -qq mingw-w64 libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev \
-    libasound2-dev libwayland-dev libxkbcommon-dev xorg-dev cmake
-  echo "APT_DONE=$?"
+if [ "${AWELL_SKIP_SYSTEM_DEPS:-0}" != 1 ]; then
+  export DEBIAN_FRONTEND=noninteractive
+  packages=(build-essential git python3 mingw-w64 libglfw3-dev libgl1-mesa-dev
+    libglu1-mesa-dev libasound2-dev libwayland-dev libxkbcommon-dev xorg-dev cmake)
+  missing=()
+  for package in "${packages[@]}"; do
+    if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed'; then
+      missing+=("$package")
+    fi
+  done
+  if (( ${#missing[@]} )); then
+    apt-get update -qq
+    apt-get install -y -qq "${missing[@]}"
+  fi
 fi
 
-if [ ! -d /home/claude/emsdk ]; then
-  git clone --depth 1 https://github.com/emscripten-core/emsdk.git /home/claude/emsdk
+if [ ! -d "$EMSDK" ]; then
+  mkdir -p "$(dirname -- "$EMSDK")"
+  git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$EMSDK"
 fi
-cd /home/claude/emsdk && ./emsdk install latest && ./emsdk activate latest
-echo "EMSDK_DONE=$?"
+cd "$EMSDK"
+./emsdk install "${EMSDK_VERSION:-6.0.8}"
+./emsdk activate "${EMSDK_VERSION:-6.0.8}"
 
-if [ ! -d /home/claude/raylib ]; then
-  git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git /home/claude/raylib
+if [ ! -d "$RAYLIB" ]; then
+  raylib_root="$(dirname -- "$RAYLIB")"
+  mkdir -p "$(dirname -- "$raylib_root")"
+  git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git "$raylib_root"
 fi
-echo "RAYLIB_CLONE_DONE=$?"
+# The SDK's node directory may only have appeared during installation.
+source "$AWELL_ROOT/tools/env.sh"
 
-export EMSDK=/home/claude/emsdk
-export PATH="$EMSDK:$EMSDK/upstream/emscripten:$PATH"
-for d in "$EMSDK"/node/*/bin; do export PATH="$d:$PATH"; done
-
-LIB=/home/user/AWellClaude/lib
-mkdir -p "$LIB"
-cd /home/claude/raylib/src
-
-make PLATFORM=PLATFORM_WEB -B -j4 && cp libraylib.a "$LIB/libraylib_web.a"
-echo "WEB_BUILD=$?"
-
-make PLATFORM=PLATFORM_DESKTOP -B -j4 && cp libraylib.a "$LIB/libraylib_linux.a"
-echo "LINUX_BUILD=$?"
-
+mkdir -p "$AWELL_LIB_DIR"
+cd "$RAYLIB"
+make PLATFORM=PLATFORM_WEB -B -j4
+cp libraylib.a "$AWELL_LIB_DIR/libraylib_web.a"
+make PLATFORM=PLATFORM_DESKTOP -B -j4
+cp libraylib.a "$AWELL_LIB_DIR/libraylib_linux.a"
 make PLATFORM=PLATFORM_DESKTOP OS=Windows_NT CC=x86_64-w64-mingw32-gcc \
-     AR=x86_64-w64-mingw32-ar RAYLIB_LIBTYPE=STATIC -B -j4 \
-  && cp libraylib.a "$LIB/libraylib_win.a"
-echo "WIN_BUILD=$?"
+  AR=x86_64-w64-mingw32-ar RAYLIB_LIBTYPE=STATIC -B -j4
+cp libraylib.a "$AWELL_LIB_DIR/libraylib_win.a"
 
-ls -la "$LIB"
+ls -la "$AWELL_LIB_DIR"
 echo "=== setup done $(date -u) ==="
-touch /home/user/AWellClaude/tools/.setup_complete
+touch "$AWELL_ROOT/tools/.setup_complete"

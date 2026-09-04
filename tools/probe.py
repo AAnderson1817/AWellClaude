@@ -15,13 +15,19 @@ def run(plan, at=None, frames=None):
     cmd = [os.path.join(ROOT, "build", "game"), "--play", plan, "--trace", "--nodraw"]
     if at:     cmd += ["--at", "%d,%d" % at]
     if frames: cmd += ["--frames", str(frames)]
-    out = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT).stdout
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+    if result.returncode:
+        raise RuntimeError("Game probe failed (exit %d): %s" %
+                           (result.returncode, result.stderr.strip()))
+    out = result.stdout
     rows = []
     for m in LINE.finditer(out):
         f, x, y, vx, vy, g, a, c, b = m.groups()
         rows.append(dict(f=int(f), x=float(x), y=float(y), vx=float(vx),
                          vy=float(vy), ground=int(g), air=int(a),
                          coy=int(c), buf=int(b)))
+    if not rows:
+        raise RuntimeError("Game probe produced no trace rows: " + result.stderr.strip())
     return rows
 
 def last(rows):  return rows[-1] if rows else None

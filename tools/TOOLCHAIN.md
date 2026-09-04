@@ -1,8 +1,30 @@
 # Toolchain notes (verified end-to-end in this container, 2026-08-29)
 
-Setup: `tools/setup.sh` (idempotent). Build: `tools/build.sh [web|linux|win|all]`.
-Paths: raylib 5.5 at `/home/claude/raylib`, emsdk at `/home/claude/emsdk`
-(emcc 6.0.8). Archives in `lib/` as `libraylib_{web,linux,win}.a`.
+Setup: `tools/setup.sh`. Build: `tools/build.sh [web|linux|win|all]`.
+Both scripts locate the checkout from their own path and work from any directory.
+Setup targets Debian/Ubuntu and needs root for missing apt packages. With system
+packages already installed, set `AWELL_SKIP_SYSTEM_DEPS=1` to skip apt entirely.
+Setup stops at the first failure and only creates `tools/.setup_complete` on success.
+
+Dependency paths are shared through `tools/env.sh`; all overrides must be absolute:
+
+| Variable | Default / meaning |
+|---|---|
+| `AWELL_TOOLCHAIN_DIR` | `<checkout>/.toolchain` |
+| `RAYLIB` | `$AWELL_TOOLCHAIN_DIR/raylib/src` (raylib 5.5 source directory) |
+| `EMSDK` | `$AWELL_TOOLCHAIN_DIR/emsdk` |
+| `AWELL_LIB_DIR` | `<checkout>/lib`, with `libraylib_{web,linux,win}.a` |
+| `EMSDK_VERSION` | `6.0.8`, used by setup |
+| `CC` | `gcc`, used by the Linux build and headless checks |
+
+To reuse the original toolchain, set `RAYLIB=/home/claude/raylib/src` and
+`EMSDK=/home/claude/emsdk` for both setup and build.
+
+`tools/check.sh` runs input/frame-timing and unsigned-hash regressions with UBSan,
+plus Python checks for route/probe failures. It needs only a C compiler supporting
+UBSan, Python 3, and raylib's header; graphics/window calls are stubbed. These checks
+do not validate rendering. `python3 tools/route.py` uses `build/game` and exits
+nonzero for unreachable hops or a failed/empty game probe.
 
 ## Gotchas found the hard way
 

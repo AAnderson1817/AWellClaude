@@ -44,3 +44,4 @@ if __name__ == "__main__":
         if not plan: bad.append(name.split()[0])
     print()
     print("unmakeable hops:", ", ".join(bad) if bad else "none -- the route closes")
+    sys.exit(1 if bad else 0)

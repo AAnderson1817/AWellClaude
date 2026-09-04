@@ -5,3 +5,5 @@ node_modules/
 shots/
 tools/.setup_complete
 tools/setup.log
+.toolchain/
+__pycache__/
