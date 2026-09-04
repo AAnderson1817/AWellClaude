@@ -110,7 +110,10 @@ timings -- take-off column, when you jump, how long you hold it, when you stop p
 A hop counts as makeable only if some way of playing it lands it.
 
     tools/build.sh              # web, linux, windows
-    python3 tools/route.py      # every hop; currently "none -- the route closes"
+    tools/check.sh              # UBSan regressions for the input latch and Hash2, plus
+                                # Python tests for probe/route; needs no build/game
+    python3 tools/route.py      # every hop; currently "none -- the route closes";
+                                # exits nonzero on an unmakeable hop
     ./build/game --wander 6 --frames 400000
                                 # a dumb bot; currently reaches all 94 surfaces
 

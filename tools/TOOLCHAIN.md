@@ -1,10 +1,16 @@
-# Toolchain notes (verified end-to-end in this container, 2026-08-29)
+# Toolchain notes
+
+Build and check paths re-verified in this container on 2026-09-04. The original
+setup ran end-to-end on 2026-08-29; the rewritten `setup.sh` below has not yet been run
+end-to-end (the toolchain it would produce already existed here).
 
 Setup: `tools/setup.sh`. Build: `tools/build.sh [web|linux|win|all]`.
 Both scripts locate the checkout from their own path and work from any directory.
 Setup targets Debian/Ubuntu and needs root for missing apt packages. With system
 packages already installed, set `AWELL_SKIP_SYSTEM_DEPS=1` to skip apt entirely.
 Setup stops at the first failure and only creates `tools/.setup_complete` on success.
+All of its output, including the failing command, goes to `tools/setup.log`; the
+terminal shows one line saying it failed and where to look.
 
 Dependency paths are shared through `tools/env.sh`; all overrides must be absolute:
 
@@ -15,10 +21,11 @@ Dependency paths are shared through `tools/env.sh`; all overrides must be absolu
 | `EMSDK` | `$AWELL_TOOLCHAIN_DIR/emsdk` |
 | `AWELL_LIB_DIR` | `<checkout>/lib`, with `libraylib_{web,linux,win}.a` |
 | `EMSDK_VERSION` | `6.0.8`, used by setup |
-| `CC` | `gcc`, used by the Linux build and headless checks |
+| `CC` | `gcc`, used by the Linux build and headless checks; may carry a wrapper or flags (`ccache gcc`) |
 
 To reuse the original toolchain, set `RAYLIB=/home/claude/raylib/src` and
-`EMSDK=/home/claude/emsdk` for both setup and build.
+`EMSDK=/home/claude/emsdk` for setup, build and check alike (or symlink them under
+`.toolchain/`, which is ignored).
 
 `tools/check.sh` runs input/frame-timing and unsigned-hash regressions with UBSan,
 plus Python checks for route/probe failures. It needs only a C compiler supporting

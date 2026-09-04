@@ -3,6 +3,10 @@
 set -euo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/env.sh"
 LOG="$AWELL_ROOT/tools/setup.log"
+# Everything goes to the log; the terminal gets one line if it fails. An EXIT trap,
+# not ERR: an unbound variable under set -u never fires ERR.
+exec 3>&2
+trap 'st=$?; if [ "$st" -ne 0 ]; then echo "setup failed (exit $st); see $LOG" >&3; fi' EXIT
 exec >>"$LOG" 2>&1
 # A failed rerun must not leave an old success marker behind.
 rm -f "$AWELL_ROOT/tools/.setup_complete"

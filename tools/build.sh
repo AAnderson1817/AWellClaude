@@ -11,7 +11,7 @@ SRC=(src/*.c)
 
 build_linux() {
   echo ">> linux"
-  "${CC:-gcc}" "${SRC[@]}" -o build/game -I"$RAYLIB" "$AWELL_LIB_DIR/libraylib_linux.a" \
+  "${AWELL_CC[@]}" "${SRC[@]}" -o build/game -I"$RAYLIB" "$AWELL_LIB_DIR/libraylib_linux.a" \
     -lGL -lm -lpthread -ldl -lrt -lX11 -O2 -Wall -Wno-unused-function
 }
 build_web() {

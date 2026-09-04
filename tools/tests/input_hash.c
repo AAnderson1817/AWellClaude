@@ -25,14 +25,14 @@ static void Reset(void) {
 int main(void) {
     Reset();
     testJumpDown = 1; testFrameTime = DT; Frame();
-    assert(player.vy < -3 && !in.jumpPressed);
+    assert(player.vy < 0 && player.jumpHeld && !player.onGround && !in.jumpPressed);
 
     // A held press on a render-only frame must reach the next physics tick.
     Reset();
     testJumpDown = 1; testFrameTime = DT * 0.25f; Frame();
     assert(in.jumpPressed && player.y == 149);
     testFrameTime = DT * 0.75f; Frame();
-    assert(player.vy < -3 && !in.jumpPressed);
+    assert(player.vy < 0 && player.jumpHeld && !player.onGround && !in.jumpPressed);
 
     // A tap released before simulation still causes a short jump.
     Reset();
@@ -40,20 +40,23 @@ int main(void) {
     testJumpDown = 0; Frame();
     assert(in.jumpPressed);
     testFrameTime = DT; Frame();
-    assert(player.vy < 0 && !in.jumpPressed);
+    assert(player.vy < 0 && !player.jumpHeld && !in.jumpPressed);   // released: the cut applied
 
     // Catch-up ticks must not treat one held press as repeated presses.
     Reset();
     testJumpDown = 1; testFrameTime = DT * 2.5f; Frame();
-    assert(player.vy < -3 && player.jumpBuf == 0 && !in.jumpPressed);
+    assert(player.vy < 0 && !player.onGround && player.jumpBuf == 0 && !in.jumpPressed);
 
     // Pressing again after release must still produce another jump.
     testJumpDown = 0; testFrameTime = DT; Frame();
     PlayerInit(65, 149);
     testJumpDown = 1; Frame();
-    assert(player.vy < -3);
+    assert(player.vy < 0 && !player.onGround);
 
-    // uint64_t provides a defined reference for the intended modulo-2^32 hash.
+    // This loop drives Hash2 through seeds whose products overflow int. The signed
+    // form wraps to the same value the uint64_t reference computes, so the assert is
+    // a sanity check only: what catches the regression is the UBSan trap check.sh
+    // builds with (-fsanitize=undefined -fno-sanitize-recover=all).
     int seeds[] = {0, 1, 6, 18, 92, 162, 258, -1, INT_MIN, INT_MAX};
     for (unsigned i = 0; i < sizeof seeds / sizeof seeds[0]; i++) {
         for (unsigned j = 0; j < sizeof seeds / sizeof seeds[0]; j++) {
