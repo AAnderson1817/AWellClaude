@@ -4,6 +4,7 @@
 float testFrameTime = 1.0f/60.0f;
 int testJumpDown;
 bool IsKeyDown(int key) { return key == KEY_Z && testJumpDown; }
+bool IsKeyPressed(int key) { return false; }
 float GetFrameTime(void) { return testFrameTime; }
 void InitWindow(int w,int h,const char *s) {}
 void CloseWindow(void) {}

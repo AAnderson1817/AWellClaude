@@ -129,6 +129,21 @@ like a bug from the map.
                shaft up: one jump from the throat shelf -> on the shelf above
                ten flooded-room hops close by search (tools/route.py, W0-W9)
 
+### Debug tags
+
+Press L (or run with `--labels`) and every standable run gets a two-character tag,
+reading order, letter+digit: A1..A9, B1..; shelves in shelf colour, stone in white,
+bulbs ^1, ^2 with a dome glyph, the room number top-left. Off by default and not part
+of the game -- it exists so a conversation can say "B3" instead of "the third shelf
+from the left, the short one". `--labels` also prints the table:
+
+    R0 A1 shelf row  4 cols 19-23
+    R0 C5 shelf row 20 cols 22-23      <- the shaft
+    R1 A1 shelf row  1 cols 22-23      <- the throat shelf
+    R1 A8 stone row 12 cols 18-20      <- the pillar under the surface
+
+Letters that read as digits at 3x5 (I, O, S, Z) are skipped.
+
 ## The rules this build is under
 
 - **L5, no text.** There is none in the game and none is planned.
@@ -177,4 +192,4 @@ time, each after the thing under it has been played and accepted.
 Arrows or WASD. Z, X, C or Space to jump; hold it longer to go higher. Down to drop
 through a shelf. Land on a bulb to bounce; press jump as you land on it to bounce
 higher. In water: Left and Right to swim, Z or Up held to swim up, Z tapped to jump
-off the surface.
+off the surface. L toggles the platform tags.

@@ -5,6 +5,7 @@
 #include "aw.h"
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 
 const u8 tileFlags[T_KINDS] = {
     [T_EMPTY] = 0,
@@ -317,9 +318,12 @@ static void ParseRoom(int idx) {
 
 // Entering a room rebuilds everything that belongs to it: tiles, bulbs, the baked
 // light, the surface, the specks. Nothing carries over except you.
+static void FindSurfaces(void);
+
 void RoomEnter(int idx) {
     roomIdx = idx;
     ParseRoom(idx);
+    FindSurfaces();
     LightBake();
     memset(surfH, 0, sizeof surfH);
     memset(surfV, 0, sizeof surfV);
@@ -564,4 +568,108 @@ void BulbsDraw(void) {
         DrawRectangle(b->x - 2, base - H + 1, 2, 1, palBulbLit);
         DrawRectangle(b->x + 1, base - 2, 1, 1, palBulbDeep);
     }
+}
+
+// ---------------------------------------------------------------- debug labels
+// Every maximal horizontal run of standable tiles with something open above it, in
+// reading order, tagged letter+digit: A1..A9, B1..B9, ... Letters that look like
+// digits at 3x5 (I, O, S, Z) are skipped. Bulbs are ^1, ^2 (the ^ is drawn as a dome). This is for talking about
+// the room -- "B3 is too far from B4" -- and it is off unless asked for.
+#define SURF_MAX 200
+typedef struct { i32 x0, x1, y; u8 shelf; char tag[3]; } Surf;
+static Surf surfs[SURF_MAX];
+static int  surfCount;
+static const char TAG_LETTERS[] = "ABCDEFGHJKLMNPQRTUVWXY";
+
+static void FindSurfaces(void) {
+    surfCount = 0;
+    int n = 0;
+    for (int y = 1; y < RH; y++) {
+        int x = 1;
+        while (x < RW - 1 && surfCount < SURF_MAX) {
+            u8 t = tiles[y][x], up = tiles[y - 1][x];
+            int standable = (TileSolid(t) || TileOneWay(t))
+                         && (up == T_EMPTY || up == T_MOSS || up == T_WATER);
+            if (!standable) { x++; continue; }
+            int shelf = TileOneWay(t), x0 = x;
+            while (x < RW - 1) {
+                u8 t2 = tiles[y][x], up2 = tiles[y - 1][x];
+                int ok = (TileSolid(t2) || TileOneWay(t2)) && TileOneWay(t2) == shelf
+                      && (up2 == T_EMPTY || up2 == T_MOSS || up2 == T_WATER);
+                if (!ok) break;
+                x++;
+            }
+            Surf *s = &surfs[surfCount++];
+            s->x0 = x0; s->x1 = x - 1; s->y = y; s->shelf = (u8)shelf;
+            s->tag[0] = TAG_LETTERS[(n / 9) % (int)(sizeof TAG_LETTERS - 1)];
+            s->tag[1] = (char)('1' + n % 9);
+            s->tag[2] = 0;
+            n++;
+        }
+    }
+}
+
+// A 3x5 font: digits, the letters used above, and a dome for the bulbs.
+static const u16 FONT[] = {
+    /* 0 */ 0x7B6F, /* 1 */ 0x2C97, /* 2 */ 0x73E7, /* 3 */ 0x79E7, /* 4 */ 0x5BC9,
+    /* 5 */ 0x79CF, /* 6 */ 0x7BCF, /* 7 */ 0x4927, /* 8 */ 0x7BEF, /* 9 */ 0x79EF,
+};
+static u16 Glyph(char c) {
+    // rows top to bottom, 3 bits each, MSB first: value = r0<<12 | r1<<9 | r2<<6 | r3<<3 | r4
+    #define G(a,b,c,d,e) ((u16)((a)<<12 | (b)<<9 | (c)<<6 | (d)<<3 | (e)))
+    switch (c) {
+        case '0': return G(7,5,5,5,7); case '1': return G(2,6,2,2,7); case '2': return G(7,1,7,4,7);
+        case '3': return G(7,1,7,1,7); case '4': return G(5,5,7,1,1); case '5': return G(7,4,7,1,7);
+        case '6': return G(7,4,7,5,7); case '7': return G(7,1,1,1,1); case '8': return G(7,5,7,5,7);
+        case '9': return G(7,5,7,1,7);
+        case 'A': return G(2,5,7,5,5); case 'B': return G(6,5,6,5,6); case 'C': return G(7,4,4,4,7);
+        case 'D': return G(6,5,5,5,6); case 'E': return G(7,4,7,4,7); case 'F': return G(7,4,7,4,4);
+        case 'G': return G(7,4,5,5,7); case 'H': return G(5,5,7,5,5); case 'J': return G(3,1,1,5,7);
+        case 'K': return G(5,5,6,5,5); case 'L': return G(4,4,4,4,7); case 'M': return G(5,7,7,5,5);
+        case 'N': return G(6,5,5,5,5); case 'P': return G(7,5,7,4,4); case 'Q': return G(7,5,5,7,1);
+        case 'R': return G(6,5,6,5,5); case 'T': return G(7,2,2,2,2); case 'U': return G(5,5,5,5,7);
+        case 'V': return G(5,5,5,5,2); case 'W': return G(5,5,7,7,5); case 'X': return G(5,5,2,5,5);
+        case 'Y': return G(5,5,2,2,2); case '^': return G(0,2,7,7,7);   // a dome: the bulb
+        default:  return 0;
+    }
+    #undef G
+}
+static void Tag(int x, int y, const char *s, Color col) {
+    int n = 0; while (s[n]) n++;
+    DrawRectangle(x - 1, y - 1, n * 4 + 1, 7, (Color){ 0, 0, 0, 190 });
+    for (int i = 0; s[i]; i++) {
+        u16 g = Glyph(s[i]);
+        for (int r = 0; r < 5; r++) {
+            int bits = (g >> (12 - r * 3)) & 7;
+            if (bits & 4) DrawRectangle(x + i * 4,     y + r, 1, 1, col);
+            if (bits & 2) DrawRectangle(x + i * 4 + 1, y + r, 1, 1, col);
+            if (bits & 1) DrawRectangle(x + i * 4 + 2, y + r, 1, 1, col);
+        }
+    }
+}
+
+void DebugLabelsDraw(void) {
+    if (!dbgLabels) return;
+    (void)FONT;
+    for (int i = 0; i < surfCount; i++) {
+        Surf *s = &surfs[i];
+        int px = s->x0 * TS + 1, py = ROOM_Y + s->y * TS - 7;
+        if (py < ROOM_Y) py = ROOM_Y + s->y * TS + 1;     // no room above: sit on it
+        Tag(px, py, s->tag, s->shelf ? (Color){ 255, 220, 150, 255 } : (Color){ 235, 235, 245, 255 });
+    }
+    for (int i = 0; i < bulbCount; i++) {
+        char t[3] = { '^', (char)('1' + i), 0 };
+        Tag(bulbs[i].x - 4, ROOM_Y + bulbs[i].y - BULB_H - 8, t, palBulbLit);
+    }
+    char r[3] = { 'R', (char)('0' + roomIdx), 0 };
+    Tag(3, ROOM_Y + 2, r, (Color){ 160, 200, 255, 255 });
+}
+
+// For the console: the same table, so a screenshot and a transcript can agree.
+void DebugLabelsPrint(void) {
+    for (int i = 0; i < surfCount; i++)
+        printf("R%d %s %-5s row %2d cols %2d-%2d\n", roomIdx, surfs[i].tag,
+               surfs[i].shelf ? "shelf" : "stone", surfs[i].y, surfs[i].x0, surfs[i].x1);
+    for (int i = 0; i < bulbCount; i++)
+        printf("R%d ^%d bulb  at col %d, base row %d\n", roomIdx, i + 1, bulbs[i].x / TS, bulbs[i].y / TS - 1);
 }

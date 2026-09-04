@@ -160,7 +160,10 @@ extern Color palWater, palWaterLit, palWaterFleck, palSkinWet;
 // ---------------------------------------------------------------- debug
 extern long frameNo;
 extern int  dbgFixedStep;
+extern int  dbgLabels;      // L toggles: every standable run gets a two-character tag
 extern const char *dbgOutDir;
+void DebugLabelsDraw(void);  // after the light pass; this is scaffolding, not the game
+void DebugLabelsPrint(void);
 
 // A tiny deterministic hash, used for tile texture and for the specks. Same seed,
 // same room, every run -- so a screenshot is a fact and not a coincidence.

@@ -13,6 +13,7 @@
 Input in;
 long frameNo = 0;
 int  dbgFixedStep = 0;
+int  dbgLabels = 0;
 const char *dbgOutDir = "shots";
 
 static int  shotFrames[16], shotCount, shotsDone;
@@ -105,6 +106,7 @@ void InputPoll(void) {
         prevJump = in.jump;
         return;
     }
+    if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
     in.left  = IsKeyDown(KEY_LEFT)  || IsKeyDown(KEY_A);
     in.right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
     in.up    = IsKeyDown(KEY_UP)    || IsKeyDown(KEY_W);
@@ -159,6 +161,7 @@ static void Frame(void) {
             FxDraw();
             LightDraw();
             PlayerDrawEyes();
+            DebugLabelsDraw();
         RenderPresent();
     }
 
@@ -197,6 +200,8 @@ int main(int argc, char **argv) {
             dbgTrace = 1;
         } else if (!strcmp(argv[i], "--nodraw")) {
             noDraw = 1;
+        } else if (!strcmp(argv[i], "--labels")) {
+            dbgLabels = 1;
         } else if (!strcmp(argv[i], "--frames") && i + 1 < argc) {
             maxFrames = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--scale") && i + 1 < argc) {
@@ -218,6 +223,7 @@ int main(int argc, char **argv) {
     RenderInit();
     RoomLoad();
     if (startRoom > 0 && startRoom < ROOM_COUNT) RoomEnter(startRoom);
+    if (dbgLabels) DebugLabelsPrint();
     // P marks the tile you stand IN: feet on that tile's bottom edge.
     int tx = (atx >= 0) ? atx : RoomStartTx();
     int ty = (aty >= 0) ? aty : RoomStartTy();
