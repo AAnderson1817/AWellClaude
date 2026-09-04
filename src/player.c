@@ -27,6 +27,17 @@ Player player;
 #define BOUNCE_TIMED_V -4.39f
 #define BOUNCE_LIFT (BOUNCE_TIMED_V - BOUNCE_V)   // added to a bounce already in the air
 
+// In water. Gravity and buoyancy are blended BY HOW MUCH OF YOU IS UNDER, never by a
+// yes/no test: a body floats where the two cancel, which for this one is a quarter
+// under, and it settles there instead of oscillating across the line. This is the
+// one piece of the earlier build that was liked, and it is carried over unchanged.
+#define WATER_SINK  -0.55f     // signed; negative rises. You are light.
+#define WATER_DRAG   0.90f
+#define WATER_TERM   1.35f
+#define WATER_DAMP   0.16f
+#define SWIM_THRUST  0.17f     // jump or up, held: you swim upward
+#define SURF_JUMP    0.80f     // a jump off the surface, as a fraction of a real one
+
 // ---------------------------------------------------------------- collision
 static int RectHitsSolid(float x, float y, int w, int h) {
     int tx0 = (int)floorf(x / TS), tx1 = (int)floorf((x + w - 1) / TS);
@@ -115,6 +126,20 @@ static void MoveY(float dy) {
     }
 }
 
+// How much of the body is under the surface, 0..1, sampled down its centre line.
+static float SubmergedFraction(void) {
+    float cx = player.x + player.w * 0.5f;
+    int n = 0;
+    player.waterY = -1;
+    for (int i = 0; i < player.h; i++) {
+        if (TileWater(TileAtPx(cx, player.y + i + 0.5f))) {
+            if (player.waterY < 0) player.waterY = (int)player.y + i;
+            n++;
+        }
+    }
+    return (float)n / (float)player.h;
+}
+
 // ---------------------------------------------------------------- step
 void PlayerInit(float x, float y) {
     player = (Player){ 0 };
@@ -122,13 +147,24 @@ void PlayerInit(float x, float y) {
     player.w = 6; player.h = 11;
     player.facing = 1;
     player.blink = 90;
+    player.waterY = -1;
 }
 
 void PlayerStep(void) {
+    int wasSubmerged = player.submerged;
     player.onGround = 0;
     if (RectHitsSolid(player.x, player.y + 1, player.w, player.h) ||
         (!in.down && LedgeBlocks(player.y + player.h, player.y + 1, player.w, player.h)))
         player.onGround = 1;
+
+    float frac = SubmergedFraction();
+    player.submerged = frac > 0.05f;
+    if (player.submerged != wasSubmerged) {
+        // A splash the size of your arrival. Solves nothing.
+        float cx = player.x + player.w * 0.5f, sp = fabsf(player.vy);
+        FxBurst(FX_SPLASH, cx, player.y + player.h * 0.6f, 4 + (int)(sp * 3.0f), 0.9f, 0.5f + sp * 0.2f);
+        WaterDisturb(cx, (wasSubmerged ? -0.45f : 0.9f) * (0.35f + sp * 0.25f));
+    }
 
     if (player.onGround) { player.coyote = COYOTE; player.airFrames = 0; }
     else { if (player.coyote > 0) player.coyote--; player.airFrames++; }
@@ -168,30 +204,53 @@ void PlayerStep(void) {
     }
 
     // ---- vertical
-    if (player.jumpBuf > 0 && player.coyote > 0) {
-        player.vy = JUMP_V;
-        player.jumpBuf = 0; player.coyote = 0;
-        player.onGround = 0; player.jumpHeld = 1;
-        FxBurst(FX_DUST, player.x + player.w * 0.5f, player.y + player.h, 4, 0.5f, 0.10f);
-    }
-    if (!in.jump) player.jumpHeld = 0;
-    if (player.vy >= 0) player.launched = 0;
-    // The cut belongs to a jump you chose the length of. A bounce is the bulb's.
-    if (!player.launched && !player.jumpHeld && player.vy < JUMP_CUT) player.vy = JUMP_CUT;
+    if (frac > 0.05f) {
+        float g = GRAV * (1.0f - frac) + WATER_SINK * frac;
+        if (in.jump || in.up) g -= SWIM_THRUST * (frac > 0.2f ? 1.0f : frac * 5.0f);
+        player.vy += g;
+        player.vy *= (1.0f - WATER_DAMP * frac);          // or it never settles
+        player.vx *= (1.0f - (1.0f - WATER_DRAG) * frac);
+        float term = WATER_TERM + (1.0f - frac) * 2.0f;
+        if (player.vy >  term) player.vy =  term;
+        if (player.vy < -term) player.vy = -term;
+        // A jump works off a flooded floor, and a smaller one off the surface itself:
+        // you are floating, there is nothing to push against but the water.
+        if (player.jumpBuf > 0 && (player.coyote > 0 || frac <= 0.6f)) {
+            player.vy = player.coyote > 0 ? JUMP_V * (1.0f - frac * 0.45f) : JUMP_V * SURF_JUMP;
+            player.jumpBuf = 0; player.coyote = 0; player.onGround = 0; player.jumpHeld = 1;
+        }
+        if (!in.jump) player.jumpHeld = 0;
+        player.launched = 0;
+        if ((frameNo & 7) == 0) WaterDisturb(player.x + player.w * 0.5f, fabsf(player.vy) * 0.06f);
+    } else {
+        if (player.jumpBuf > 0 && player.coyote > 0) {
+            player.vy = JUMP_V;
+            player.jumpBuf = 0; player.coyote = 0;
+            player.onGround = 0; player.jumpHeld = 1;
+            FxBurst(FX_DUST, player.x + player.w * 0.5f, player.y + player.h, 4, 0.5f, 0.10f);
+        }
+        if (!in.jump) player.jumpHeld = 0;
+        if (player.vy >= 0) player.launched = 0;
+        // The cut belongs to a jump you chose the length of. A bounce is the bulb's.
+        if (!player.launched && !player.jumpHeld && player.vy < JUMP_CUT) player.vy = JUMP_CUT;
 
-    float g = GRAV;
-    if (player.jumpHeld && fabsf(player.vy) < APEX_BAND) g *= GRAV_APEX;
-    player.vy += g;
-    if (player.vy > TERM) player.vy = TERM;
+        float g = GRAV;
+        if (player.jumpHeld && fabsf(player.vy) < APEX_BAND) g *= GRAV_APEX;
+        player.vy += g;
+        if (player.vy > TERM) player.vy = TERM;
+    }
 
     MoveX(player.vx);
     MoveY(player.vy);
 
-    // The room is sealed. Walking into the edge is walking into stone.
+    // The side walls are sealed. Top and bottom are sealed only where no room lies.
     if (player.x < 0) { player.x = 0; player.vx = 0; }
     if (player.x + player.w > RW * TS) { player.x = RW * TS - player.w; player.vx = 0; }
-    if (player.y < 0) { player.y = 0; player.vy = 0; }
-    if (player.y + player.h > RH * TS) { player.y = RH * TS - player.h; player.vy = 0; }
+    if (roomIdx == 0 && player.y < 0) { player.y = 0; player.vy = 0; }
+    if (roomIdx == ROOM_COUNT - 1 && player.y + player.h > RH * TS) {
+        player.y = RH * TS - player.h; player.vy = 0;
+    }
+    RoomTransition();
 
     // ---- procedural pass. Lag only: nothing here squashes and nothing stretches.
     player.animT += (player.onGround && fabsf(player.vx) > 0.05f)
@@ -219,6 +278,16 @@ void PlayerDraw(void) {
     DrawRectangle(px + 1, py + player.h - 1, player.w - 2, 1, palSkinDeep);
     DrawRectangle(px,     py + player.h - 3, 1, 2, palSkinDeep);
     DrawRectangle(px + player.w - 1, py + player.h - 3, 1, 2, palSkinDeep);
+
+    // The surface cuts the body. Without this a floating body reads as standing on
+    // the water, because only a quarter of it is under.
+    if (player.waterY >= 0) {
+        int wy = ROOM_Y + player.waterY, bot = py + player.h;
+        if (wy < bot) {
+            int top = wy > py ? wy : py;
+            DrawRectangle(px, top, player.w, bot - top, palSkinWet);
+        }
+    }
 
     // Two nubs on the head that lag the turn. They are the only thing on the body
     // that reads which way it is going, and they are late about it.

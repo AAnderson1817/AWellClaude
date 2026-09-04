@@ -56,7 +56,7 @@ static int PlanExhausted(void) { return planLen && frameNo > planTotal + 2; }
 // am the worst possible judge of whether the room can be climbed. Deterministic
 // from its seed, so a failure can be replayed exactly.
 static int wanderSeed = 0;
-static u8 stood[RH][RW];
+static u8 stood[ROOM_COUNT][RH][RW];
 static u32 wrng;
 static float WRnd(void) {
     wrng ^= wrng << 13; wrng ^= wrng >> 17; wrng ^= wrng << 5;
@@ -124,6 +124,7 @@ static void Sim(void) {
     PlayerStep();
     in.jumpPressed = 0;
     BulbsStep();
+    WaterStep();
     FxStep();
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
@@ -134,7 +135,7 @@ static void Sim(void) {
         int ty = (int)floorf((player.y + player.h + 0.5f) / TS);
         int x0 = (int)floorf(player.x / TS), x1 = (int)floorf((player.x + player.w - 1) / TS);
         for (int tx = x0; tx <= x1; tx++)
-            if (tx >= 0 && tx < RW && ty >= 0 && ty < RH) stood[ty][tx] = 1;
+            if (tx >= 0 && tx < RW && ty >= 0 && ty < RH) stood[roomIdx][ty][tx] = 1;
     }
 }
 
@@ -162,9 +163,10 @@ static void Frame(void) {
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d\n",
                frameNo, player.x, player.y, player.vx, player.vy,
-               player.onGround, player.airFrames, player.coyote, player.jumpBuf);
+               player.onGround, player.airFrames, player.coyote, player.jumpBuf,
+               roomIdx, player.submerged);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -181,7 +183,7 @@ static void Frame(void) {
 }
 
 int main(int argc, char **argv) {
-    int winScale = 4, atx = -1, aty = -1;
+    int winScale = 4, atx = -1, aty = -1, startRoom = 0;
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");
@@ -201,6 +203,8 @@ int main(int argc, char **argv) {
             winScale = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--wander") && i + 1 < argc) {
             wanderSeed = atoi(argv[++i]); dbgFixedStep = 1; noDraw = 1;
+        } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
+            startRoom = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--at") && i + 1 < argc) {
             atx = atoi(strtok(argv[++i], ","));
             char *t = strtok(NULL, ","); if (t) aty = atoi(t);
@@ -213,7 +217,7 @@ int main(int argc, char **argv) {
     SetTargetFPS(dbgFixedStep ? 0 : 60);
     RenderInit();
     RoomLoad();
-    FxInit();
+    if (startRoom > 0 && startRoom < ROOM_COUNT) RoomEnter(startRoom);
     // P marks the tile you stand IN: feet on that tile's bottom edge.
     int tx = (atx >= 0) ? atx : RoomStartTx();
     int ty = (aty >= 0) ? aty : RoomStartTy();
@@ -226,18 +230,21 @@ int main(int argc, char **argv) {
            && !(maxFrames && frameNo >= maxFrames)) Frame();
 #endif
     if (wanderSeed) {
-        // Every surface a body could rest on, and whether this bot ever rested there.
-        int total = 0, hit = 0;
-        for (int y = 1; y < RH; y++)
-            for (int x = 1; x < RW - 1; x++) {
-                u8 t = TileGet(x, y);
-                if (!(TileSolid(t) || TileOneWay(t))) continue;
-                if (TileGet(x, y - 1) != T_EMPTY && TileGet(x, y - 1) != T_MOSS) continue;
-                total++;
-                if (stood[y][x]) hit++;
-                else printf("unvisited surface %d,%d\n", x, y);
-            }
-        printf("STOOD %d/%d surfaces  (seed %d, %ld frames)\n", hit, total, wanderSeed, frameNo);
+        // Every surface a body could rest on, per room, and whether this bot ever did.
+        for (int r = 0; r < ROOM_COUNT; r++) {
+            RoomEnter(r);
+            int total = 0, hit = 0;
+            for (int y = 1; y < RH; y++)
+                for (int x = 1; x < RW - 1; x++) {
+                    u8 t = TileGet(x, y), up = TileGet(x, y - 1);
+                    if (!(TileSolid(t) || TileOneWay(t))) continue;
+                    if (up != T_EMPTY && up != T_MOSS && up != T_WATER) continue;
+                    total++;
+                    if (stood[r][y][x]) hit++;
+                    else printf("unvisited surface room %d %d,%d\n", r, x, y);
+                }
+            printf("STOOD room %d: %d/%d surfaces  (seed %d, %ld frames)\n", r, hit, total, wanderSeed, frameNo);
+        }
     }
     CloseWindow();
     return 0;

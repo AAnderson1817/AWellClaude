@@ -7,7 +7,31 @@ jump timing, jump length and when-you-stop-pushing actually lands it."""
 import sys, os
 from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from probe import reach
+from probe import reach, run
+
+def onto(rows, row, cols, room):
+    return any(r["ground"] and r["room"] == room and round((r["y"] + 11) / 8) == row
+               and (int(r["x"] // 8) in cols or int((r["x"] + 5) // 8) in cols) for r in rows)
+
+# From floating in the water to an island top: swim, then a surface jump. The search
+# varies how long you swim and how long you hold the jump.
+def water_to(key, cols):
+    for pre in range(40, 160, 12):
+        for hold in (6, 12, 20):
+            plan = "-:110,%s:%d,%sJ:%d,%s:6,-:60" % (key, pre, key, hold, key)
+            if onto(run(plan, at=(22, 3), room=1), 6, cols, 1): return "from the water: " + plan
+    return None
+
+# The shaft. Down: stand on the shelf over it and hold Down; you should end up floating
+# in the room below. Up: from the shelf in its throat, one jump should land you on the
+# shelf over it in the room above.
+def shaft_down():
+    e = run("-:20,D:300", at=(22, 19))[-1]
+    return "D from (22,19): room %d, floating" % e["room"] if e["room"] == 1 and e["wet"] else None
+def shaft_up():
+    e = run("-:10,J:30,-:60", at=(22, 0), room=1)[-1]
+    return "J from the throat: room %d, row %.0f" % (e["room"], (e["y"] + 11) / 8) \
+        if e["room"] == 0 and e["ground"] and round((e["y"] + 11) / 8) == 20 else None
 
 ROUTE = [
  ("A  floor           -> lower left step",   range(6, 10), 19, 18, range(4, 6),   -1),
@@ -31,17 +55,33 @@ ROUTE = [
  ("S  pillar top      -> the floor",         range(18, 21),12, 20, range(21, 30), +1),
 ]
 
+FLOODED = [
+ ("W0 the shaft, down (hold Down on the shelf)", shaft_down),
+ ("W1 water -> left island",                     lambda: water_to("L", range(3, 8))),
+ ("W2 water -> right island",                    lambda: water_to("R", range(31, 36))),
+ ("W3 left island -> shelf row 5",               lambda: reach(range(3, 8),   5, 5, range(9, 14),  +1, room=1)),
+ ("W4 shelf row 5 -> shelf row 3",               lambda: reach(range(9, 14),  4, 3, range(17, 22), +1, room=1)),
+ ("W5 shelf row 3 -> the throat shelf",          lambda: reach(range(17, 22), 2, 1, range(22, 24), +1, room=1)),
+ ("W6 right island -> shelf row 5 (rt)",         lambda: reach(range(31, 36), 5, 5, range(26, 31), -1, room=1)),
+ ("W7 shelf row 5 (rt) -> shelf row 3 (rt)",     lambda: reach(range(26, 31), 4, 3, range(24, 29), -1, room=1)),
+ ("W8 shelf row 3 (rt) -> the throat shelf",     lambda: reach(range(24, 29), 2, 1, range(22, 24), -1, room=1)),
+ ("W9 the shaft, up (jump from the throat)",     shaft_up),
+]
+
 def check(h):
+    if len(h) == 2:
+        name, fn = h
+        return name, fn()
     name, sc, sr, tr, tc, d = h
     return name, reach(sc, sr, tr, tc, d)
 
 if __name__ == "__main__":
-    with ThreadPoolExecutor(max_workers=10) as ex:
-        results = list(ex.map(check, ROUTE))
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        results = list(ex.map(check, ROUTE + FLOODED))
     bad = []
     for name, plan in results:
         print("%-42s %s" % (name, plan if plan else "*** NO WAY OF PLAYING IT LANDS THIS"))
         if not plan: bad.append(name.split()[0])
     print()
-    print("unmakeable hops:", ", ".join(bad) if bad else "none -- the route closes")
+    print("unmakeable hops:", ", ".join(bad) if bad else "none -- both rooms close")
     sys.exit(1 if bad else 0)

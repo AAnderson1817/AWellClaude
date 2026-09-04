@@ -27,6 +27,10 @@ Color palDrop     = { 130, 168, 196, 255 };
 Color palBulb     = { 156, 104, 148, 255 };   // something grown, not cut
 Color palBulbLit  = { 224, 178, 214, 255 };
 Color palBulbDeep = {  92,  58,  90, 255 };
+Color palWater    = {  38,  74, 104, 255 };
+Color palWaterLit = { 112, 164, 182, 255 };   // the surface line
+Color palWaterFleck={  60, 108, 140, 255 };
+Color palSkinWet  = { 124, 134, 132, 255 };   // the part of you that is under
 
 // Not an overlay: scanline depth is modulated per pixel by luminosity, so a bright
 // pixel blooms across the gap and a dark one sinks into it. X stays bilinear, Y is

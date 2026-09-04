@@ -2,7 +2,8 @@
 
 ## Where this is
 
-**Rebuilt from scratch as a single room.** Running and jumping, plus two bulbs.
+**Two rooms now: the chamber, and a flooded chamber under it.** Running, jumping,
+two bulbs, and the water.
 
 The user played the from-scratch room and asked to keep it as the base. First addition
 on top of it: the bulb (below).
@@ -94,6 +95,40 @@ Placement: one on the left floor under the row-12 shelf -- a bounce and a nudge 
 reaches the row-15 shelf -- and one on the right floor under the row-16 shelf, which a
 bounce lands you on.
 
+### The flooded room
+
+Reached through a shaft in the chamber's floor at cols 22-23: a one-way shelf set into
+the floor, over an opening in the border. Walk over it like floor; press Down on it and
+you fall seven tiles into water. The water is the buoyancy from the earlier build,
+carried over unchanged: gravity and buoyancy blended by how much of the body is under,
+so it floats a quarter submerged and settles instead of bobbing. Jump or Up held swims
+you upward; a tap of jump while floating is a smaller jump off the surface (2.5 tiles,
+0.8 of a real one). Out of the water onto an island, then shelves, then a shelf set in
+the shaft's throat, then one jump puts you back on the floor above.
+
+Rooms are stacked; positions are continuous across the seam (y shifts by one room), so
+nothing about the motion changes at the cut. Outside a room is stone at the sides and
+open at top and bottom only where a room lies that way -- the authored border row still
+decides where you can pass. Entering a room rebuilds its tiles, bulbs, baked light,
+surface and specks; nothing carries over but you.
+
+Light under water dies faster (x0.90 per step) and goes cold (red x0.6, green x0.9),
+so the seams on the flooded floor and the pillar under the surface read as things you
+can see and cannot reach. You cannot: you are too light to dive. That is deliberate and
+it is the seed of the weight verb, if it comes back.
+
+One geometry fact worth knowing: a body straddling the seam between rooms sees only
+the room it is in, and the rows beyond the edge as open. So the throat shelf (room 1,
+row 1) is never met from above -- you always fall past it into the water -- and is a
+landing on the way up only. That is the behaviour wanted; it is noted because it looks
+like a bug from the map.
+
+    measured   float 23% under, settles within 0.5px
+               surface jump 2.49 tiles; swim up lifts you clear of the water
+               shaft down: Down on the shelf -> floating in room 1
+               shaft up: one jump from the throat shelf -> on the shelf above
+               ten flooded-room hops close by search (tools/route.py, W0-W9)
+
 ## The rules this build is under
 
 - **L5, no text.** There is none in the game and none is planned.
@@ -134,11 +169,12 @@ convention borrowed from one context and used in another where it is off by one.
 
 ## What is deliberately not here
 
-Water and weight. Room transitions. A second verb. Puzzles. They come back one at a
+Weight. A second verb. Puzzles. Sound. They come back one at a
 time, each after the thing under it has been played and accepted.
 
 ## Controls
 
 Arrows or WASD. Z, X, C or Space to jump; hold it longer to go higher. Down to drop
 through a shelf. Land on a bulb to bounce; press jump as you land on it to bounce
-higher.
+higher. In water: Left and Right to swim, Z or Up held to swim up, Z tapped to jump
+off the surface.

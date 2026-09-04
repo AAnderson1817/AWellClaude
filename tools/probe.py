@@ -9,23 +9,32 @@ import subprocess, sys, re, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINE = re.compile(r"f=\s*(\d+) x=\s*([-\d.]+) y=\s*([-\d.]+) vx=\s*([-\d.]+) "
-                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+)")
+                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) room=(\d+) wet=(\d+)")
 
-def run(plan, at=None, frames=None):
+def run(plan, at=None, frames=None, room=None):
     cmd = [os.path.join(ROOT, "build", "game"), "--play", plan, "--trace", "--nodraw"]
     if at:     cmd += ["--at", "%d,%d" % at]
+    if room:   cmd += ["--room", str(room)]
     if frames: cmd += ["--frames", str(frames)]
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+    if result.returncode < 0:
+        # The simulation is deterministic, so a signal that does not repeat is the
+        # display server under load (many probes at once), not the game. One retry;
+        # a second failure is reported as real.
+        again = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+        if again.returncode == 0:
+            sys.stderr.write("probe: retried once after signal %d (display contention)\n" % -result.returncode)
+            result = again
     if result.returncode:
         raise RuntimeError("Game probe failed (exit %d): %s" %
                            (result.returncode, result.stderr.strip()))
     out = result.stdout
     rows = []
     for m in LINE.finditer(out):
-        f, x, y, vx, vy, g, a, c, b = m.groups()
+        f, x, y, vx, vy, g, a, c, b, rm, w = m.groups()
         rows.append(dict(f=int(f), x=float(x), y=float(y), vx=float(vx),
                          vy=float(vy), ground=int(g), air=int(a),
-                         coy=int(c), buf=int(b)))
+                         coy=int(c), buf=int(b), room=int(rm), wet=int(w)))
     if not rows:
         raise RuntimeError("Game probe produced no trace rows: " + result.stderr.strip())
     return rows
@@ -44,7 +53,7 @@ if __name__ == "__main__":
 # them, just automated. So it varies where you start, when you jump, how long you
 # hold the jump, and when you stop pushing.
 def reach(start_cols, start_row, target_row, target_cols, direction,
-          pres=(0, 4, 8, 12), holds=(6, 12, 20, 30), runs=(8, 18, 40)):
+          pres=(0, 4, 8, 12), holds=(6, 12, 20, 30), runs=(8, 18, 40), room=None):
     key = {-1: "L", 1: "R", 0: ""}[direction]
     for sc in start_cols:
         for pre in pres:
@@ -55,8 +64,10 @@ def reach(start_cols, start_row, target_row, target_cols, direction,
                     plan += "%sJ:%d," % (key, hold)
                     if key: plan += "%s:%d," % (key, after)
                     plan += "-:50"
-                    for r in run(plan, at=(sc, start_row)):
+                    for r in run(plan, at=(sc, start_row), room=room):
                         if not r["ground"]: continue
+                        if room and r["room"] != room: continue
+                        if not room and r["room"] != 0: continue
                         if round((r["y"] + 11) / 8.0) != target_row: continue
                         if int(r["x"] // 8) in target_cols or int((r["x"] + 5) // 8) in target_cols:
                             return "from col %d: %s" % (sc, plan)

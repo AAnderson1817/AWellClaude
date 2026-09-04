@@ -84,7 +84,8 @@ void FxStep(void) {
                 if (p->vy > 3.2f) p->vy = 3.2f;
                 p->y += p->vy;
                 u8 t = TileAtPx(p->x, p->y + 1.0f);
-                if (TileSolid(t) || TileOneWay(t) || p->y > RH * TS) {
+                if (TileWater(t)) WaterDisturb(p->x, 0.10f);
+                if (TileSolid(t) || TileOneWay(t) || TileWater(t) || p->y > RH * TS) {
                     // It lands, and what it does when it lands is all it ever does.
                     for (int k = 0; k < 3; k++)
                         FxSpawn(FX_SPLASH, p->x, p->y, (Rnd() - 0.5f) * 1.4f,

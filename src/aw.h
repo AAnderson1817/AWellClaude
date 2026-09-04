@@ -35,6 +35,7 @@ enum {
     TF_ONEWAY = 1 << 1,     // blocks downward motion only: stand on it, jump through it
     TF_OPAQUE = 1 << 2,     // receives light, does not pass it on
     TF_EMIT   = 1 << 3,     // a light source
+    TF_WATER  = 1 << 4,     // buoyant; light dies faster in it
 };
 
 enum {
@@ -44,27 +45,39 @@ enum {
     T_VEIN,                 // stone with a lit mineral seam running through it
     T_MOSS,                 // hanging growth; not solid, not anything
     T_BULB,                 // authoring only: where a bulb sits. Becomes T_EMPTY + a Bulb
+    T_WATER,                // the flooded part. You float in it, a quarter under
     T_KINDS
 };
 
 extern const u8 tileFlags[T_KINDS];
 static inline int TileSolid(u8 t)  { return (tileFlags[t] & TF_SOLID)  != 0; }
 static inline int TileOneWay(u8 t) { return (tileFlags[t] & TF_ONEWAY) != 0; }
+static inline int TileWater(u8 t)  { return (tileFlags[t] & TF_WATER)  != 0; }
 
-// ---------------------------------------------------------------- the room
-// One room. Level data is authored as text in room.c and read once at startup;
-// nothing streams from disk, and nothing writes to it at runtime.
-extern u8 tiles[RH][RW];
+// ---------------------------------------------------------------- the rooms
+// Two rooms, stacked: the chamber and the flooded one under it. Level data is authored
+// as text in room.c and read once at startup; nothing streams from disk, and nothing
+// writes to it at runtime. `tiles` holds the room you are in.
+#define ROOM_COUNT 2
+extern u8  tiles[RH][RW];
+extern int roomIdx;
 
-// Outside the room is stone. There is nowhere else to be.
+// Past the side walls is stone. Past the top or bottom is open only where a room lies
+// that way -- the authored border row still decides where you can actually pass.
 static inline u8 TileGet(int tx, int ty) {
-    if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return T_ROCK;
+    if (tx < 0 || tx >= RW) return T_ROCK;
+    if (ty < 0)   return roomIdx > 0              ? T_EMPTY : T_ROCK;
+    if (ty >= RH) return roomIdx < ROOM_COUNT - 1 ? T_EMPTY : T_ROCK;
     return tiles[ty][tx];
 }
 u8 TileAtPx(float px, float py);
 
 void RoomLoad(void);
+void RoomEnter(int idx);
+int  RoomTransition(void);  // stepped off the top or bottom: change room, keep motion
 void RoomDraw(void);
+void WaterStep(void);       // the surface, a 1D wave
+void WaterDisturb(float px, float strength);
 void LightStep(void);       // recompute the moving part of the light
 void LightDraw(void);       // multiply the room by it
 int  RoomStartTx(void);
@@ -102,6 +115,8 @@ typedef struct {
     int launched;           // rising off a bulb: the jump cut does not apply
     int bulbGrace;          // frames left in which a late press still lifts the bounce
     int lastBulb;
+    int submerged;          // any of the body under the surface
+    i32 waterY;             // room-pixel y of the surface where it cuts the body, or -1
     f32 animT;
     f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.
     i32 blink;
@@ -140,6 +155,7 @@ extern RenderTexture2D screenRT;
 extern Color palVoid, palBack, palBackLit, palRock, palRockDeep, palRockLit;
 extern Color palLedge, palLedgeLit, palVein, palVeinHot, palMoss;
 extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop, palBulb, palBulbLit, palBulbDeep;
+extern Color palWater, palWaterLit, palWaterFleck, palSkinWet;
 
 // ---------------------------------------------------------------- debug
 extern long frameNo;

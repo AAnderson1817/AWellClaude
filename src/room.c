@@ -13,38 +13,70 @@ const u8 tileFlags[T_KINDS] = {
     [T_VEIN]  = TF_SOLID | TF_OPAQUE | TF_EMIT,
     [T_MOSS]  = 0,
     [T_BULB]  = 0,
+    [T_WATER] = TF_WATER,
 };
 
-// '#' stone   '-' one-way shelf   '*' lit seam   ',' growth   'o' bulb   'P' where you begin
-static const char *MAP[RH] = {
-    "########################################",
-    "#...#.#.###..#..#...#.#*#...#..#..###..#",
-    "#.......###............,..........###..#",
-    "#........,........................###..#",
-    "#..................-----...........,...#",
-    "#............-----.........-----.......#",
-    "##*##.------.....................###*###",
-    "#####............................#######",
-    "#####.......................-----#######",
-    "#.....----............................##",
-    "#......................................#",
-    "#.........................----.........#",
-    "#..........----..................,.....#",
-    "#.,...............#*#.........#........#",
-    "##.....,..........###.........#####*####",
-    "####..----........###.........##########",
-    "####..............###.----....##########",
-    "#####.............###.........*#########",
-    "#####*............###.........##########",
-    "######..P...o...,.####..o,.##.##########",
-    "########################################",
-    "########################################",
+// '#' stone   '-' one-way shelf   '~' water   '*' lit seam   ',' growth   'o' bulb   'P' start
+static const char *MAPS[ROOM_COUNT][RH] = {
+    { // 0: the chamber
+        "########################################",
+        "#...#.#.###..#..#...#.#*#...#..#..###..#",
+        "#.......###............,..........###..#",
+        "#........,........................###..#",
+        "#..................-----...........,...#",
+        "#............-----.........-----.......#",
+        "##*##.------.....................###*###",
+        "#####............................#######",
+        "#####.......................-----#######",
+        "#.....----............................##",
+        "#......................................#",
+        "#.........................----.........#",
+        "#..........----..................,.....#",
+        "#.,...............#*#.........#........#",
+        "##.....,..........###.........#####*####",
+        "####..----........###.........##########",
+        "####..............###.----....##########",
+        "#####.............###.........*#########",
+        "#####*............###.........##########",
+        "######..P...o...,.####..o,.##.##########",
+        "######################--################",
+        "######################..################",
+    },
+    { // 1: below it, flooded
+        "####################*#..################",
+        "#..##...#...,#........--.....,.##...#..#",
+        "#......................................#",
+        "#................-----..-----..........#",
+        "#......................................#",
+        "#.....,..-----............-----.,......#",
+        "#..##*##.......................##*##...#",
+        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~#*#~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~###~~~~~~~~~~#####~~~#",
+        "#~~#####~~~~~~~~~~###~~~~~~~~~~#####~~~#",
+        "#~~########~~~~~~~###~~~~~~~~~~#####~~~#",
+        "#~~########~~~~~~~###~~~~~~~########~~~#",
+        "#~~########~~~~~~~###~~~~~~~########~~~#",
+        "#~~########~~~~~~~###~~~~~~~########~~~#",
+        "#~~########~~~~~~~###~~~~~~~########~~~#",
+        "#~~########~~~~~~~###~~~~~~~########~~~#",
+        "#############*############*#############",
+    },
 };
 
-u8 tiles[RH][RW];
+u8  tiles[RH][RW];
+int  roomIdx;
 static int startTx = 8, startTy = 19;
 Bulb bulbs[BULB_MAX];
 int  bulbCount;
+
+// The surface. One height and one velocity per column; nothing below the surface
+// line moves, which is what keeps it readable at 8px.
+static f32 surfH[RW], surfV[RW];
 
 int RoomStartTx(void) { return startTx; }
 int RoomStartTy(void) { return startTy; }
@@ -126,6 +158,7 @@ static void LightBake(void) {
                         if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
                         if (Opaque(nx, ny)) continue;
                         f32 c = lstat[ny][nx] * ((dx && dy) ? LATT_D : LATT_O);
+                        if (TileWater(tiles[y][x])) c *= 0.90f;   // light dies faster under
                         if (c > best) best = c;
                     }
                 lstat[y][x] = best;
@@ -213,11 +246,20 @@ void LightStep(void) {
                     acc += lnow[y][x]; n++;
                 }
             f32 v = n ? acc / n : 0.0f;
+            int wn = 0;
+            for (int dy = -1; dy <= 0; dy++)
+                for (int dx = -1; dx <= 0; dx++) {
+                    int x = i + dx, y = j + dy;
+                    if (x >= 0 && x < RW && y >= 0 && y < RH && TileWater(tiles[y][x])) wn++;
+                }
+            f32 wf = n ? (f32)wn / n : 0.0f;          // how much of this corner is under
             f32 h = 1.0f - (f32)j / (f32)RH;          // a shade more sky near the ceiling
             f32 w = powf(v, 1.55f);
             f32 r = AMB_R * (0.88f + 0.26f * h) + w * WARM_R;
             f32 g = AMB_G * (0.88f + 0.24f * h) + w * WARM_G;
             f32 b = AMB_B * (0.92f + 0.22f * h) + w * WARM_B;
+            r *= 1.0f - 0.40f * wf;                   // under the water everything goes cold
+            g *= 1.0f - 0.10f * wf;
             if (r > 1.0f) r = 1.0f;
             if (g > 1.0f) g = 1.0f;
             if (b > 1.0f) b = 1.0f;
@@ -245,28 +287,23 @@ void LightDraw(void) {
 }
 
 // ---------------------------------------------------------------- load
-void RoomLoad(void) {
-    // A map row that is one character short reads its last column as the string
-    // terminator and quietly opens a hole in the wall. Editing these strings by
-    // hand did exactly that once, and nothing downstream noticed.
-    for (int y = 0; y < RH; y++) {
-        int n = 0;
-        while (MAP[y][n]) n++;
-        if (n != RW) TraceLog(LOG_ERROR, "map row %d is %d wide, expected %d", y, n, RW);
-    }
+static void ParseRoom(int idx) {
+    bulbCount = 0;
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {
-            char c = MAP[y][x];
+            char c = MAPS[idx][y][x];
             u8 t = T_EMPTY;
             switch (c) {
                 case '#': t = T_ROCK;  break;
                 case '-': t = T_LEDGE; break;
                 case '*': t = T_VEIN;  break;
                 case ',': t = T_MOSS;  break;
+                case '~': t = T_WATER; break;
                 case 'o':
                     if (bulbCount < BULB_MAX) {
                         bulbs[bulbCount].x = x * TS + TS / 2;
                         bulbs[bulbCount].y = (y + 1) * TS;       // base on the tile floor
+                        bulbs[bulbCount].squash = bulbs[bulbCount].flash = bulbs[bulbCount].timed = 0;
                         bulbCount++;
                     }
                     break;
@@ -276,7 +313,29 @@ void RoomLoad(void) {
             tiles[y][x] = t;
         }
     }
+}
+
+// Entering a room rebuilds everything that belongs to it: tiles, bulbs, the baked
+// light, the surface, the specks. Nothing carries over except you.
+void RoomEnter(int idx) {
+    roomIdx = idx;
+    ParseRoom(idx);
     LightBake();
+    memset(surfH, 0, sizeof surfH);
+    memset(surfV, 0, sizeof surfV);
+    FxInit();
+}
+
+void RoomLoad(void) {
+    // A map row that is one character short reads its last column as the string
+    // terminator and quietly opens a hole in the wall. Editing these strings by
+    // hand did exactly that once, and nothing downstream noticed.
+    for (int r = 0; r < ROOM_COUNT; r++)
+        for (int y = 0; y < RH; y++) {
+            int n = 0;
+            while (MAPS[r][y][n]) n++;
+            if (n != RW) TraceLog(LOG_ERROR, "room %d row %d is %d wide, expected %d", r, y, n, RW);
+        }
     Image im = GenImageColor(RW + 1, RH + 1, WHITE);
     lightTex = LoadTextureFromImage(im);
     glowTex  = LoadTextureFromImage(im);
@@ -285,6 +344,44 @@ void RoomLoad(void) {
     SetTextureWrap(lightTex, TEXTURE_WRAP_CLAMP);
     SetTextureFilter(glowTex, TEXTURE_FILTER_BILINEAR);
     SetTextureWrap(glowTex, TEXTURE_WRAP_CLAMP);
+    ParseRoom(0);               // finds P
+    RoomEnter(0);
+}
+
+// The body has gone off the top or the bottom. Positions are continuous across the
+// seam (y shifts by exactly one room), so nothing about the motion changes but the
+// walls around it.
+int RoomTransition(void) {
+    if (player.y >= RH * TS && roomIdx < ROOM_COUNT - 1) {
+        RoomEnter(roomIdx + 1);
+        player.y -= RH * TS;
+        return 1;
+    }
+    if (player.y + player.h <= 0 && roomIdx > 0) {
+        RoomEnter(roomIdx - 1);
+        player.y += RH * TS;
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------- water
+void WaterDisturb(float px, float strength) {
+    int c = (int)floorf(px / TS);
+    if (c < 0 || c >= RW) return;
+    surfV[c] += strength;
+    if (c > 0)      surfV[c - 1] += strength * 0.5f;
+    if (c < RW - 1) surfV[c + 1] += strength * 0.5f;
+}
+
+void WaterStep(void) {
+    for (int x = 0; x < RW; x++) {
+        f32 l = x > 0      ? surfH[x - 1] : surfH[x];
+        f32 r = x < RW - 1 ? surfH[x + 1] : surfH[x];
+        surfV[x] += ((l + r) * 0.5f - surfH[x]) * 0.24f - surfH[x] * 0.045f;
+        surfV[x] *= 0.955f;
+    }
+    for (int x = 0; x < RW; x++) surfH[x] += surfV[x];
 }
 
 // ---------------------------------------------------------------- drawing
@@ -359,6 +456,23 @@ static void DrawLedge(int x, int y, int px, int py) {
                DrawRectangle(px + TS - 1, py + 2, 1, 1, palBack); }
 }
 
+static void DrawWater(int x, int y, int px, int py) {
+    int surface = !TileWater(TileGet(x, y - 1));
+    if (surface) {
+        // The wave displaces the surface line only. The body stays put.
+        int d = (int)(surfH[x] * 3.0f);
+        if (d >  3) d =  3;
+        if (d < -3) d = -3;
+        DrawRectangle(px, py + d, TS, TS - d, palWater);
+        DrawRectangle(px, py + d, TS, 1, palWaterLit);
+    } else {
+        DrawRectangle(px, py, TS, TS, palWater);
+        // a fleck drifting up now and then: the water is not still
+        if (((x * 3 + y * 7 + (int)(frameNo / 26)) % 11) == 0)
+            DrawRectangle(px + 2 + (x & 3), py + 3, 1, 1, palWaterFleck);
+    }
+}
+
 static void DrawMoss(int x, int y, int px, int py) {
     u32 h = Hash2(x * 11 + 5, y * 17);
     int down = Massive(x, y - 1) || TileGet(x, y - 1) == T_LEDGE;
@@ -398,6 +512,7 @@ void RoomDraw(void) {
                 case T_ROCK:  DrawStone(x, y, px, py); break;
                 case T_VEIN:  DrawVein(x, y, px, py);  break;
                 case T_LEDGE: DrawLedge(x, y, px, py); break;
+                case T_WATER: DrawWater(x, y, px, py); break;
                 case T_MOSS:  DrawMoss(x, y, px, py);  break;
                 default: break;
             }
