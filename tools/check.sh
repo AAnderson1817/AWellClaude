@@ -7,6 +7,6 @@ check_dir="$(mktemp -d)"
 trap 'rm -rf "$check_dir"' EXIT
 "${AWELL_CC[@]}" -std=c99 -O1 -g -fsanitize=undefined -fno-sanitize-recover=all \
   -I"$RAYLIB" tools/tests/input_hash.c tools/tests/raylib_stubs.c \
-  src/player.c src/room.c src/fx.c src/render.c src/audio.c src/life.c src/lamp.c -lm -o "$check_dir/regressions"
+  src/player.c src/room.c src/fx.c src/render.c src/audio.c src/life.c src/items.c -lm -o "$check_dir/regressions"
 "$check_dir/regressions"
 python3 tools/tests/test_tools.py

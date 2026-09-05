@@ -203,15 +203,36 @@ indifference; L3: neither of these is a verb).
 
 Trace runs report `LIFE birds startled N, plant phrases N, beast turns N, rustles N`.
 
-### The lamp (the first verb: Hold)
+### Hold: the lamp and the stones (the first verb)
 
-`src/lamp.c`. A small iron lamp with a pale glass, on the floor three steps right of
-where you begin. X picks it up when you are beside it; X again sets it down at your
-feet on the side you face (at your feet exactly if that would be inside stone). It is
-an object: airborne, it falls from your hand; it lands on stone and on shelves crossed
-from above; it falls through the grate into the room below; in water it rises and rests
-with its glass above the line. Set it down and go to the other room and it stays where
-you left it -- the first thing in the game that has a room of its own.
+`src/items.c`. One hand. X sets down whatever you hold, at your feet on the side you
+face (at your feet exactly if that would be inside stone); with your hands free, X takes
+the nearest thing within reach. So to swap, X twice. Everything held is an object:
+airborne, it leaves your hand and falls; it lands on stone and on shelves crossed from
+above; it falls through the grate into the room below; set it down and change rooms and
+it stays where you left it -- the first things in the game with rooms of their own.
+
+**The lamp**: a small iron lamp with a pale glass, on the floor three steps right of
+where you begin. In water it rises and rests with its glass above the line.
+
+**The stones**: two. One on the animal's ledge in the chamber, one on the left island
+below. A stone sinks, slowly, to the flooded floor. While you hold one, the gravity
+axis changes and nothing else does (the rule from the first build: weight never touches
+running): a jump is 0.78 of a jump, so the rise is 0.6 of the rise, 4.0 -> 2.4 tiles;
+you fall a little faster and land harder, and the thud says so; a bulb throws you 0.85
+as fast; and in water the sign of buoyancy flips, -0.55 -> +0.30, so you go to the floor
+and walk it, and hops down there are two-thirds of a tile. Set the stone down under and
+you float back up without it. It stays. You can see it. The other stone is how you get
+another go -- losing one to the deep is a consequence, not a dead end.
+
+    measured   jump with a stone 2.37 tiles; walking the flooded floor, ground=1 at
+               row 21; hop under water 0.65 tiles; set down under -> back at the
+               surface in 5 s, stone resting below; lamp held + X = set down, no swap
+
+The point of the stone is the room you already had: the seams under the water were
+"things you can see and cannot reach". Now you can reach them, at the cost of your light
+(one hand) and your buoyancy. That tension is the first real one in the game and it
+comes from two objects and no rule.
 
 Its light adds to the glow you already carry (the user's call: add, do not replace):
 reach 7.4 tiles at peak 0.90, against the aura's 4.6 at 0.42, with a slight flicker.
@@ -223,7 +244,8 @@ dark until you bring the lamp, or go without it on two eyes and a few pixels.
 Second readings are not built yet and are not promised: creatures by light, things that
 exist only in the dark. First the user plays it cold. X and C came off the jump keys.
 
-`--lamp ROOM,TX,TY` places it for a probe; the trace carries `lamp=held/room/x,y`.
+`--lamp ROOM,TX,TY` places the lamp for a probe; stones are authored with `s`. The
+trace carries `hold=<0|1|2>` and the lamp's and first stone's room and position.
 
 ### Debug tags
 
@@ -285,7 +307,8 @@ time, each after the thing under it has been played and accepted.
 
 ## Controls
 
-Arrows or WASD. Z or Space to jump; hold it longer to go higher. X to hold / let go. Down to drop
+Arrows or WASD. Z or Space to jump; hold it longer to go higher. X to hold / let go
+(the lamp, or a stone; one at a time). Down to drop
 through a shelf. Land on a bulb to bounce; press jump as you land on it to bounce
 higher. In water: Left and Right to swim, Z or Up held to swim up, Z tapped to jump
 off the surface. L toggles the platform tags.

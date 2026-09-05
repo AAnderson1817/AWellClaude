@@ -17,7 +17,8 @@ def fake_run(plan, at=None, frames=None, room=None):
     spawn the game (they used to, and failed whenever the display was busy)."""
     def row(**k):
         base = dict(f=1, x=170.0, y=-3.0, vx=0, vy=0, ground=1, air=0, coy=0, buf=0,
-                    room=1, wet=0, sfx="-", lamp=0, lampRoom=0, lampX=0, lampY=0)
+                    room=1, wet=0, sfx="-", hold=0, lampRoom=0, lampX=0, lampY=0,
+                    stoneRoom=0, stoneX=0, stoneY=0)
         base.update(k); return base
     if plan == "-:20,D:300":                 return [row(room=1, wet=1)]              # shaft down
     if plan == "-:10,J:30,-:60":             return [row(room=0, y=149.0, x=176.0)]  # shaft up: row 20

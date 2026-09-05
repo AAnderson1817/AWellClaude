@@ -19,7 +19,7 @@ const u8 tileFlags[T_KINDS] = {
 };
 
 // '#' stone   '-' shelf   '~' water   '*' seam   ',' moss   'b' bush   'o' bulb
-// 'm' the animal's home   'f' a talking plant   'P' start
+// 'm' the animal's home   'f' a talking plant   's' a stone   'P' start
 static const char *MAPS[ROOM_COUNT][RH] = {
     { // 0: the chamber
         "########################################",
@@ -35,7 +35,7 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "#......................................#",
         "#.........................----.........#",
         "#..........----..................,.....#",
-        "#.,...............###.........#.b.m..b.#",
+        "#.,...............###.........#.b.m.sb.#",
         "#b.....,..........###.........#####*####",
         "####..----........###.........##########",
         "####..............###.----....##########",
@@ -51,7 +51,7 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "#......................................#",
         "#...............------....------.......#",
         "#......................................#",
-        "#...b.,..-----.............-----b.f....#",
+        "#...bs,..-----.............-----b.f....#",
         "#..#####.......................#####...#",
         "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
         "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
@@ -76,6 +76,12 @@ u8  roomTiles[ROOM_COUNT][RH][RW];
 int  roomIdx;
 static int markBeastX = -1, markBeastY = -1;
 static int markPlantN, markPlantX[4], markPlantY[4];
+static int markStoneN, markStoneX[4], markStoneY[4];
+int  RoomMarkStones(int *txs, int *tys, int max) {
+    int n = markStoneN < max ? markStoneN : max;
+    for (int i = 0; i < n; i++) { txs[i] = markStoneX[i]; tys[i] = markStoneY[i]; }
+    return n;
+}
 int  RoomMarkBeast(int *tx, int *ty) { if (markBeastX < 0) return 0; *tx = markBeastX; *ty = markBeastY; return 1; }
 int  RoomMarkPlants(int *txs, int *tys, int max) {
     int n = markPlantN < max ? markPlantN : max;
@@ -239,7 +245,7 @@ void LightStep(void) {
     memcpy(lnow, lstat, sizeof lnow);
     AddAura();
     LifeLights();
-    LampLight();
+    ItemsLight();
     // A bulb that has just been landed on throws light for a moment; more, and further,
     // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
@@ -307,7 +313,7 @@ void LightDraw(void) {
 
 // ---------------------------------------------------------------- load
 static void ParseRoom(int idx, u8 dst[RH][RW]) {
-    bulbCount = 0; markBeastX = markBeastY = -1; markPlantN = 0;
+    bulbCount = 0; markBeastX = markBeastY = -1; markPlantN = 0; markStoneN = 0;
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {
             char c = MAPS[idx][y][x];
@@ -320,6 +326,7 @@ static void ParseRoom(int idx, u8 dst[RH][RW]) {
                 case '~': t = T_WATER; break;
                 case 'b': t = T_BUSH;  break;
                 case 'm': markBeastX = x; markBeastY = y; break;
+                case 's': if (markStoneN < 4) { markStoneX[markStoneN] = x; markStoneY[markStoneN] = y; markStoneN++; } break;
                 case 'f': if (markPlantN < 4) { markPlantX[markPlantN] = x; markPlantY[markPlantN] = y; markPlantN++; } break;
                 case 'o':
                     if (bulbCount < BULB_MAX) {
@@ -371,8 +378,13 @@ void RoomLoad(void) {
     SetTextureWrap(lightTex, TEXTURE_WRAP_CLAMP);
     SetTextureFilter(glowTex, TEXTURE_FILTER_BILINEAR);
     SetTextureWrap(glowTex, TEXTURE_WRAP_CLAMP);
-    for (int r = 0; r < ROOM_COUNT; r++) ParseRoom(r, roomTiles[r]);   // room 0 last finds P
-    ParseRoom(0, roomTiles[0]);
+    // items[0] is the lamp (added by main after this); stones follow
+    for (int r = 0; r < ROOM_COUNT; r++) {
+        ParseRoom(r, roomTiles[r]);
+        int xs[4], ys[4], n = RoomMarkStones(xs, ys, 4);
+        for (int i = 0; i < n; i++) ItemsAdd(IT_STONE, r, xs[i], ys[i]);
+    }
+    ParseRoom(0, roomTiles[0]);                                          // finds P
     RoomEnter(0);
 }
 

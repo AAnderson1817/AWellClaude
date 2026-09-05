@@ -224,6 +224,15 @@ static void Synth(void) {
       for (int i = 0; i < n; i++) work[i] += sv[i]; }
     Register(SFX_SETDOWN, "setdown", n, 0.9f, 0.28f, 1);
 
+    // a stone: set down or landing, a dull weight; taken up, a scrape of grit
+    n = (int)(SR * 0.30f); Clear(n); Sine(n, 110, 60, 0.08f, 0.9f); Env(n, 0.002f, 0.06f);
+    { static float sv[7000]; memcpy(sv, work, sizeof(float) * n); Clear(n); Noise(n, 0.9f); LowPass(n, 600, 600, 0); Env(n, 0.001f, 0.022f);
+      for (int i = 0; i < n; i++) work[i] += sv[i]; }
+    Soft(n, 1.5f); Reverb(n, 0.18f, 0.75f, 0.4f);
+    Register(SFX_STONE, "stone", n, 0.8f, 0.55f, 2);
+    n = (int)(SR * 0.18f); Clear(n); Noise(n, 1.0f); HighPass(n, 700); LowPass(n, 3000, 1800, 0.15f); Env(n, 0.02f, 0.05f);
+    Register(SFX_STONE_UP, "stone-up", n, 0.8f, 0.26f, 1);
+
     // ambience. Six seconds, looped, ends crossfaded so the seam is not a click.
     for (int r = 0; r < ROOM_COUNT; r++) {
         n = SR * 6; Clear(n);

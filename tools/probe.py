@@ -9,7 +9,7 @@ import subprocess, sys, re, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINE = re.compile(r"f=\s*(\d+) x=\s*([-\d.]+) y=\s*([-\d.]+) vx=\s*([-\d.]+) "
-                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) room=(\d+) wet=(\d+) sfx=(\S+) lamp=(\d)/(\d)/([-\d]+),([-\d]+)")
+                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) room=(\d+) wet=(\d+) sfx=(\S+) hold=(\d) lamp=(\d)/([-\d]+),([-\d]+) stone=(-?\d)/([-\d]+),([-\d]+)")
 
 def run(plan, at=None, frames=None, room=None):
     cmd = [os.path.join(ROOT, "build", "game"), "--play", plan, "--trace", "--nodraw"]
@@ -31,11 +31,12 @@ def run(plan, at=None, frames=None, room=None):
     out = result.stdout
     rows = []
     for m in LINE.finditer(out):
-        f, x, y, vx, vy, g, a, c, b, rm, w, sf, lh, lr, lx, ly = m.groups()
+        f, x, y, vx, vy, g, a, c, b, rm, w, sf, hd, lr, lx, ly, sr_, sx, sy = m.groups()
         rows.append(dict(f=int(f), x=float(x), y=float(y), vx=float(vx),
                          vy=float(vy), ground=int(g), air=int(a),
                          coy=int(c), buf=int(b), room=int(rm), wet=int(w), sfx=sf,
-                         lamp=int(lh), lampRoom=int(lr), lampX=int(lx), lampY=int(ly)))
+                         hold=int(hd), lampRoom=int(lr), lampX=int(lx), lampY=int(ly),
+                         stoneRoom=int(sr_), stoneX=int(sx), stoneY=int(sy)))
     if not rows:
         raise RuntimeError("Game probe produced no trace rows: " + result.stderr.strip())
     return rows

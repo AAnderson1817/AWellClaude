@@ -32,6 +32,10 @@ Player player;
 // under, and it settles there instead of oscillating across the line. This is the
 // one piece of the earlier build that was liked, and it is carried over unchanged.
 #define WATER_SINK  -0.55f     // signed; negative rises. You are light.
+#define STONE_SINK   0.30f     // with a stone in hand you are not: you go to the floor
+#define STONE_JUMP   0.78f     // of a jump; the rise scales with its square: 4.0 -> 2.4 tiles
+#define STONE_TERM   3.6f
+#define STONE_BOUNCE 0.85f     // a bulb throws a heavy body less
 #define WATER_DRAG   0.90f
 #define WATER_TERM   1.35f
 #define WATER_DAMP   0.16f
@@ -91,7 +95,7 @@ static void MoveY(float dy) {
                 int timed = player.jumpBuf > 0;
                 Sfx(timed ? SFX_BULB_TIMED : SFX_BULB, 1.0f, 1.0f + AudioRnd() * 0.03f, 0.5f);
                 player.y = (float)(bulbs[b].y - BULB_H) - player.h;
-                player.vy = timed ? BOUNCE_TIMED_V : BOUNCE_V;
+                player.vy = (timed ? BOUNCE_TIMED_V : BOUNCE_V) * (player.heavy ? STONE_BOUNCE : 1.0f);
                 player.launched = 1;
                 player.jumpHeld = 0;
                 player.jumpBuf = 0;
@@ -118,9 +122,10 @@ static void MoveY(float dy) {
                     FxBurst(FX_DUST, cx, cy, n, 0.8f, 0.30f);
                     player.landImpact = 7;
                     float v = (player.vy - 0.8f) / 2.2f;
+                    if (player.heavy) v = v * 1.3f + 0.15f;
                     if (v > 1.0f) v = 1.0f;
                     if (v < 0.25f) v = 0.25f;
-                    Sfx(SFX_LAND, v, 0.94f + AudioRnd() * 0.06f, 0.5f);
+                    Sfx(SFX_LAND, v, (player.heavy ? 0.86f : 0.94f) + AudioRnd() * 0.06f, 0.5f);
                 } else if (player.vy > 0.3f && !player.onGround) {
                     // a small step down: the footstep sound, not the thud
                     int shelf = TileOneWay(TileAtPx(player.x + player.w * 0.5f, ny + player.h + 0.5f));
@@ -227,7 +232,8 @@ void PlayerStep(void) {
 
     // ---- vertical
     if (frac > 0.05f) {
-        float g = GRAV * (1.0f - frac) + WATER_SINK * frac;
+        float sink = player.heavy ? STONE_SINK : WATER_SINK;
+        float g = GRAV * (1.0f - frac) + sink * frac;
         if (in.jump || in.up) g -= SWIM_THRUST * (frac > 0.2f ? 1.0f : frac * 5.0f);
         player.vy += g;
         player.vy *= (1.0f - WATER_DAMP * frac);          // or it never settles
@@ -238,7 +244,8 @@ void PlayerStep(void) {
         // A jump works off a flooded floor, and a smaller one off the surface itself:
         // you are floating, there is nothing to push against but the water.
         if (player.jumpBuf > 0 && (player.coyote > 0 || frac <= 0.6f)) {
-            player.vy = player.coyote > 0 ? JUMP_V * (1.0f - frac * 0.45f) : JUMP_V * SURF_JUMP;
+            player.vy = (player.coyote > 0 ? JUMP_V * (1.0f - frac * 0.45f) : JUMP_V * SURF_JUMP)
+                      * (player.heavy ? STONE_JUMP : 1.0f);
             player.jumpBuf = 0; player.coyote = 0; player.onGround = 0; player.jumpHeld = 1;
             Sfx(SFX_SPLASH_OUT, 0.7f, 1.0f + AudioRnd() * 0.08f, 0.5f);
         }
@@ -250,7 +257,7 @@ void PlayerStep(void) {
         if ((frameNo & 7) == 0) WaterDisturb(player.x + player.w * 0.5f, fabsf(player.vy) * 0.06f);
     } else {
         if (player.jumpBuf > 0 && player.coyote > 0) {
-            player.vy = JUMP_V;
+            player.vy = JUMP_V * (player.heavy ? STONE_JUMP : 1.0f);
             player.jumpBuf = 0; player.coyote = 0;
             player.onGround = 0; player.jumpHeld = 1;
             FxBurst(FX_DUST, player.x + player.w * 0.5f, player.y + player.h, 4, 0.5f, 0.10f);
@@ -264,7 +271,8 @@ void PlayerStep(void) {
         float g = GRAV;
         if (player.jumpHeld && fabsf(player.vy) < APEX_BAND) g *= GRAV_APEX;
         player.vy += g;
-        if (player.vy > TERM) player.vy = TERM;
+        float term = player.heavy ? STONE_TERM : TERM;
+        if (player.vy > term) player.vy = term;
     }
 
     MoveX(player.vx);
@@ -287,8 +295,9 @@ void PlayerStep(void) {
         // A footstep on each bob of the walk cycle, and it knows what it is on.
         if (player.onGround && fabsf(player.vx) > 0.3f && (((int)player.animT & 1) != before)) {
             int shelf = TileOneWay(TileAtPx(player.x + player.w * 0.5f, player.y + player.h + 0.5f));
-            Sfx(shelf ? SFX_STEP_SHELF : SFX_STEP_STONE, 0.55f + 0.45f * fabsf(player.vx) / RUN_MAX,
-                0.92f + AudioRnd() * 0.12f, 0.5f);
+            Sfx(shelf ? SFX_STEP_SHELF : SFX_STEP_STONE,
+                (0.55f + 0.45f * fabsf(player.vx) / RUN_MAX) * (player.heavy ? 1.25f : 1.0f),
+                (player.heavy ? 0.84f : 0.92f) + AudioRnd() * 0.12f, 0.5f);
         }
     }
     player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;

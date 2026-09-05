@@ -92,6 +92,7 @@ int  SurfCount(void);
 void SurfGet(int i, int *x0, int *x1, int *y, int *shelf);
 int  RoomMarkBeast(int *tx, int *ty);
 int  RoomMarkPlants(int *txs, int *tys, int max);
+int  RoomMarkStones(int *txs, int *tys, int max);
 void LightAddPoint(f32 px, f32 py, f32 R, f32 peak);   // an occluded point light, this frame
 
 // ---------------------------------------------------------------- bulbs
@@ -128,6 +129,7 @@ typedef struct {
     int lastBulb;
     int submerged;          // any of the body under the surface
     int splashCool;         // frames before another splash may sound
+    int heavy;              // holding a stone: the gravity axis changes, nothing else
     i32 waterY;             // room-pixel y of the surface where it cuts the body, or -1
     f32 animT;
     f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.
@@ -151,20 +153,27 @@ void LifeLights(void);      // called by LightStep
 void LifePrintStats(void);
 extern u8 bushShake[RH][RW];
 
-// ---------------------------------------------------------------- the lamp
-// The first thing you can hold. Persistent: it has a room of its own when set down.
+// ---------------------------------------------------------------- things you can hold
+// One hand. The lamp gives light and floats; a stone sinks, and so do you while you
+// hold it. Persistent: each has a room of its own when set down.
+enum { IT_NONE = 0, IT_LAMP, IT_STONE };
+#define ITEM_MAX 8
 typedef struct {
-    int room;               // which room it is in when not held
+    int kind, room;         // room: where it is when not held
     f32 x, y, vy;
-    int held, onGround, cool;
-    f32 flick;
-} Lamp;
-extern Lamp lamp;
-void LampInit(int room, int tx, int ty);
-void LampStep(void);
-void LampLight(void);       // called by LightStep
-void LampDraw(void);        // before the light pass
-void LampDrawCore(void);    // after it
+    int onGround, cool;
+    f32 flick;              // the lamp's
+} Item;
+extern Item items[ITEM_MAX];
+extern int  itemCount, heldItem;
+void ItemsReset(void);
+int  ItemsAdd(int kind, int room, int tx, int ty);
+void ItemsStep(void);
+void ItemsLight(void);      // called by LightStep
+void ItemsDrawBehind(void); // before the body, before the light pass
+void ItemsDrawHeld(void);   // after the body, before the light pass
+void ItemsDrawCore(void);   // after the light pass
+int  PlayerHolds(void);     // IT_NONE, IT_LAMP or IT_STONE
 
 // ---------------------------------------------------------------- input
 // One indirection, so a scripted playtest and a keyboard take the same path.
@@ -189,7 +198,7 @@ void FxBurst(int kind, float x, float y, int n, float spread, float up);
 enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SPLASH_OUT,
        SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED,
        SFX_RUSTLE, SFX_WING, SFX_CHIRP, SFX_PAD, SFX_CHIRR, SFX_PLANT0, SFX_PLANT1, SFX_PLANT2,
-       SFX_PICKUP, SFX_SETDOWN,
+       SFX_PICKUP, SFX_SETDOWN, SFX_STONE, SFX_STONE_UP,
        SFX_COUNT };
 void  AudioInit(int mute);
 void  AudioStep(void);
@@ -213,7 +222,7 @@ extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop, palBulb, palBulbLi
 extern Color palWater, palWaterLit, palWaterFleck, palSkinWet;
 extern Color palBush, palBushLit, palBerry, palStalk, palLeaf, palPod, palPodLit, palPodDeep;
 extern Color palBird, palBirdLight, palFur, palFurLight, palEyeGreen;
-extern Color palLampIron, palLampGlass, palLampHot;
+extern Color palLampIron, palLampGlass, palLampHot, palStone, palStoneLit, palStoneDeep;
 
 // ---------------------------------------------------------------- debug
 extern long frameNo;

@@ -133,7 +133,7 @@ void InputPoll(void) {
 static void Sim(void) {
     InputPoll();
     PlayerStep();
-    LampStep();
+    ItemsStep();
     in.jumpPressed = 0;
     in.actPressed = 0;
     BulbsStep();
@@ -172,23 +172,25 @@ static void Frame(void) {
             RoomDraw();
             BulbsDraw();
             LifeDraw();
-            if (!lamp.held) LampDraw();
+            ItemsDrawBehind();
             PlayerDraw();
-            if (lamp.held) LampDraw();
+            ItemsDrawHeld();
             FxDraw();
             LightDraw();
             PlayerDrawEyes();
             LifeDrawEyes();
-            LampDrawCore();
+            ItemsDrawCore();
             DebugLabelsDraw();
         RenderPresent();
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s lamp=%d/%d/%.0f,%.0f\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s hold=%d lamp=%d/%.0f,%.0f stone=%d/%.0f,%.0f\n",
                frameNo, player.x, player.y, player.vx, player.vy,
                player.onGround, player.airFrames, player.coyote, player.jumpBuf,
-               roomIdx, player.submerged, dbgLastSfx, lamp.held, lamp.room, lamp.x, lamp.y);
+               roomIdx, player.submerged, dbgLastSfx, PlayerHolds(),
+               items[0].room, items[0].x, items[0].y,
+               itemCount > 1 ? items[1].room : -1, itemCount > 1 ? items[1].x : 0.0f, itemCount > 1 ? items[1].y : 0.0f);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -249,6 +251,8 @@ int main(int argc, char **argv) {
     InitWindow(GW * winScale, GH * winScale, "well");
     SetTargetFPS(dbgFixedStep ? 0 : 60);
     RenderInit();
+    ItemsReset();
+    ItemsAdd(IT_LAMP, lampRoom, lampTx, lampTy);   // items[0]: by default on the floor, three steps right of the start
     RoomLoad();
     // Headless runs do not open a device: the container has none, and probing for one
     // is slow. Every sound still gets synthesized and counted, so the trace can say
@@ -261,7 +265,7 @@ int main(int argc, char **argv) {
     int tx = (atx >= 0) ? atx : RoomStartTx();
     int ty = (aty >= 0) ? aty : RoomStartTy();
     PlayerInit(tx * TS + 1.0f, (ty + 1) * TS - 11.0f);
-    LampInit(lampRoom, lampTx, lampTy);   // by default on the floor, three steps right of where you begin
+    
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);

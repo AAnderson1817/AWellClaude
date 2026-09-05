@@ -47,6 +47,9 @@ Color palEyeGreen = { 170, 240, 190, 255 };
 Color palLampIron = {  58,  54,  66, 255 };
 Color palLampGlass= { 255, 226, 172, 255 };
 Color palLampHot  = { 255, 250, 232, 255 };
+Color palStone    = {  98,  92,  96, 255 };   // warmer than the walls: it is not part of them
+Color palStoneLit = { 150, 142, 140, 255 };
+Color palStoneDeep= {  54,  50,  56, 255 };
 
 // Not an overlay: scanline depth is modulated per pixel by luminosity, so a bright
 // pixel blooms across the gap and a dark one sinks into it. X stays bilinear, Y is
