@@ -203,6 +203,28 @@ indifference; L3: neither of these is a verb).
 
 Trace runs report `LIFE birds startled N, plant phrases N, beast turns N, rustles N`.
 
+### The lamp (the first verb: Hold)
+
+`src/lamp.c`. A small iron lamp with a pale glass, on the floor three steps right of
+where you begin. X picks it up when you are beside it; X again sets it down at your
+feet on the side you face (at your feet exactly if that would be inside stone). It is
+an object: airborne, it falls from your hand; it lands on stone and on shelves crossed
+from above; it falls through the grate into the room below; in water it rises and rests
+with its glass above the line. Set it down and go to the other room and it stays where
+you left it -- the first thing in the game that has a room of its own.
+
+Its light adds to the glow you already carry (the user's call: add, do not replace):
+reach 7.4 tiles at peak 0.90, against the aura's 4.6 at 0.42, with a slight flicker.
+To make it matter, the seams went from seven to three in the chamber (the start, the
+ceiling, the right ledge) and from six to three below (the ceiling by the chimney and
+the two under the water -- the ones the stone will be for). The rest of both rooms is
+dark until you bring the lamp, or go without it on two eyes and a few pixels.
+
+Second readings are not built yet and are not promised: creatures by light, things that
+exist only in the dark. First the user plays it cold. X and C came off the jump keys.
+
+`--lamp ROOM,TX,TY` places it for a probe; the trace carries `lamp=held/room/x,y`.
+
 ### Debug tags
 
 Press L (or run with `--labels`) and every standable run gets a two-character tag,
@@ -263,7 +285,7 @@ time, each after the thing under it has been played and accepted.
 
 ## Controls
 
-Arrows or WASD. Z, X, C or Space to jump; hold it longer to go higher. Down to drop
+Arrows or WASD. Z or Space to jump; hold it longer to go higher. X to hold / let go. Down to drop
 through a shelf. Land on a bulb to bounce; press jump as you land on it to bounce
 higher. In water: Left and Right to swim, Z or Up held to swim up, Z tapped to jump
 off the surface. L toggles the platform tags.

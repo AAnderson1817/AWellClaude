@@ -30,7 +30,7 @@ static float acc = 0.0f;
 #define PLAN_MAX 64
 static struct { int mask, frames; } plan[PLAN_MAX];
 static int planLen, planIdx, planLeft, planTotal;
-enum { M_L = 1, M_R = 2, M_U = 4, M_D = 8, M_J = 16 };
+enum { M_L = 1, M_R = 2, M_U = 4, M_D = 8, M_J = 16, M_X = 32 };
 
 static void ParsePlan(char *s) {
     char *tok = strtok(s, ",");
@@ -42,7 +42,7 @@ static void ParsePlan(char *s) {
             switch (*c) {
                 case 'L': mask |= M_L; break; case 'R': mask |= M_R; break;
                 case 'U': mask |= M_U; break; case 'D': mask |= M_D; break;
-                case 'J': mask |= M_J; break; default: break;
+                case 'J': mask |= M_J; break; case 'X': mask |= M_X; break; default: break;
             }
         }
         plan[planLen].mask = mask; plan[planLen].frames = n; planLen++;
@@ -92,7 +92,7 @@ static void WanderPoll(void) {
 }
 
 void InputPoll(void) {
-    static int prevJump = 0;
+    static int prevJump = 0, prevAct = 0;
     if (wanderSeed) { WanderPoll(); return; }
     if (planLen) {
         while (planIdx < planLen && planLeft <= 0) {
@@ -106,6 +106,9 @@ void InputPoll(void) {
         in.jump = !!(m & M_J);
         in.jumpPressed = in.jump && !prevJump;
         prevJump = in.jump;
+        in.act = !!(m & M_X);
+        in.actPressed = in.act && !prevAct;
+        prevAct = in.act;
         return;
     }
     if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
@@ -113,9 +116,13 @@ void InputPoll(void) {
     in.right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
     in.up    = IsKeyDown(KEY_UP)    || IsKeyDown(KEY_W);
     in.down  = IsKeyDown(KEY_DOWN)  || IsKeyDown(KEY_S);
-    int jump = IsKeyDown(KEY_Z) || IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_K)
-            || IsKeyDown(KEY_X) || IsKeyDown(KEY_C);
+    int jump = IsKeyDown(KEY_Z) || IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_K);
     in.jump = jump;
+    // X: hold / let go. Latched like the jump, for the same reason.
+    int act = IsKeyDown(KEY_X);
+    in.act = act;
+    in.actPressed |= act && !prevAct;
+    prevAct = act;
     // A render frame may have no physics tick. Keep its press (even if released
     // before the next tick) until PlayerStep has consumed it.
     in.jumpPressed |= jump && !prevJump;
@@ -126,7 +133,9 @@ void InputPoll(void) {
 static void Sim(void) {
     InputPoll();
     PlayerStep();
+    LampStep();
     in.jumpPressed = 0;
+    in.actPressed = 0;
     BulbsStep();
     WaterStep();
     FxStep();
@@ -163,20 +172,23 @@ static void Frame(void) {
             RoomDraw();
             BulbsDraw();
             LifeDraw();
+            if (!lamp.held) LampDraw();
             PlayerDraw();
+            if (lamp.held) LampDraw();
             FxDraw();
             LightDraw();
             PlayerDrawEyes();
             LifeDrawEyes();
+            LampDrawCore();
             DebugLabelsDraw();
         RenderPresent();
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s lamp=%d/%d/%.0f,%.0f\n",
                frameNo, player.x, player.y, player.vx, player.vy,
                player.onGround, player.airFrames, player.coyote, player.jumpBuf,
-               roomIdx, player.submerged, dbgLastSfx);
+               roomIdx, player.submerged, dbgLastSfx, lamp.held, lamp.room, lamp.x, lamp.y);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -194,6 +206,7 @@ static void Frame(void) {
 
 int main(int argc, char **argv) {
     int winScale = 4, atx = -1, aty = -1, startRoom = 0;
+    int lampRoom = 0, lampTx = 10, lampTy = 19;
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");
@@ -221,6 +234,10 @@ int main(int argc, char **argv) {
             wanderSeed = atoi(argv[++i]); dbgFixedStep = 1; noDraw = 1;
         } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
             startRoom = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "--lamp") && i + 1 < argc) {
+            lampRoom = atoi(strtok(argv[++i], ","));
+            char *t = strtok(NULL, ","); if (t) lampTx = atoi(t);
+            t = strtok(NULL, ","); if (t) lampTy = atoi(t);
         } else if (!strcmp(argv[i], "--at") && i + 1 < argc) {
             atx = atoi(strtok(argv[++i], ","));
             char *t = strtok(NULL, ","); if (t) aty = atoi(t);
@@ -244,6 +261,7 @@ int main(int argc, char **argv) {
     int tx = (atx >= 0) ? atx : RoomStartTx();
     int ty = (aty >= 0) ? aty : RoomStartTy();
     PlayerInit(tx * TS + 1.0f, (ty + 1) * TS - 11.0f);
+    LampInit(lampRoom, lampTx, lampTy);   // by default on the floor, three steps right of where you begin
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(Frame, 0, 1);

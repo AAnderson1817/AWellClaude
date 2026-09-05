@@ -215,6 +215,15 @@ static void Synth(void) {
         Register(SFX_PLANT0 + v, v == 0 ? "plant-a" : v == 1 ? "plant-b" : "plant-c", n, 0.9f, 0.34f, 3);
     }
 
+    // the lamp: taking it up is glass and iron; setting it down is a small weight meeting stone
+    n = (int)(SR * 0.22f); Clear(n); Sine(n, 1900, 1900, 0, 0.6f); Sine(n, 2850, 2850, 0, 0.35f); Env(n, 0.001f, 0.035f);
+    Noise((int)(SR * 0.01f), 0.5f); Reverb(n, 0.25f, 0.78f, 0.35f);
+    Register(SFX_PICKUP, "pickup", n, 0.8f, 0.24f, 1);
+    n = (int)(SR * 0.16f); Clear(n); Noise(n, 1.0f); LowPass(n, 700, 700, 0); Env(n, 0.001f, 0.014f);
+    { static float sv[4000]; memcpy(sv, work, sizeof(float) * n); Clear(n); Sine(n, 420, 380, 0.05f, 0.5f); Env(n, 0.001f, 0.03f);
+      for (int i = 0; i < n; i++) work[i] += sv[i]; }
+    Register(SFX_SETDOWN, "setdown", n, 0.9f, 0.28f, 1);
+
     // ambience. Six seconds, looped, ends crossfaded so the seam is not a click.
     for (int r = 0; r < ROOM_COUNT; r++) {
         n = SR * 6; Clear(n);

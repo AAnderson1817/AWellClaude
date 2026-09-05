@@ -151,9 +151,24 @@ void LifeLights(void);      // called by LightStep
 void LifePrintStats(void);
 extern u8 bushShake[RH][RW];
 
+// ---------------------------------------------------------------- the lamp
+// The first thing you can hold. Persistent: it has a room of its own when set down.
+typedef struct {
+    int room;               // which room it is in when not held
+    f32 x, y, vy;
+    int held, onGround, cool;
+    f32 flick;
+} Lamp;
+extern Lamp lamp;
+void LampInit(int room, int tx, int ty);
+void LampStep(void);
+void LampLight(void);       // called by LightStep
+void LampDraw(void);        // before the light pass
+void LampDrawCore(void);    // after it
+
 // ---------------------------------------------------------------- input
 // One indirection, so a scripted playtest and a keyboard take the same path.
-typedef struct { int left, right, up, down, jump, jumpPressed; } Input;
+typedef struct { int left, right, up, down, jump, jumpPressed, act, actPressed; } Input;
 extern Input in;
 void InputPoll(void);
 
@@ -174,6 +189,7 @@ void FxBurst(int kind, float x, float y, int n, float spread, float up);
 enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SPLASH_OUT,
        SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED,
        SFX_RUSTLE, SFX_WING, SFX_CHIRP, SFX_PAD, SFX_CHIRR, SFX_PLANT0, SFX_PLANT1, SFX_PLANT2,
+       SFX_PICKUP, SFX_SETDOWN,
        SFX_COUNT };
 void  AudioInit(int mute);
 void  AudioStep(void);
@@ -197,6 +213,7 @@ extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop, palBulb, palBulbLi
 extern Color palWater, palWaterLit, palWaterFleck, palSkinWet;
 extern Color palBush, palBushLit, palBerry, palStalk, palLeaf, palPod, palPodLit, palPodDeep;
 extern Color palBird, palBirdLight, palFur, palFurLight, palEyeGreen;
+extern Color palLampIron, palLampGlass, palLampHot;
 
 // ---------------------------------------------------------------- debug
 extern long frameNo;
