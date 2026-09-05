@@ -159,8 +159,9 @@ static PCM. The palette, quiet on purpose:
                    timed bounce a fifth up and brighter, with a second voice
     ambience       per room, six seconds looped with the seam crossfaded: brown noise
                    under 200 Hz and a three-partial drone that breathes; the flooded
-                   room adds a band of water noise that swells. rms 0.02 -- a room,
-                   not a sound
+                   room adds a band of water noise that swells. rms 0.01 -- a room,
+                   not a sound. (First shipped at 0.02; the user heard it and it was
+                   still too much. Halved.)
 
 One effect is not baked in: when the surface is above your head the whole mix goes
 through a low-pass that opens and closes smoothly (`AttachAudioMixedProcessor`). You

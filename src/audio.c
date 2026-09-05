@@ -8,6 +8,7 @@
 
 #define SR   22050
 #define PI_F 3.14159265f
+#define AMB_VOL 0.26f          // was 0.55; the user heard it and it was too much
 
 static int ready = 0;
 const char *dbgLastSfx = "-";
@@ -259,7 +260,7 @@ void AudioAmbience(int room) {
     if (!ready || room < 0 || room >= ROOM_COUNT) return;
     if (ambRoom >= 0) StopSound(amb[ambRoom]);
     ambRoom = room;
-    SetSoundVolume(amb[room], 0.55f);
+    SetSoundVolume(amb[room], AMB_VOL);
     PlaySound(amb[room]);
 }
 
@@ -290,7 +291,7 @@ int AudioExportMontage(const char *path) {
         if (!ambPcm[r]) continue;
         printf("amb%d     %6.2f\n", r, (float)ambLen[r] / SR);
         int take = ambLen[r] < SR * 3 ? ambLen[r] : SR * 3;
-        for (int i = 0; i < take; i++) out[n++] = (i16)(ambPcm[r][i] * 0.55f);
+        for (int i = 0; i < take; i++) out[n++] = (i16)(ambPcm[r][i] * AMB_VOL);
         for (int i = 0; i < gap; i++) out[n++] = 0;
     }
     Wave w = { (unsigned)n, SR, 16, 1, out };
