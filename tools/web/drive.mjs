@@ -36,6 +36,14 @@ for (const step of plan.split(';').map(s => s.trim()).filter(Boolean)) {
     await pg.waitForTimeout(+(b||100));
     for (const k of keys) { await pg.keyboard.up(k); held.delete(k); }
   }
+  else if (op === 'audio') {
+    // miniaudio's device list: is the context running, and is it producing callbacks?
+    const st = await pg.evaluate(() => {
+      const m = window.miniaudio; if (!m || !m.devices) return 'no miniaudio';
+      return m.devices.filter(Boolean).map(d => (d.webaudio ? d.webaudio.state : 'no ctx') + '/' + (d.webaudio ? d.webaudio.sampleRate : '-')).join(',') || 'no devices';
+    });
+    console.log('AUDIO ' + a + ': ' + st);
+  }
   else if (op === 'down') { await pg.keyboard.down(a); held.add(a); }
   else if (op === 'up')   { await pg.keyboard.up(a);   held.delete(a); }
 }

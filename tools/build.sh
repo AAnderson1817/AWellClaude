@@ -18,7 +18,11 @@ build_web() {
   echo ">> web"
   emcc "${SRC[@]}" -o build/game.js -I"$RAYLIB" "$AWELL_LIB_DIR/libraylib_web.a" \
     -Os -DPLATFORM_WEB -s USE_GLFW=3 -s ASYNCIFY -s SINGLE_FILE=1 \
-    -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s EXPORT_NAME=RL -s ENVIRONMENT=web
+    -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s EXPORT_NAME=RL -s ENVIRONMENT=web \
+    -s EXPORTED_RUNTIME_METHODS=HEAPF32,HEAP8,HEAPU8,HEAP16,HEAPU16,HEAP32,HEAPU32
+  # The heap views: miniaudio's web glue reads Module.HEAPF32 in every audio callback,
+  # and emscripten stopped attaching those to the module by default. Without this the
+  # web build is silent and throws once per audio buffer.
 }
 build_win() {
   echo ">> win"

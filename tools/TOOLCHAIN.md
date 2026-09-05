@@ -35,6 +35,13 @@ nonzero for unreachable hops or a failed/empty game probe.
 
 ## Gotchas found the hard way
 
+- **Web audio was silent and threw once per buffer.** miniaudio's web glue reads
+  `Module.HEAPF32.buffer` inside every audio callback, and emscripten no longer attaches
+  heap views to the module object by default. `build.sh` passes
+  `-s EXPORTED_RUNTIME_METHODS=HEAPF32,...`. Native builds never see this; only the
+  headless-browser step does (`tools/web/drive.mjs` has an `audio:` step that reports
+  the AudioContext state and sample rate).
+
 **1. raylib's Makefile overwrites `libraylib.a` per platform.**
 Build each target, then copy the archive to a distinct name before building the next.
 Already handled in `setup.sh`.
