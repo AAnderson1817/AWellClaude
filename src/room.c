@@ -117,6 +117,7 @@ static Texture2D lightTex, glowTex;
 static const f32 AMB_R = 0.118f, AMB_G = 0.130f, AMB_B = 0.222f;
 static const f32 WARM_R = 1.00f, WARM_G = 0.815f, WARM_B = 0.560f;
 #define GLOW 0.38f
+#define GLOW_CAP 0.60f
 
 static int Opaque(int x, int y) { return (tileFlags[TileGet(x, y)] & TF_OPAQUE) != 0; }
 
@@ -280,7 +281,10 @@ void LightStep(void) {
             if (b > 1.0f) b = 1.0f;
             lpix[j * (RW + 1) + i] = (Color){ (u8)(r * 255), (u8)(g * 255), (u8)(b * 255), 255 };
             // The additive half. Squared, so it stays off everywhere except close in.
+            // Capped: past this a lamp in hand blew every channel past 255 and the cast
+            // wrapped, red first -- a cyan blotch where the light was strongest.
             f32 q = v * v * GLOW;
+            if (q > GLOW_CAP) q = GLOW_CAP;
             gpix[j * (RW + 1) + i] = (Color){ (u8)(q * WARM_R * 255), (u8)(q * WARM_G * 255),
                                               (u8)(q * WARM_B * 255), 255 };
         }
