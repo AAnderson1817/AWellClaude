@@ -179,6 +179,42 @@ static void Synth(void) {
     Soft(n, 2.4f); Noise((int)(SR * 0.02f), 0.18f); Reverb(n, 0.22f, 0.78f, 0.35f);
     Register(SFX_BULB_TIMED, "bulb!", n, 0.8f, 0.66f, 2);
 
+    // a bush pushed through: dry leaves
+    n = (int)(SR * 0.20f); Clear(n); Noise(n, 1.0f); HighPass(n, 1400); LowPass(n, 6500, 6500, 0); Env(n, 0.012f, 0.05f);
+    Register(SFX_RUSTLE, "rustle", n, 0.8f, 0.20f, 2);
+    // wings: a few beats of air
+    n = (int)(SR * 0.38f); Clear(n); Noise(n, 1.0f); HighPass(n, 350); LowPass(n, 2600, 2600, 0);
+    for (int i = 0; i < n; i++) { float t = (float)i / SR; float beat = sinf(2 * PI_F * 16.0f * t); work[i] *= beat * beat * expf(-t / 0.13f); }
+    Register(SFX_WING, "wing", n, 0.9f, 0.26f, 2);
+    // a chirp: two notes, up then down
+    n = (int)(SR * 0.17f); Clear(n); Sine((int)(SR * 0.07f), 2500, 3300, 0.06f, 1.0f);
+    { float ph = 0; for (int i = (int)(SR * 0.085f); i < n; i++) { float t = (float)(i - (int)(SR * 0.085f)) / SR; float f = 3100 - 700 * (t / 0.08f);
+        ph += 2 * PI_F * f / SR; work[i] += sinf(ph); } }
+    Env(n, 0.003f, 0.07f); for (int i = (int)(SR * 0.06f); i < (int)(SR * 0.085f) && i < n; i++) work[i] *= 0.2f;
+    Register(SFX_CHIRP, "chirp", n, 0.6f, 0.13f, 2);
+    // a soft pad: the animal's foot
+    n = (int)(SR * 0.06f); Clear(n); Noise(n, 1.0f); LowPass(n, 450, 450, 0); Env(n, 0.001f, 0.009f);
+    Register(SFX_PAD, "pad", n, 0.9f, 0.11f, 2);
+    // a chirr: the animal settling
+    n = (int)(SR * 0.32f); Clear(n);
+    for (int i = 0; i < n; i++) { float t = (float)i / SR; float g = sinf(2 * PI_F * 26.0f * t); work[i] = sinf(2 * PI_F * 92.0f * t) * g * g * 0.8f; }
+    Noise(n, 0.25f); LowPass(n, 900, 900, 0); Env(n, 0.01f, 0.10f);
+    Register(SFX_CHIRR, "chirr", n, 0.8f, 0.18f, 1);
+    // the plant's three syllables: a voice-like tone through a moving formant
+    for (int v = 0; v < 3; v++) {
+        static const float F0[3] = { 230, 262, 300 }, FA[3] = { 620, 950, 1400 }, FB[3] = { 1150, 520, 800 };
+        n = (int)(SR * 0.17f); Clear(n);
+        { float ph = 0; for (int i = 0; i < n; i++) { float t = (float)i / SR;
+            float f = F0[v] * (1.0f + 0.06f * (t / 0.17f) + 0.02f * sinf(2 * PI_F * 6.5f * t));
+            ph += 2 * PI_F * f / SR;
+            float s = sinf(ph); s = s > 0 ? powf(s, 0.6f) : -powf(-s, 0.6f);      // a little edge, like a reed
+            work[i] = s; } }
+        LowPass(n, FA[v], FB[v], 0.15f); LowPass(n, FA[v] * 1.3f, FB[v] * 1.3f, 0.15f);
+        for (int i = 0; i < n; i++) work[i] *= 3.0f;
+        Env(n, 0.014f, 0.062f); Soft(n, 1.4f);
+        Register(SFX_PLANT0 + v, v == 0 ? "plant-a" : v == 1 ? "plant-b" : "plant-c", n, 0.9f, 0.34f, 3);
+    }
+
     // ambience. Six seconds, looped, ends crossfaded so the seam is not a click.
     for (int r = 0; r < ROOM_COUNT; r++) {
         n = SR * 6; Clear(n);

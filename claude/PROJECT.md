@@ -174,6 +174,35 @@ runs (`--nodraw`, `--mute`) synthesize everything and count what would have play
 the trace line carries `sfx=<name>`. There is no audio device in this container, so
 nothing here has been listened to -- only measured and looked at.
 
+### What lives here
+
+`src/life.c`. Flat arrays and switch statements, no entity base class. Nothing here can
+be hurt or hurts you, nothing counts anything, nothing opens anything (L9: dread from
+indifference; L3: neither of these is a verb).
+
+- **Bushes** (`b`): a tile, drawn by the room, that leans away from a passing body and
+  shakes and rustles when pushed through. Bird perches, too.
+- **Birds**: three in the chamber, two below. They sit on the ends of shelves and stone
+  runs and on bushes -- perches are derived from the map, never authored -- and when
+  you come within about five tiles, or land hard nearby, they leave for a perch far
+  from you: a climb-then-settle flight, wings beating, a flutter of air. Left alone
+  they turn their heads, sing a two-note chirp when you are not near, and sometimes
+  move for no reason. A single eye, drawn after the light pass.
+- **The animal** (`m`): long and low, on the right-hand ledge of the chamber. Its ledge
+  is the standable run it was set down on, so it walks between that run's ends, turns,
+  pauses, sits with a chirr, and when you are within about six tiles it stops, lifts
+  its head, and watches you -- the head follows you. It never approaches, never runs.
+  Soft pads underfoot. Tail is a lag chain. One green eye, drawn after the light.
+- **The plant** (`f`): a stalk with three fruit, one on the upper-left shelf of the
+  chamber and one on the right island below. When you are near, the fruit lean toward
+  you and it speaks: four to eight syllables, each from one pod, whose mouth opens for
+  it, each a voice-like tone through a moving formant at that pod's pitch. Then quiet
+  for four to eight seconds. It notices a jump (the pods perk). The pods glow, more
+  while speaking. **It says nothing in words** -- L5 -- and nothing you can use. It is
+  saying it anyway. This is what "a talking plant" is in a game with no text.
+
+Trace runs report `LIFE birds startled N, plant phrases N, beast turns N, rustles N`.
+
 ### Debug tags
 
 Press L (or run with `--labels`) and every standable run gets a two-character tag,
@@ -229,7 +258,7 @@ convention borrowed from one context and used in another where it is off by one.
 
 ## What is deliberately not here
 
-Weight. A second verb. Puzzles. They come back one at a
+Weight. A second verb. Puzzles. Anything that speaks in words. They come back one at a
 time, each after the thing under it has been played and accepted.
 
 ## Controls

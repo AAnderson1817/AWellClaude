@@ -47,6 +47,7 @@ enum {
     T_MOSS,                 // hanging growth; not solid, not anything
     T_BULB,                 // authoring only: where a bulb sits. Becomes T_EMPTY + a Bulb
     T_WATER,                // the flooded part. You float in it, a quarter under
+    T_BUSH,                 // a clump you can walk through; it minds
     T_KINDS
 };
 
@@ -86,6 +87,12 @@ void LightStep(void);       // recompute the moving part of the light
 void LightDraw(void);       // multiply the room by it
 int  RoomStartTx(void);
 int  RoomStartTy(void);
+// The standable runs, and the authored places for the living things, for life.c.
+int  SurfCount(void);
+void SurfGet(int i, int *x0, int *x1, int *y, int *shelf);
+int  RoomMarkBeast(int *tx, int *ty);
+int  RoomMarkPlants(int *txs, int *tys, int max);
+void LightAddPoint(f32 px, f32 py, f32 R, f32 peak);   // an occluded point light, this frame
 
 // ---------------------------------------------------------------- bulbs
 // A dome you land on and leave faster than you arrived. Not solid: you walk through
@@ -133,6 +140,17 @@ void PlayerStep(void);
 void PlayerDraw(void);
 void PlayerDrawEyes(void);   // drawn after the light pass: you can always find yourself
 
+// ---------------------------------------------------------------- life
+// Bushes, birds, the animal, the plant. Nothing here is read by a rule.
+#define BUFFER_FRAMES 7
+void LifeInit(void);        // per room, after the tiles and surfaces are known
+void LifeStep(void);
+void LifeDraw(void);        // before the light pass
+void LifeDrawEyes(void);    // after it
+void LifeLights(void);      // called by LightStep
+void LifePrintStats(void);
+extern u8 bushShake[RH][RW];
+
 // ---------------------------------------------------------------- input
 // One indirection, so a scripted playtest and a keyboard take the same path.
 typedef struct { int left, right, up, down, jump, jumpPressed; } Input;
@@ -154,7 +172,9 @@ void FxBurst(int kind, float x, float y, int n, float spread, float up);
 // Synthesized at startup, nothing loaded. Sfx() is the one call: an id, a volume,
 // a pitch, a pan (0.5 is centre). Nothing here is ever read by a rule.
 enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SPLASH_OUT,
-       SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED, SFX_COUNT };
+       SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED,
+       SFX_RUSTLE, SFX_WING, SFX_CHIRP, SFX_PAD, SFX_CHIRR, SFX_PLANT0, SFX_PLANT1, SFX_PLANT2,
+       SFX_COUNT };
 void  AudioInit(int mute);
 void  AudioStep(void);
 void  Sfx(int id, float vol, float pitch, float pan);
@@ -175,6 +195,8 @@ extern Color palVoid, palBack, palBackLit, palRock, palRockDeep, palRockLit;
 extern Color palLedge, palLedgeLit, palVein, palVeinHot, palMoss;
 extern Color palSkin, palSkinDeep, palEye, palPupil, palDrop, palBulb, palBulbLit, palBulbDeep;
 extern Color palWater, palWaterLit, palWaterFleck, palSkinWet;
+extern Color palBush, palBushLit, palBerry, palStalk, palLeaf, palPod, palPodLit, palPodDeep;
+extern Color palBird, palBirdLight, palFur, palFurLight, palEyeGreen;
 
 // ---------------------------------------------------------------- debug
 extern long frameNo;

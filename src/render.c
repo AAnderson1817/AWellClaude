@@ -31,6 +31,19 @@ Color palWater    = {  38,  74, 104, 255 };
 Color palWaterLit = { 112, 164, 182, 255 };   // the surface line
 Color palWaterFleck={  60, 108, 140, 255 };
 Color palSkinWet  = { 124, 134, 132, 255 };   // the part of you that is under
+Color palBush     = {  44,  84,  56, 255 };
+Color palBushLit  = {  92, 148,  96, 255 };
+Color palBerry    = { 204,  84,  96, 255 };
+Color palStalk    = {  56, 100,  62, 255 };
+Color palLeaf     = {  70, 128,  78, 255 };
+Color palPod      = { 214, 112, 150, 255 };   // the fruit: something that would be sweet
+Color palPodLit   = { 246, 186, 206, 255 };
+Color palPodDeep  = { 120,  50,  80, 255 };
+Color palBird     = {  60,  62,  80, 255 };
+Color palBirdLight= { 128, 130, 148, 255 };
+Color palFur      = {  86,  68,  60, 255 };
+Color palFurLight = { 138, 116, 100, 255 };
+Color palEyeGreen = { 170, 240, 190, 255 };
 
 // Not an overlay: scanline depth is modulated per pixel by luminosity, so a bright
 // pixel blooms across the gap and a dark one sinks into it. X stays bilinear, Y is

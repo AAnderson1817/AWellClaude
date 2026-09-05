@@ -15,9 +15,11 @@ const u8 tileFlags[T_KINDS] = {
     [T_MOSS]  = 0,
     [T_BULB]  = 0,
     [T_WATER] = TF_WATER,
+    [T_BUSH]  = 0,
 };
 
-// '#' stone   '-' one-way shelf   '~' water   '*' lit seam   ',' growth   'o' bulb   'P' start
+// '#' stone   '-' shelf   '~' water   '*' seam   ',' moss   'b' bush   'o' bulb
+// 'm' the animal's home   'f' a talking plant   'P' start
 static const char *MAPS[ROOM_COUNT][RH] = {
     { // 0: the chamber
         "########################################",
@@ -25,7 +27,7 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "#.......###............,..........###..#",
         "#........,........................###..#",
         "#..................-----...........,...#",
-        "#............-----.........-----.......#",
+        "#..f.........-----.........-----.......#",
         "##*##.------.....................###*###",
         "#####............................#######",
         "#####.......................-----#######",
@@ -33,13 +35,13 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "#......................................#",
         "#.........................----.........#",
         "#..........----..................,.....#",
-        "#.,...............#*#.........#........#",
-        "##.....,..........###.........#####*####",
+        "#.,...............#*#.........#.b.m..b.#",
+        "#b.....,..........###.........#####*####",
         "####..----........###.........##########",
         "####..............###.----....##########",
         "#####.............###.........*#########",
         "#####*............###.......o.##########",
-        "######..P...o...,.###....,.##.##########",
+        "######.bP...o..b,.###....,.##b##########",
         "#####################------#############",
         "#####################......#############",
     },
@@ -49,7 +51,7 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "#......................................#",
         "#...............------....------.......#",
         "#......................................#",
-        "#.....,..-----.............-----,......#",
+        "#...b.,..-----.............-----b.f....#",
         "#..##*##.......................##*##...#",
         "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
         "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
@@ -72,6 +74,14 @@ static const char *MAPS[ROOM_COUNT][RH] = {
 u8  tiles[RH][RW];
 u8  roomTiles[ROOM_COUNT][RH][RW];
 int  roomIdx;
+static int markBeastX = -1, markBeastY = -1;
+static int markPlantN, markPlantX[4], markPlantY[4];
+int  RoomMarkBeast(int *tx, int *ty) { if (markBeastX < 0) return 0; *tx = markBeastX; *ty = markBeastY; return 1; }
+int  RoomMarkPlants(int *txs, int *tys, int max) {
+    int n = markPlantN < max ? markPlantN : max;
+    for (int i = 0; i < n; i++) { txs[i] = markPlantX[i]; tys[i] = markPlantY[i]; }
+    return n;
+}
 static int startTx = 8, startTy = 19;
 Bulb bulbs[BULB_MAX];
 int  bulbCount;
@@ -222,10 +232,12 @@ static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK) {
 static void AddAura(void) {
     AddPoint(player.x + player.w * 0.5f, player.y + player.h * 0.5f, 4.6f, 0.42f);
 }
+void LightAddPoint(f32 px, f32 py, f32 R, f32 peak) { AddPoint(px, py, R, peak); }
 
 void LightStep(void) {
     memcpy(lnow, lstat, sizeof lnow);
     AddAura();
+    LifeLights();
     // A bulb that has just been landed on throws light for a moment; more, and further,
     // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
@@ -290,7 +302,7 @@ void LightDraw(void) {
 
 // ---------------------------------------------------------------- load
 static void ParseRoom(int idx, u8 dst[RH][RW]) {
-    bulbCount = 0;
+    bulbCount = 0; markBeastX = markBeastY = -1; markPlantN = 0;
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {
             char c = MAPS[idx][y][x];
@@ -301,6 +313,9 @@ static void ParseRoom(int idx, u8 dst[RH][RW]) {
                 case '*': t = T_VEIN;  break;
                 case ',': t = T_MOSS;  break;
                 case '~': t = T_WATER; break;
+                case 'b': t = T_BUSH;  break;
+                case 'm': markBeastX = x; markBeastY = y; break;
+                case 'f': if (markPlantN < 4) { markPlantX[markPlantN] = x; markPlantY[markPlantN] = y; markPlantN++; } break;
                 case 'o':
                     if (bulbCount < BULB_MAX) {
                         bulbs[bulbCount].x = x * TS + TS / 2;
@@ -329,6 +344,7 @@ void RoomEnter(int idx) {
     memset(surfH, 0, sizeof surfH);
     memset(surfV, 0, sizeof surfV);
     FxInit();
+    LifeInit();
     AudioAmbience(idx);          // a no-op until the device is up
 }
 
@@ -489,6 +505,25 @@ static void DrawWater(int x, int y, int px, int py) {
     }
 }
 
+static void DrawBush(int x, int y, int px, int py) {
+    // A clump on whatever it grows from. Leans away from a body passing, shakes after.
+    float dx = (player.x + player.w * 0.5f) - (px + 4.0f);
+    int lean = 0;
+    if (dx > -12.0f && dx < 12.0f) lean = (dx > 0) ? -1 : 1;
+    int shake = bushShake[y][x] ? (((bushShake[y][x] / 2) & 1) ? 1 : -1) : 0;
+    int l = lean + shake;
+    u32 h = Hash2(x * 5 + 3, y * 9 + 1);
+    DrawRectangle(px, py + 5, TS, 3, palBush);
+    DrawRectangle(px + 1 + l, py + 3, 6, 2, palBush);
+    DrawRectangle(px + 2 + l, py + 2, 4, 1, palBush);
+    DrawRectangle(px + 3 + l + (h & 1), py + 1, 2, 1, palBush);
+    DrawRectangle(px + 2 + l, py + 3, 1, 1, palBushLit);
+    DrawRectangle(px + 5 + l, py + 2, 1, 1, palBushLit);
+    DrawRectangle(px + 1, py + 5, 1, 1, palBushLit);
+    DrawRectangle(px + 1 + (h >> 2 & 3) + l, py + 4, 1, 1, palBerry);
+    DrawRectangle(px + 3 + (h >> 4 & 3), py + 6, 1, 1, palBerry);
+}
+
 static void DrawMoss(int x, int y, int px, int py) {
     u32 h = Hash2(x * 11 + 5, y * 17);
     int down = Massive(x, y - 1) || TileGet(x, y - 1) == T_LEDGE;
@@ -529,6 +564,7 @@ void RoomDraw(void) {
                 case T_VEIN:  DrawVein(x, y, px, py);  break;
                 case T_LEDGE: DrawLedge(x, y, px, py); break;
                 case T_WATER: DrawWater(x, y, px, py); break;
+                case T_BUSH:  DrawBush(x, y, px, py);  break;
                 case T_MOSS:  DrawMoss(x, y, px, py);  break;
                 default: break;
             }
@@ -593,6 +629,11 @@ static Surf surfs[SURF_MAX];
 static int  surfCount;
 static const char TAG_LETTERS[] = "ABCDEFGHJKLMNPQRTUVWXY";
 
+int  SurfCount(void) { return surfCount; }
+void SurfGet(int i, int *x0, int *x1, int *y, int *shelf) {
+    *x0 = surfs[i].x0; *x1 = surfs[i].x1; *y = surfs[i].y; *shelf = surfs[i].shelf;
+}
+
 static void FindSurfaces(void) {
     surfCount = 0;
     int n = 0;
@@ -601,13 +642,13 @@ static void FindSurfaces(void) {
         while (x < RW - 1 && surfCount < SURF_MAX) {
             u8 t = tiles[y][x], up = tiles[y - 1][x];
             int standable = (TileSolid(t) || TileOneWay(t))
-                         && (up == T_EMPTY || up == T_MOSS || up == T_WATER);
+                         && (up == T_EMPTY || up == T_MOSS || up == T_WATER || up == T_BUSH);
             if (!standable) { x++; continue; }
             int shelf = TileOneWay(t), x0 = x;
             while (x < RW - 1) {
                 u8 t2 = tiles[y][x], up2 = tiles[y - 1][x];
                 int ok = (TileSolid(t2) || TileOneWay(t2)) && TileOneWay(t2) == shelf
-                      && (up2 == T_EMPTY || up2 == T_MOSS || up2 == T_WATER);
+                      && (up2 == T_EMPTY || up2 == T_MOSS || up2 == T_WATER || up2 == T_BUSH);
                 if (!ok) break;
                 x++;
             }

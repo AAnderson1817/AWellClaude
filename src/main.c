@@ -130,6 +130,7 @@ static void Sim(void) {
     BulbsStep();
     WaterStep();
     FxStep();
+    LifeStep();
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
         // a fraction past the tile top; landing on a shelf stops them a fraction
@@ -161,10 +162,12 @@ static void Frame(void) {
         RenderBegin();
             RoomDraw();
             BulbsDraw();
+            LifeDraw();
             PlayerDraw();
             FxDraw();
             LightDraw();
             PlayerDrawEyes();
+            LifeDrawEyes();
             DebugLabelsDraw();
         RenderPresent();
     }
@@ -248,6 +251,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose() && !shotsDone && !PlanExhausted()
            && !(maxFrames && frameNo >= maxFrames)) Frame();
 #endif
+    if (dbgTrace) LifePrintStats();
     if (wanderSeed) {
         // Every surface a body could rest on, per room, and whether this bot ever did.
         for (int r = 0; r < ROOM_COUNT; r++) {
@@ -257,7 +261,7 @@ int main(int argc, char **argv) {
                 for (int x = 1; x < RW - 1; x++) {
                     u8 t = TileGet(x, y), up = TileGet(x, y - 1);
                     if (!(TileSolid(t) || TileOneWay(t))) continue;
-                    if (up != T_EMPTY && up != T_MOSS && up != T_WATER) continue;
+                    if (up != T_EMPTY && up != T_MOSS && up != T_WATER && up != T_BUSH) continue;
                     total++;
                     if (stood[r][y][x]) hit++;
                     else printf("unvisited surface room %d %d,%d\n", r, x, y);
