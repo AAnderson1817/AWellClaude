@@ -38,3 +38,17 @@ Texture2D LoadTextureFromImage(Image i) { return (Texture2D){0}; }
 Image LoadImageFromScreen(void) { return (Image){0}; }
 void UnloadImage(Image i) {}
 bool ExportImage(Image i,const char *p) { return false; }
+void InitAudioDevice(void) {}
+void CloseAudioDevice(void) {}
+bool IsAudioDeviceReady(void) { return false; }
+void SetMasterVolume(float v) {}
+Sound LoadSoundFromWave(Wave w) { return (Sound){0}; }
+Sound LoadSoundAlias(Sound s) { return (Sound){0}; }
+void PlaySound(Sound s) {}
+void StopSound(Sound s) {}
+bool IsSoundPlaying(Sound s) { return false; }
+void SetSoundVolume(Sound s,float v) {}
+void SetSoundPitch(Sound s,float p) {}
+void SetSoundPan(Sound s,float p) {}
+void AttachAudioMixedProcessor(AudioCallback c) {}
+bool ExportWave(Wave w,const char *p) { return false; }

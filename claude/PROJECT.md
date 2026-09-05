@@ -138,6 +138,41 @@ it is the seed of the weight verb, if it comes back.
                the hops, the shaft both ways, standing jumps from A2/A3 onto A1, a
                failed exit from A1 landing back on A1 (through it only with Down held)
 
+### Sound
+
+Everything is synthesized at startup in `src/audio.c` from sines, noise, one-pole
+filters and a small Schroeder reverb (four combs, two allpasses) that stands in for the
+cave. Nothing is loaded; there is nothing to stream. 22050 Hz, mono, about 750 KB of
+static PCM. The palette, quiet on purpose:
+
+    step / shelf   a dull tap on stone; a hollower knock with a ring on a shelf,
+                   on each bob of the walk cycle, and on a small step down
+    land           a thud that sweeps down, louder with the fall, a little of the room
+    jump           barely a breath (peak 0.03)
+    splash         into the water: a bloop under a rush that darkens; out: lighter,
+                   with a few drops after. One per arrival: the settling bob crosses
+                   the surface a few times and each crossing is not a new splash
+    swim           water moved aside, every 19 frames while you move through it
+    drip           a plink whose pitch falls in its first milliseconds, then 1.7 s of
+                   cave; panned to where it fell; lower and softer into water. Seldom
+    bulb / bulb!   rubber: a low tone with a wobble that settles, soft-clipped; the
+                   timed bounce a fifth up and brighter, with a second voice
+    ambience       per room, six seconds looped with the seam crossfaded: brown noise
+                   under 200 Hz and a three-partial drone that breathes; the flooded
+                   room adds a band of water noise that swells. rms 0.02 -- a room,
+                   not a sound
+
+One effect is not baked in: when the surface is above your head the whole mix goes
+through a low-pass that opens and closes smoothly (`AttachAudioMixedProcessor`). You
+only hear it on the plunge, because you cannot dive.
+
+`./build/game --wav out.wav` writes every sound in a row with gaps, and the
+spectrogram of that file is how the palette was checked: it is what caught the
+ambience clipping (a gain that turned brown noise into full-band noise). Headless
+runs (`--nodraw`, `--mute`) synthesize everything and count what would have played;
+the trace line carries `sfx=<name>`. There is no audio device in this container, so
+nothing here has been listened to -- only measured and looked at.
+
 ### Debug tags
 
 Press L (or run with `--labels`) and every standable run gets a two-character tag,
@@ -193,7 +228,7 @@ convention borrowed from one context and used in another where it is off by one.
 
 ## What is deliberately not here
 
-Weight. A second verb. Puzzles. Sound. They come back one at a
+Weight. A second verb. Puzzles. They come back one at a
 time, each after the thing under it has been played and accepted.
 
 ## Controls

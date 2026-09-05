@@ -329,6 +329,7 @@ void RoomEnter(int idx) {
     memset(surfH, 0, sizeof surfH);
     memset(surfV, 0, sizeof surfV);
     FxInit();
+    AudioAmbience(idx);          // a no-op until the device is up
 }
 
 void RoomLoad(void) {

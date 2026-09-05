@@ -68,7 +68,8 @@ void FxStep(void) {
     }
 
     // A drip every so often, from somewhere that has stone over it.
-    if (dripCount && (frameNo % 23) == 0 && Rnd() < 0.55f) {
+    // Seldom. A drip is an event in here, and each one rings for nearly two seconds.
+    if (dripCount && (frameNo % 47) == 0 && Rnd() < 0.45f) {
         int k = (int)(Rnd() * dripCount);
         FxSpawn(FX_DRIP, drips[k].x * TS + 2.0f + Rnd() * 4.0f,
                 drips[k].y * TS + TS + 0.5f, 0.0f, 0.0f, 400);
@@ -86,6 +87,9 @@ void FxStep(void) {
                 u8 t = TileAtPx(p->x, p->y + 1.0f);
                 if (TileWater(t)) WaterDisturb(p->x, 0.10f);
                 if (TileSolid(t) || TileOneWay(t) || TileWater(t) || p->y > RH * TS) {
+                    // A plink from where it fell. Into water it is lower and softer.
+                    Sfx(SFX_DRIP, TileWater(t) ? 0.45f : 0.6f + 0.3f * AudioRnd(),
+                        (TileWater(t) ? 0.62f : 0.9f) + AudioRnd() * 0.18f, p->x / (float)GW);
                     // It lands, and what it does when it lands is all it ever does.
                     for (int k = 0; k < 3; k++)
                         FxSpawn(FX_SPLASH, p->x, p->y, (Rnd() - 0.5f) * 1.4f,

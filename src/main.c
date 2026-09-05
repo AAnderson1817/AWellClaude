@@ -19,6 +19,8 @@ const char *dbgOutDir = "shots";
 static int  shotFrames[16], shotCount, shotsDone;
 static int  dbgTrace = 0;
 static int  noDraw = 0;   // the wanderer runs a million frames; it does not need pictures
+static int  mute = 0;
+static const char *wavPath = 0;
 static long maxFrames = 0;
 static float acc = 0.0f;
 
@@ -143,6 +145,7 @@ static void Sim(void) {
 
 static void Frame(void) {
     frameNo++;
+    dbgLastSfx = "-";
     if (dbgFixedStep) {
         Sim();
     } else {
@@ -152,6 +155,7 @@ static void Frame(void) {
         while (acc >= DT && steps < 5) { Sim(); acc -= DT; steps++; }
         if (steps == 0) InputPoll();
     }
+    AudioStep();
     if (!noDraw) {
         LightStep();
         RenderBegin();
@@ -166,10 +170,10 @@ static void Frame(void) {
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s\n",
                frameNo, player.x, player.y, player.vx, player.vy,
                player.onGround, player.airFrames, player.coyote, player.jumpBuf,
-               roomIdx, player.submerged);
+               roomIdx, player.submerged, dbgLastSfx);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -202,6 +206,10 @@ int main(int argc, char **argv) {
             noDraw = 1;
         } else if (!strcmp(argv[i], "--labels")) {
             dbgLabels = 1;
+        } else if (!strcmp(argv[i], "--mute")) {
+            mute = 1;
+        } else if (!strcmp(argv[i], "--wav") && i + 1 < argc) {
+            wavPath = argv[++i]; mute = 1;
         } else if (!strcmp(argv[i], "--frames") && i + 1 < argc) {
             maxFrames = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--scale") && i + 1 < argc) {
@@ -222,6 +230,11 @@ int main(int argc, char **argv) {
     SetTargetFPS(dbgFixedStep ? 0 : 60);
     RenderInit();
     RoomLoad();
+    // Headless runs do not open a device: the container has none, and probing for one
+    // is slow. Every sound still gets synthesized and counted, so the trace can say
+    // what would have played.
+    AudioInit(mute || noDraw);
+    if (wavPath) { int ok = AudioExportMontage(wavPath); printf("%s -> %s\n", ok ? "wrote" : "FAILED", wavPath); CloseWindow(); return ok ? 0 : 1; }
     if (startRoom > 0 && startRoom < ROOM_COUNT) RoomEnter(startRoom);
     if (dbgLabels) DebugLabelsPrint();
     // P marks the tile you stand IN: feet on that tile's bottom edge.

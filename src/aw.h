@@ -15,6 +15,7 @@
 
 typedef uint8_t  u8;
 typedef uint16_t u16;
+typedef int16_t  i16;
 typedef uint32_t u32;
 typedef int32_t  i32;
 typedef float    f32;
@@ -119,6 +120,7 @@ typedef struct {
     int bulbGrace;          // frames left in which a late press still lifts the bounce
     int lastBulb;
     int submerged;          // any of the body under the surface
+    int splashCool;         // frames before another splash may sound
     i32 waterY;             // room-pixel y of the surface where it cuts the body, or -1
     f32 animT;
     f32 leanX, leanY;       // second-order lag. Lag only -- no squash, no stretch.
@@ -147,6 +149,20 @@ void FxInit(void);
 void FxStep(void);
 void FxDraw(void);
 void FxBurst(int kind, float x, float y, int n, float spread, float up);
+
+// ---------------------------------------------------------------- audio
+// Synthesized at startup, nothing loaded. Sfx() is the one call: an id, a volume,
+// a pitch, a pan (0.5 is centre). Nothing here is ever read by a rule.
+enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SPLASH_OUT,
+       SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED, SFX_COUNT };
+void  AudioInit(int mute);
+void  AudioStep(void);
+void  Sfx(int id, float vol, float pitch, float pan);
+void  AudioAmbience(int room);
+float AudioRnd(void);          // -1..1, for pitch and level variation
+int   AudioExportMontage(const char *path);
+extern const char *dbgLastSfx;
+extern int sfxCount[SFX_COUNT];
 
 // ---------------------------------------------------------------- render
 void RenderInit(void);

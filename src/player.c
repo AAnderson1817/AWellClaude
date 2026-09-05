@@ -89,6 +89,7 @@ static void MoveY(float dy) {
                 // A press in the last few frames is the buffered jump; here it is the
                 // timed bounce instead, and it is spent so it cannot also be a jump.
                 int timed = player.jumpBuf > 0;
+                Sfx(timed ? SFX_BULB_TIMED : SFX_BULB, 1.0f, 1.0f + AudioRnd() * 0.03f, 0.5f);
                 player.y = (float)(bulbs[b].y - BULB_H) - player.h;
                 player.vy = timed ? BOUNCE_TIMED_V : BOUNCE_V;
                 player.launched = 1;
@@ -116,6 +117,14 @@ static void MoveY(float dy) {
                     if (n > 10) n = 10;
                     FxBurst(FX_DUST, cx, cy, n, 0.8f, 0.30f);
                     player.landImpact = 7;
+                    float v = (player.vy - 0.8f) / 2.2f;
+                    if (v > 1.0f) v = 1.0f;
+                    if (v < 0.25f) v = 0.25f;
+                    Sfx(SFX_LAND, v, 0.94f + AudioRnd() * 0.06f, 0.5f);
+                } else if (player.vy > 0.3f && !player.onGround) {
+                    // a small step down: the footstep sound, not the thud
+                    int shelf = TileOneWay(TileAtPx(player.x + player.w * 0.5f, ny + player.h + 0.5f));
+                    Sfx(shelf ? SFX_STEP_SHELF : SFX_STEP_STONE, 0.7f, 0.95f + AudioRnd() * 0.08f, 0.5f);
                 }
                 player.onGround = 1; player.coyote = COYOTE;
             }
@@ -164,7 +173,20 @@ void PlayerStep(void) {
         float cx = player.x + player.w * 0.5f, sp = fabsf(player.vy);
         FxBurst(FX_SPLASH, cx, player.y + player.h * 0.6f, 4 + (int)(sp * 3.0f), 0.9f, 0.5f + sp * 0.2f);
         WaterDisturb(cx, (wasSubmerged ? -0.45f : 0.9f) * (0.35f + sp * 0.25f));
+        // One sound per arrival: the body bobs across the line a few times as it
+        // settles, and each crossing is not a new splash.
+        if (player.splashCool == 0) {
+            if (!wasSubmerged && sp > 0.4f) {
+                float v = 0.35f + sp * 0.25f; if (v > 1.0f) v = 1.0f;
+                Sfx(SFX_SPLASH_IN, v, 0.92f + AudioRnd() * 0.1f, 0.5f);
+                player.splashCool = 75;      // the settling bob crosses the line for about a second
+            } else if (wasSubmerged && player.vy < -0.8f) {
+                Sfx(SFX_SPLASH_OUT, 0.6f, 1.0f + AudioRnd() * 0.1f, 0.5f);
+                player.splashCool = 20;
+            }
+        }
     }
+    if (player.splashCool > 0) player.splashCool--;
 
     if (player.onGround) { player.coyote = COYOTE; player.airFrames = 0; }
     else { if (player.coyote > 0) player.coyote--; player.airFrames++; }
@@ -218,9 +240,13 @@ void PlayerStep(void) {
         if (player.jumpBuf > 0 && (player.coyote > 0 || frac <= 0.6f)) {
             player.vy = player.coyote > 0 ? JUMP_V * (1.0f - frac * 0.45f) : JUMP_V * SURF_JUMP;
             player.jumpBuf = 0; player.coyote = 0; player.onGround = 0; player.jumpHeld = 1;
+            Sfx(SFX_SPLASH_OUT, 0.7f, 1.0f + AudioRnd() * 0.08f, 0.5f);
         }
         if (!in.jump) player.jumpHeld = 0;
         player.launched = 0;
+        // swimming: water moved aside, every so often, while you move through it
+        if (fabsf(player.vx) > 0.4f && (frameNo % 19) == 0)
+            Sfx(SFX_SWIM, 0.5f + 0.5f * fabsf(player.vx) / RUN_MAX, 0.9f + AudioRnd() * 0.15f, 0.5f);
         if ((frameNo & 7) == 0) WaterDisturb(player.x + player.w * 0.5f, fabsf(player.vy) * 0.06f);
     } else {
         if (player.jumpBuf > 0 && player.coyote > 0) {
@@ -228,6 +254,7 @@ void PlayerStep(void) {
             player.jumpBuf = 0; player.coyote = 0;
             player.onGround = 0; player.jumpHeld = 1;
             FxBurst(FX_DUST, player.x + player.w * 0.5f, player.y + player.h, 4, 0.5f, 0.10f);
+            Sfx(SFX_JUMP, 1.0f, 0.95f + AudioRnd() * 0.1f, 0.5f);
         }
         if (!in.jump) player.jumpHeld = 0;
         if (player.vy >= 0) player.launched = 0;
@@ -253,8 +280,17 @@ void PlayerStep(void) {
     RoomTransition();
 
     // ---- procedural pass. Lag only: nothing here squashes and nothing stretches.
-    player.animT += (player.onGround && fabsf(player.vx) > 0.05f)
-                  ? fabsf(player.vx) * 0.22f : 0.03f;
+    {
+        int before = (int)player.animT & 1;
+        player.animT += (player.onGround && fabsf(player.vx) > 0.05f)
+                      ? fabsf(player.vx) * 0.22f : 0.03f;
+        // A footstep on each bob of the walk cycle, and it knows what it is on.
+        if (player.onGround && fabsf(player.vx) > 0.3f && (((int)player.animT & 1) != before)) {
+            int shelf = TileOneWay(TileAtPx(player.x + player.w * 0.5f, player.y + player.h + 0.5f));
+            Sfx(shelf ? SFX_STEP_SHELF : SFX_STEP_STONE, 0.55f + 0.45f * fabsf(player.vx) / RUN_MAX,
+                0.92f + AudioRnd() * 0.12f, 0.5f);
+        }
+    }
     player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;
     player.leanY += (player.vy * 0.35f - player.leanY) * 0.18f;
     if (player.landImpact > 0) player.landImpact--;

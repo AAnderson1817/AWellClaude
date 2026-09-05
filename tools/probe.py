@@ -9,7 +9,7 @@ import subprocess, sys, re, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINE = re.compile(r"f=\s*(\d+) x=\s*([-\d.]+) y=\s*([-\d.]+) vx=\s*([-\d.]+) "
-                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) room=(\d+) wet=(\d+)")
+                  r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) room=(\d+) wet=(\d+) sfx=(\S+)")
 
 def run(plan, at=None, frames=None, room=None):
     cmd = [os.path.join(ROOT, "build", "game"), "--play", plan, "--trace", "--nodraw"]
@@ -31,10 +31,10 @@ def run(plan, at=None, frames=None, room=None):
     out = result.stdout
     rows = []
     for m in LINE.finditer(out):
-        f, x, y, vx, vy, g, a, c, b, rm, w = m.groups()
+        f, x, y, vx, vy, g, a, c, b, rm, w, sf = m.groups()
         rows.append(dict(f=int(f), x=float(x), y=float(y), vx=float(vx),
                          vy=float(vy), ground=int(g), air=int(a),
-                         coy=int(c), buf=int(b), room=int(rm), wet=int(w)))
+                         coy=int(c), buf=int(b), room=int(rm), wet=int(w), sfx=sf))
     if not rows:
         raise RuntimeError("Game probe produced no trace rows: " + result.stderr.strip())
     return rows
