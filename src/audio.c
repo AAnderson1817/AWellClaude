@@ -232,6 +232,12 @@ static void Synth(void) {
     Register(SFX_STONE, "stone", n, 0.8f, 0.55f, 2);
     n = (int)(SR * 0.18f); Clear(n); Noise(n, 1.0f); HighPass(n, 700); LowPass(n, 3000, 1800, 0.15f); Env(n, 0.02f, 0.05f);
     Register(SFX_STONE_UP, "stone-up", n, 0.8f, 0.26f, 1);
+    // waking: a breath let out, and under it the room, low. It marks nothing but the moment.
+    n = (int)(SR * 0.9f); Clear(n); Noise(n, 1.0f); HighPass(n, 160); LowPass(n, 1100, 420, 0.6f); Env(n, 0.14f, 0.26f);
+    { static float sv[20000]; memcpy(sv, work, sizeof(float) * n); Clear(n); Sine(n, 66, 58, 0.5f, 0.5f); Env(n, 0.10f, 0.30f);
+      for (int i = 0; i < n; i++) work[i] += sv[i] * 0.8f; }
+    Reverb(n, 0.30f, 0.80f, 0.35f);
+    Register(SFX_WAKE, "wake", n, 0.8f, 0.30f, 1);
 
     // ambience. Six seconds, looped, ends crossfaded so the seam is not a click.
     for (int r = 0; r < ROOM_COUNT; r++) {
@@ -319,8 +325,9 @@ void AudioAmbience(int room) {
 }
 
 void AudioStep(void) {
-    // head under: the surface line sits within the top few pixels of the body, or above it
-    muffleTarget = (player.waterY >= 0 && player.waterY <= (int)player.y + 3) ? 1.0f : 0.0f;
+    // head under: the surface line sits within the top few pixels of the body, or above it.
+    // Or your eyes are closing: the same muffle, for the same reason -- the world is further off.
+    muffleTarget = ((player.waterY >= 0 && player.waterY <= (int)player.y + 3) || resetFade > 0.35f) ? 1.0f : 0.0f;
     if (ready && ambRoom >= 0 && !IsSoundPlaying(amb[ambRoom])) PlaySound(amb[ambRoom]);
 }
 

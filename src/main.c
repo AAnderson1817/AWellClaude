@@ -30,7 +30,7 @@ static float acc = 0.0f;
 #define PLAN_MAX 64
 static struct { int mask, frames; } plan[PLAN_MAX];
 static int planLen, planIdx, planLeft, planTotal;
-enum { M_L = 1, M_R = 2, M_U = 4, M_D = 8, M_J = 16, M_X = 32 };
+enum { M_L = 1, M_R = 2, M_U = 4, M_D = 8, M_J = 16, M_X = 32, M_H = 64 };   // H: hold R (start over)
 
 static void ParsePlan(char *s) {
     char *tok = strtok(s, ",");
@@ -42,7 +42,8 @@ static void ParsePlan(char *s) {
             switch (*c) {
                 case 'L': mask |= M_L; break; case 'R': mask |= M_R; break;
                 case 'U': mask |= M_U; break; case 'D': mask |= M_D; break;
-                case 'J': mask |= M_J; break; case 'X': mask |= M_X; break; default: break;
+                case 'J': mask |= M_J; break; case 'X': mask |= M_X; break;
+                case 'H': mask |= M_H; break; default: break;
             }
         }
         plan[planLen].mask = mask; plan[planLen].frames = n; planLen++;
@@ -60,6 +61,8 @@ static int PlanExhausted(void) { return planLen && frameNo > planTotal + 2; }
 // from its seed, so a failure can be replayed exactly.
 static int wanderSeed = 0;
 static u8 stood[ROOM_COUNT][RH][RW];
+static long homeFrame = 0;                 // first frame a bot dropped elsewhere stood on the start tile again
+static float homeX, homeY;
 static u32 wrng;
 static float WRnd(void) {
     wrng ^= wrng << 13; wrng ^= wrng >> 17; wrng ^= wrng << 5;
@@ -109,9 +112,11 @@ void InputPoll(void) {
         in.act = !!(m & M_X);
         in.actPressed = in.act && !prevAct;
         prevAct = in.act;
+        in.reset = !!(m & M_H);
         return;
     }
     if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
+    in.reset = IsKeyDown(KEY_R);
     in.left  = IsKeyDown(KEY_LEFT)  || IsKeyDown(KEY_A);
     in.right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
     in.up    = IsKeyDown(KEY_UP)    || IsKeyDown(KEY_W);
@@ -129,9 +134,59 @@ void InputPoll(void) {
     prevJump = jump;
 }
 
+// ---------------------------------------------------------------- starting over
+// Where you began, as it was when you began. The rooms are rebuilt (RoomEnter does
+// that), every held or dropped thing goes home, and the body is set on the start tile.
+// There is no progress to keep yet; when there is, it is kept and this returns only
+// what moves.
+#define RESET_HOLD 90        // frames R is held to go through: a second and a half
+#define RESET_WAKE 54        // frames for the room to come back after
+f32 resetFade = 0.0f;
+static int resetHeld, resetSpent, resetWaking;
+long dbgResets = 0;
+
+static void BeginAgain(void) {
+    ItemsHome();
+    RoomEnter(0);
+    PlayerInit(RoomStartTx() * TS + 1.0f, (RoomStartTy() + 1) * TS - 11.0f);
+    dbgResets++;
+}
+
+void ResetStep(void) {
+    if (in.reset && !resetSpent) {
+        resetHeld++;
+        resetWaking = 0;
+        f32 f = (f32)resetHeld / RESET_HOLD;
+        if (f > resetFade) resetFade = f;            // never a jump back down when re-pressed mid-wake
+        if (resetHeld >= RESET_HOLD) {
+            BeginAgain();
+            Sfx(SFX_WAKE, 0.9f, 1.0f + AudioRnd() * 0.04f, 0.5f);
+            resetFade = 1.0f; resetHeld = 0;
+            resetSpent = 1;                          // let go before it can happen again
+            resetWaking = 1;
+        }
+    } else {
+        if (!in.reset) resetSpent = 0;
+        resetHeld = 0;
+        // Let go early: it comes back at three times the speed it went. Waking: slower.
+        resetFade -= resetWaking ? 1.0f / RESET_WAKE : 3.0f / RESET_HOLD;
+        if (resetFade <= 0.0f) { resetFade = 0.0f; resetWaking = 0; }
+    }
+}
+
+// Your lids, over everything the light pass produced -- the lamp's glass and the
+// creatures' eyes included. Your own eyes are drawn after this, and close on their own.
+void ResetDrawLids(void) {
+    if (resetFade <= 0.0f) return;
+    int a = (int)(resetFade * 255.0f);
+    if (a > 255) a = 255;
+    DrawRectangle(0, 0, GW, GH, (Color){ 0, 0, 0, (u8)a });
+}
+
 // ---------------------------------------------------------------- frame
 static void Sim(void) {
     InputPoll();
+    ResetStep();
     PlayerStep();
     ItemsStep();
     in.jumpPressed = 0;
@@ -140,6 +195,8 @@ static void Sim(void) {
     WaterStep();
     FxStep();
     LifeStep();
+    if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
+        && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
         // a fraction past the tile top; landing on a shelf stops them a fraction
@@ -177,20 +234,22 @@ static void Frame(void) {
             ItemsDrawHeld();
             FxDraw();
             LightDraw();
-            PlayerDrawEyes();
             LifeDrawEyes();
             ItemsDrawCore();
+            ResetDrawLids();
+            PlayerDrawEyes();      // over the lids: your own eyes close on their own, last
             DebugLabelsDraw();
         RenderPresent();
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s hold=%d lamp=%d/%.0f,%.0f stone=%d/%.0f,%.0f\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s hold=%d lamp=%d/%.0f,%.0f stone=%d/%.0f,%.0f fade=%.2f\n",
                frameNo, player.x, player.y, player.vx, player.vy,
                player.onGround, player.airFrames, player.coyote, player.jumpBuf,
                roomIdx, player.submerged, dbgLastSfx, PlayerHolds(),
                items[0].room, items[0].x, items[0].y,
-               itemCount > 1 ? items[1].room : -1, itemCount > 1 ? items[1].x : 0.0f, itemCount > 1 ? items[1].y : 0.0f);
+               itemCount > 1 ? items[1].room : -1, itemCount > 1 ? items[1].x : 0.0f, itemCount > 1 ? items[1].y : 0.0f,
+               resetFade);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -265,6 +324,7 @@ int main(int argc, char **argv) {
     int tx = (atx >= 0) ? atx : RoomStartTx();
     int ty = (aty >= 0) ? aty : RoomStartTy();
     PlayerInit(tx * TS + 1.0f, (ty + 1) * TS - 11.0f);
+    homeX = RoomStartTx() * TS + 1.0f; homeY = (RoomStartTy() + 1) * TS - 11.0f;
     
 
 #if defined(PLATFORM_WEB)
@@ -290,6 +350,9 @@ int main(int argc, char **argv) {
                 }
             printf("STOOD room %d: %d/%d surfaces  (seed %d, %ld frames)\n", r, hit, total, wanderSeed, frameNo);
         }
+        // Whether, dropped wherever --at put it, this bot ever stood on the start tile again.
+        // tools/escape.py asks that of every surface in the map.
+        printf("HOME %s (%ld)\n", homeFrame ? "reached" : "never", homeFrame);
     }
     CloseWindow();
     return 0;

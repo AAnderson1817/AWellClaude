@@ -7,7 +7,7 @@ IN="${1:-build/game.js}"; OUT="${2:-build/play.html}"; TITLE="${3:-Slice}"
 python3 - "$IN" "$OUT" "$TITLE" <<'PY'
 import sys, html
 src, out, title = sys.argv[1], sys.argv[2], sys.argv[3]
-js = open(src, encoding='utf-8', errors='surrogateescape').read()
+js = open(src, encoding='utf-8', errors='surrogateescape', newline='').read()   # see artifact.py: a \r in the wasm string
 tpl = """<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>%TITLE%</title>
@@ -31,6 +31,6 @@ tpl = """<!doctype html><html><head><meta charset="utf-8">
 </body></html>
 """
 tpl = tpl.replace('%TITLE%', html.escape(title)).replace('%JS%', js)
-open(out, 'w', encoding='utf-8', errors='surrogateescape').write(tpl)
+open(out, 'w', encoding='utf-8', errors='surrogateescape', newline='').write(tpl)
 print(out, len(tpl))
 PY

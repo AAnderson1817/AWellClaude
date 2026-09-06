@@ -163,11 +163,13 @@ typedef struct {
     f32 x, y, vy;
     int onGround, cool;
     f32 flick;              // the lamp's
+    f32 hx, hy; int hroom;  // home: where it was set at the start, for starting over
 } Item;
 extern Item items[ITEM_MAX];
 extern int  itemCount, heldItem;
 void ItemsReset(void);
 int  ItemsAdd(int kind, int room, int tx, int ty);
+void ItemsHome(void);       // every item back where it began, hands empty
 void ItemsStep(void);
 void ItemsLight(void);      // called by LightStep
 void ItemsDrawBehind(void); // before the body, before the light pass
@@ -177,9 +179,18 @@ int  PlayerHolds(void);     // IT_NONE, IT_LAMP or IT_STONE
 
 // ---------------------------------------------------------------- input
 // One indirection, so a scripted playtest and a keyboard take the same path.
-typedef struct { int left, right, up, down, jump, jumpPressed, act, actPressed; } Input;
+typedef struct { int left, right, up, down, jump, jumpPressed, act, actPressed, reset; } Input;
 extern Input in;
 void InputPoll(void);
+
+// ---------------------------------------------------------------- starting over
+// The rule: you are never soft-locked without a way out. This is the way out, and it
+// is always there. Hold R and the dark comes in -- your eyes are closing -- and if you
+// hold it to the end you wake where you began, with everything where it began. Let go
+// early and the room comes back. No text says so; the darkening says so.
+extern f32 resetFade;       // 0 = eyes open, 1 = shut
+void ResetStep(void);
+void ResetDrawLids(void);   // after the light pass, before your eyes
 
 // ---------------------------------------------------------------- fx
 // A fixed pool of specks. Nothing here is ever read by a rule; it exists so the
@@ -198,7 +209,7 @@ void FxBurst(int kind, float x, float y, int n, float spread, float up);
 enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SPLASH_OUT,
        SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED,
        SFX_RUSTLE, SFX_WING, SFX_CHIRP, SFX_PAD, SFX_CHIRR, SFX_PLANT0, SFX_PLANT1, SFX_PLANT2,
-       SFX_PICKUP, SFX_SETDOWN, SFX_STONE, SFX_STONE_UP,
+       SFX_PICKUP, SFX_SETDOWN, SFX_STONE, SFX_STONE_UP, SFX_WAKE,
        SFX_COUNT };
 void  AudioInit(int mute);
 void  AudioStep(void);

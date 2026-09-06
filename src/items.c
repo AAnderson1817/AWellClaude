@@ -29,9 +29,23 @@ int ItemsAdd(int kind, int room, int tx, int ty) {
     it->kind = kind; it->room = room;
     it->x = tx * TS + (TS - W(it)) * 0.5f;
     it->y = (ty + 1) * TS - H(it);
+    it->hx = it->x; it->hy = it->y; it->hroom = room;
     return itemCount++;
 }
 void ItemsReset(void) { itemCount = 0; heldItem = -1; }
+
+// Starting over. A stone on the flooded floor is the one thing in the game you can lose
+// for good; this is how it is not lost for good. Each thing goes back to where it was
+// set, whichever room it is in now, and whatever you were holding you are not.
+void ItemsHome(void) {
+    for (int i = 0; i < itemCount; i++) {
+        Item *it = &items[i];
+        it->x = it->hx; it->y = it->hy; it->room = it->hroom;
+        it->vy = 0; it->onGround = 0; it->cool = 0; it->flick = 0;
+    }
+    heldItem = -1;
+    player.heavy = 0;
+}
 
 int PlayerHolds(void) { return heldItem < 0 ? IT_NONE : items[heldItem].kind; }
 

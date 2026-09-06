@@ -245,7 +245,41 @@ Second readings are not built yet and are not promised: creatures by light, thin
 exist only in the dark. First the user plays it cold. X and C came off the jump keys.
 
 `--lamp ROOM,TX,TY` places the lamp for a probe; stones are authored with `s`. The
-trace carries `hold=<0|1|2>` and the lamp's and first stone's room and position.
+trace carries `hold=<0|1|2>`, the lamp's and first stone's room and position, and
+`fade=` (the reset's lids, 0..1). In a plan, `H` holds R.
+
+### Starting over
+
+The rule, from the user after playing the stone: **the player is never soft-locked
+without a way to reset.** So there is a way to reset, and it is always there. Hold R.
+The dark comes in over a second and a half -- your lids, over everything, the lamp's
+glass and the creatures' eyes included; your own eyes narrow at halfway and shut near
+the end -- and if you hold it through, you wake where you began, with everything where it
+began: every item back on its home tile in its home room, hands empty, the rooms rebuilt.
+Let go early and the room comes back three times as fast as it went, and nothing has
+happened. One reset per press: holding R down through the wake does not chain. The mix
+muffles as your eyes close, the same low-pass as under the surface. One sound marks the
+waking, a breath let out over a low tone. No text says any of this; the darkening says it
+the moment R is pressed.
+
+There is no progress to keep yet, so the reset is total. When there is progress, it is
+kept, and the reset returns only what moves.
+
+What the audit found, before the button was built. Positions: from every one of the 36
+standable runs in both rooms, the wander bot -- which does not know the route -- got back
+to the start tile (`tools/escape.py`: three seeds, forty minutes of play each; the
+slowest was A2 in the flooded room at 24 minutes; a first pass with an eight-minute budget
+flagged five surfaces, and all five were the bot being slow). Holding a stone never traps
+you either: X puts it down and your jump comes back. Items: the lamp floats and is always
+reachable; a stone under water is not, and with both stones under water the flooded floor
+is out of reach for good. That is the one soft lock in the game, and R is its way out.
+Losing a stone to the deep is still a consequence -- the walk back, and the lamp left
+wherever you set it down before the reset returns that too.
+
+    measured   hold 90 frames -> reset; 54 frames to wake; early release back in 15
+               X0: from the flooded floor, heavy, lamp a room away -> at the start,
+               hands empty, room 0; X1: stone taken up, R held -> stone back on its
+               ledge; X2: R held 40 frames and released -> nothing moved, fade to 0
 
 ### Debug tags
 
@@ -269,6 +303,9 @@ Letters that read as digits at 3x5 (I, O, S, Z) are skipped.
   animation is second-order lag only.
 - **L11.** One room, one screen, locked camera.
 - No combat, no counters, no collectibles, no third verb.
+- **Never soft-locked without a way to reset** (the user's rule, after the stone). Hold
+  R. Every state the game can get into has this way out, and the geometry is swept for
+  places a body cannot leave (`tools/escape.py`).
 
 ## How it is checked
 
@@ -280,8 +317,11 @@ A hop counts as makeable only if some way of playing it lands it.
     tools/build.sh              # web, linux, windows
     tools/check.sh              # UBSan regressions for the input latch and Hash2, plus
                                 # Python tests for probe/route; needs no build/game
-    python3 tools/route.py      # every hop; currently "none -- the route closes";
+    python3 tools/route.py      # every hop, plus the reset from the flooded floor
+                                # (X0-X2); currently "none -- both rooms close";
                                 # exits nonzero on an unmakeable hop
+    python3 tools/escape.py     # from every standable run, can a bot get back to the
+                                # start? currently 36/36; exits nonzero otherwise
     ./build/game --wander 6 --frames 400000
                                 # a dumb bot; currently reaches all 94 surfaces
 
@@ -311,4 +351,5 @@ Arrows or WASD. Z or Space to jump; hold it longer to go higher. X to hold / let
 (the lamp, or a stone; one at a time). Down to drop
 through a shelf. Land on a bulb to bounce; press jump as you land on it to bounce
 higher. In water: Left and Right to swim, Z or Up held to swim up, Z tapped to jump
-off the surface. L toggles the platform tags.
+off the surface. Hold R to close your eyes and wake where you began, with everything
+where it began. L toggles the platform tags.

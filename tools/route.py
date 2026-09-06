@@ -47,6 +47,36 @@ def failed_exit_lands_on_throat():
     w = run("-:6,J:6,-:6,D:120", at=(22, 0), room=1)[-1]
     return "short jump: back on A1; with Down held: in the water" if w["wet"] else None
 
+# Starting over. Hold R for a second and a half and you wake where you began with everything
+# where it began; let go early and nothing happens. This is the way out of every soft lock,
+# so it is checked from the worst place there is: on the flooded floor, holding the stone
+# that put you there, with the lamp a room away.
+def reset_from_the_deep():
+    rows = run("-:4,X:1,-:4,R:34,-:170,H:90,-:60", at=(5, 5), room=1)
+    if not any(r["ground"] and r["wet"] and r["hold"] == 2 for r in rows): return None   # never got down there
+    e = rows[-1]
+    return "from the flooded floor, heavy: room %d, at the start, hands empty" % e["room"] \
+        if e["room"] == 0 and e["ground"] and e["hold"] == 0 and abs(e["x"] - 65) < 1 and round((e["y"] + 11) / 8) == 20 \
+        else None
+def reset_puts_the_stone_back():
+    rows = run("-:4,X:1,-:10,H:90,-:40", at=(36, 13))
+    home = (rows[0]["stoneRoom"], rows[0]["stoneX"])
+    e = rows[-1]
+    return "stone taken up, R held: stone back at %d/%d" % home \
+        if rows[14]["hold"] == 2 and e["hold"] == 0 and (e["stoneRoom"], e["stoneX"]) == home else None
+def reset_let_go_early_does_nothing():
+    rows = run("-:4,X:1,-:10,H:40,-:40", at=(36, 13))
+    a, e = rows[14], rows[-1]
+    return "R held 40 frames and let go: still there, still holding, fade back to 0" \
+        if e["hold"] == 2 and abs(e["x"] - a["x"]) < 0.5 and e["room"] == a["room"] and e["fade"] == 0 \
+        and max(r["fade"] for r in rows) > 0.3 else None
+
+RESET = [
+ ("X0 hold R on the flooded floor, heavy",     reset_from_the_deep),
+ ("X1 hold R: the stone goes home",             reset_puts_the_stone_back),
+ ("X2 let go of R early: nothing happens",      reset_let_go_early_does_nothing),
+]
+
 ROUTE = [
  ("A  floor           -> lower left step",   range(6, 10), 19, 18, range(4, 6),   -1),
  ("B  lower step      -> the lip (4,17)",    range(4, 6),  17, 17, range(4, 5),   -1),
@@ -94,7 +124,7 @@ def check(h):
 
 if __name__ == "__main__":
     with ThreadPoolExecutor(max_workers=6) as ex:
-        results = list(ex.map(check, ROUTE + FLOODED))
+        results = list(ex.map(check, ROUTE + FLOODED + RESET))
     bad = []
     for name, plan in results:
         print("%-42s %s" % (name, plan if plan else "*** NO WAY OF PLAYING IT LANDS THIS"))

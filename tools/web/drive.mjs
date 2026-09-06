@@ -19,7 +19,17 @@ const logs = [];
 pg.on('console', m => logs.push(`[${m.type()}] ${m.text()}`));
 pg.on('pageerror', e => logs.push(`[pageerror] ${e.message}`));
 
-await pg.goto('file://' + path.resolve(page_));
+// The artifact page is a fragment: the host supplies the doctype and <meta charset=utf8>.
+// Loaded bare from file://, Chrome sniffs the encoding, and on some builds it guesses
+// wrong -- the wasm is a binary-coded string, so one mis-decoded byte and the module
+// fails to instantiate. Give it what the host gives it.
+let target = path.resolve(page_);
+const src = fs.readFileSync(target);            // bytes, not text: the wasm string must not be re-decoded here
+if (!/^\s*<!doctype/i.test(src.subarray(0, 64).toString('latin1'))) {
+  target = path.resolve(outDir, 'page.html');
+  fs.writeFileSync(target, Buffer.concat([Buffer.from('<!doctype html><meta charset="utf-8">\n'), src]));
+}
+await pg.goto('file://' + target);
 try { await pg.waitForFunction('window.__ready === true', { timeout: 30000 }); }
 catch { console.error('MODULE NEVER BECAME READY'); }
 await pg.click('canvas').catch(()=>{});

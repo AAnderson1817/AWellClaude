@@ -344,6 +344,7 @@ void PlayerDraw(void) {
 // reaches it; these two do not, so you can always find yourself.
 void PlayerDrawEyes(void) {
     if (player.blink < 5) return;
+    if (resetFade > 0.85f) return;                      // shut
     int px = (int)floorf(player.x), py = (int)floorf(player.y) + ROOM_Y;
     int bob = (player.onGround && fabsf(player.vx) > 0.05f) ? ((int)player.animT & 1) : 0;
     py += bob;
@@ -351,6 +352,11 @@ void PlayerDrawEyes(void) {
     int ex = px + (player.facing > 0 ? 2 : 1);
     // Dark eyes with a lit point in each. In a corner nothing reaches, the two points
     // are the only thing left of you, which is the reason they are drawn out here.
+    if (resetFade > 0.45f) {                            // half shut: the lid is down over the light
+        DrawRectangle(ex,     ey + 1, 1, 1, palPupil);
+        DrawRectangle(ex + 3, ey + 1, 1, 1, palPupil);
+        return;
+    }
     DrawRectangle(ex,     ey, 1, 2, palPupil);
     DrawRectangle(ex + 3, ey, 1, 2, palPupil);
     DrawRectangle(ex,     ey, 1, 1, palEye);
