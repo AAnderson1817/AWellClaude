@@ -52,7 +52,7 @@ Zones: CITY = cols 30-39 rows 6-21 (the balcony and its mass, the right block) a
 | 19 | The floor lamp | the seam (35,14) becomes a glass lamp set in the balcony floor, green | | flickers; motes gather | 1 |
 | 20 | The hanging lamp | an iron chain from the ceiling at (28,1) down to row 5, a green glass at its end, beside shelf A3 | passing through the chain; a hard landing on A3 | swings, clinks, and its light swings with it | 1 |
 | 21 | Bushes x5 | (6,19) (10,19) (29,19) (32,13) (37,13) | as now | as now: lean, rustle, perch | 1 |
-| 22 | Birds x3, the animal, the plant, the bulbs | as now | as now | as now; the bulbs redrawn as grown things of the city | 1 |
+| 22 | Birds x2, the animal, the plant, the bulbs | as now | as now | as now; the bulbs redrawn as grown things of the city | 1 |
 | 23 | Seams | (23,1) and (5,18) stay amber: raw rock | | | 1 |
 | 24 | Ambience | a deeper room; a settling rumble in the first seconds; from the right, faint, the city | | | 5 |
 
@@ -98,7 +98,7 @@ everything sunk shows through it, cold.
 | 14 | The drain shaft | cols 21-26 rows 0-2; the seam (20,0) a green lamp in its wall | | drips constantly into the pool; the room's drips start here and at the cornices | 2 |
 | 15 | Pack and a dead lamp | on the flooded floor at (14,20), in the fronds | the native's lights passing over it | glints as it passes. Evidence someone tried the deep | 2 |
 | 16 | Bubbles | from the face's mouth every 9 s or so; from the native when it breathes | | rise; break the surface with a tick | 2 |
-| 17 | Birds x2 | as now | as now | as now | 2 |
+| 17 | Birds x1 | as now | as now | as now | 2 |
 | 18 | Seams | (20,0) (19,12) (26,21) (23,21): all the city's green | | | 2 |
 | 19 | Ambience | water as now, thinner; the native's breath far off; the drips' rhythm; under the surface the face's hum inside the muffle | | | 5 |
 

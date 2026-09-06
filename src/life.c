@@ -96,7 +96,7 @@ static int PickPerch(float awayX, float awayY, int notThis) {
 static void BirdsInit(void) {
     memset(birds, 0, sizeof birds);
     if (perchCount == 0) return;
-    int want = roomIdx == 0 ? 3 : 2;
+    int want = roomIdx == 0 ? 2 : 1;      // was 3 and 2; the user found them a bit much
     float sx = player.x, sy = player.y;
     for (int i = 0; i < want && i < BIRD_MAX; i++) {
         int p = PickPerch(sx, sy, -1);
@@ -132,13 +132,16 @@ static void BirdsStep(void) {
                 BirdStartle(b, px, py);
                 break;
             }
+            // Every six to eighteen seconds a bird does one thing, and most often that is
+            // nothing much. (It was every two to six, and half of those were a song: the
+            // room was busy, and the user asked for calm.)
             if (--b->timer <= 0) {
-                b->timer = 90 + (int)(Rnd() * 260);
+                b->timer = 360 + (int)(Rnd() * 720);
                 float r = Rnd();
-                if (r < 0.45f) b->facing = -b->facing;                 // look the other way
-                else if (r < 0.75f && dx > 70)                          // a small song, when you are not near
-                    Sfx(SFX_CHIRP, 0.6f + Rnd() * 0.3f, b->pitch, b->x / (float)GW);
-                else if (r < 0.82f) BirdStartle(b, b->x + (Rnd() - 0.5f) * 40, b->y);   // restless
+                if (r < 0.55f) b->facing = -b->facing;                 // look the other way
+                else if (r < 0.72f && dx > 70)                          // a small song, when you are not near
+                    Sfx(SFX_CHIRP, 0.5f + Rnd() * 0.3f, b->pitch, b->x / (float)GW);
+                else if (r < 0.77f) BirdStartle(b, b->x + (Rnd() - 0.5f) * 40, b->y);   // restless
             }
         } break;
         case B_FLY: {
@@ -160,7 +163,7 @@ static void BirdsStep(void) {
             b->flap++;
             if (d < 2.5f) {
                 b->x = t->x; b->y = t->y; b->perch = b->target;
-                b->state = B_PERCH; b->timer = 120 + (int)(Rnd() * 300);
+                b->state = B_PERCH; b->timer = 300 + (int)(Rnd() * 600);
             }
         } break;
         }
@@ -251,17 +254,17 @@ static void BeastStep(void) {
         if (beast.x <= beast.x0) { beast.x = beast.x0; beast.dir = 1; lifeBeastTurns++; }
         if (beast.x >= beast.x1) { beast.x = beast.x1; beast.dir = -1; lifeBeastTurns++; }
         if (((int)(beast.legT * 2) & 1) != ((int)((beast.legT - 0.16f) * 2) & 1) && fabsf(dx) < 130)
-            Sfx(SFX_PAD, 0.5f, 0.9f + AudioRnd() * 0.2f, cx / (float)GW);
+            Sfx(SFX_PAD, 0.35f, 0.9f + AudioRnd() * 0.2f, cx / (float)GW);
         if (--beast.timer <= 0) {
             float r = Rnd();
             beast.state = r < 0.7f ? M_PAUSE : M_SIT;
-            beast.timer = beast.state == M_SIT ? 180 + (int)(Rnd() * 300) : 30 + (int)(Rnd() * 120);
-            if (beast.state == M_SIT) Sfx(SFX_CHIRR, 0.6f, 0.95f + AudioRnd() * 0.1f, cx / (float)GW);
+            beast.timer = beast.state == M_SIT ? 600 + (int)(Rnd() * 900) : 120 + (int)(Rnd() * 300);
+            if (beast.state == M_SIT && Rnd() < 0.5f) Sfx(SFX_CHIRR, 0.45f, 0.95f + AudioRnd() * 0.1f, cx / (float)GW);
         }
         break;
     case M_PAUSE:
         if (--beast.timer <= 0) {
-            beast.state = M_WALK; beast.timer = 90 + (int)(Rnd() * 300);
+            beast.state = M_WALK; beast.timer = 60 + (int)(Rnd() * 180);
             if (Rnd() < 0.4f) beast.dir = -beast.dir;
         }
         break;
@@ -375,13 +378,13 @@ static void PlantsStep(void) {
         if (near && player.jumpBuf == BUFFER_FRAMES) p->perk = 12;    // it noticed the jump
         switch (p->state) {
         case P_IDLE:
-            if (near && Rnd() < 0.04f) { p->state = P_SPEAK; p->syl = 4 + (int)(Rnd() * 5); PlantSyllable(p); lifePlantPhrases++; }
+            if (near && Rnd() < 0.02f) { p->state = P_SPEAK; p->syl = 4 + (int)(Rnd() * 5); PlantSyllable(p); lifePlantPhrases++; }
             break;
         case P_SPEAK:
             if (p->mouth > 0) p->mouth--;
             if (--p->timer <= 0) {
                 if (--p->syl > 0) PlantSyllable(p);
-                else { p->state = P_COOL; p->timer = 240 + (int)(Rnd() * 240); p->mouth = 0; }
+                else { p->state = P_COOL; p->timer = 600 + (int)(Rnd() * 600); p->mouth = 0; }
             }
             break;
         case P_COOL:

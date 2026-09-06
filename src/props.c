@@ -299,7 +299,7 @@ void PropsStep(void) {
                 }
             } else {
                 p->phase += 0.21f + Rnd() * 0.06f;
-                if (--p->timer <= 0) { Sfx(SFX_CRACKLE, 0.25f + Rnd() * 0.15f, 0.9f + Rnd() * 0.3f, cx / GW); p->timer = 30 + (int)((Rnd() + 0.5f) * 70); }
+                if (--p->timer <= 0) { Sfx(SFX_CRACKLE, 0.2f + Rnd() * 0.12f, 0.9f + Rnd() * 0.3f, cx / GW); p->timer = 180 + (int)((Rnd() + 0.5f) * 360); }
                 if ((frameNo % 7) == 0 && Rnd() > 0.1f) FxBurst(FX_SPARK, cx + Rnd() * 3, cy - 3, 1, 0.3f, 0.7f);
             }
         } break;

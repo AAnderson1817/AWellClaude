@@ -67,9 +67,10 @@ void FxStep(void) {
         if (motes[i].y < 0) { motes[i].y = RH * TS; motes[i].x = Rnd() * (RW * TS); }
     }
 
-    // A drip every so often, from somewhere that has stone over it.
-    // Seldom. A drip is an event in here, and each one rings for nearly two seconds.
-    if (dripCount && (frameNo % 47) == 0 && Rnd() < 0.45f) {
+    // A drip every so often, from somewhere that has stone over it. Seldom: about one a
+    // quarter minute. A drip is an event in here, and each one rings for nearly two
+    // seconds. (It was one every two seconds, which is a tap left running.)
+    if (dripCount && (frameNo % 90) == 0 && Rnd() < 0.075f) {
         int k = (int)(Rnd() * dripCount);
         FxSpawn(FX_DRIP, drips[k].x * TS + 2.0f + Rnd() * 4.0f,
                 drips[k].y * TS + TS + 0.5f, 0.0f, 0.0f, 400);

@@ -155,7 +155,8 @@ static PCM. The palette, quiet on purpose:
                    the surface a few times and each crossing is not a new splash
     swim           water moved aside, every 19 frames while you move through it
     drip           a plink whose pitch falls in its first milliseconds, then 1.7 s of
-                   cave; panned to where it fell; lower and softer into water. Seldom
+                   cave; panned to where it fell; lower and softer into water. Seldom:
+                   about four a minute (it was thirty, and the user asked for calm)
     bulb / bulb!   rubber: a low tone with a wobble that settles, soft-clipped; the
                    timed bounce a fifth up and brighter, with a second voice
     ambience       per room, six seconds looped with the seam crossfaded: brown noise
@@ -175,6 +176,18 @@ runs (`--nodraw`, `--mute`) synthesize everything and count what would have play
 the trace line carries `sfx=<name>`. There is no audio device in this container, so
 nothing here has been listened to -- only measured and looked at.
 
+### Calm (a tuning, after the Vault Mouth was played)
+
+The user heard the rooms as busy. Measured standing still for a minute: 56 unprompted
+sounds, thirty of them drips, thirteen chirps, ten wingbeats. Now: the drips come about
+four a minute, a bird does one thing every six to eighteen seconds and it is usually
+nothing, the animal sits longer and walks less and chirrs on half its sits, the plant
+waits ten to twenty seconds between phrases, and a lit fire crackles every three to nine
+seconds instead of every second. Birds are halved: two in the chamber, one below.
+
+    measured   standing still a minute: 56 unprompted sounds -> about 8
+               drips 30 -> ~4, chirps 13 -> ~2, wingbeats 10 -> ~1, chirr 3 -> <1
+
 ### What lives here
 
 `src/life.c`. Flat arrays and switch statements, no entity base class. Nothing here can
@@ -183,7 +196,7 @@ indifference; L3: neither of these is a verb).
 
 - **Bushes** (`b`): a tile, drawn by the room, that leans away from a passing body and
   shakes and rustles when pushed through. Bird perches, too.
-- **Birds**: three in the chamber, two below. They sit on the ends of shelves and stone
+- **Birds**: two in the chamber, one below (three and two at first; the user found them a bit much). They sit on the ends of shelves and stone
   runs and on bushes -- perches are derived from the map, never authored -- and when
   you come within about five tiles, or land hard nearby, they leave for a perch far
   from you: a climb-then-settle flight, wings beating, a flutter of air. Left alone
