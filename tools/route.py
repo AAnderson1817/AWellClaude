@@ -56,7 +56,7 @@ def reset_from_the_deep():
     if not any(r["ground"] and r["wet"] and r["hold"] == 2 for r in rows): return None   # never got down there
     e = rows[-1]
     return "from the flooded floor, heavy: room %d, at the start, hands empty" % e["room"] \
-        if e["room"] == 0 and e["ground"] and e["hold"] == 0 and abs(e["x"] - 65) < 1 and round((e["y"] + 11) / 8) == 20 \
+        if e["room"] == 0 and e["ground"] and e["hold"] == 0 and abs(e["x"] - 17) < 1 and round((e["y"] + 11) / 8) == 15 \
         else None
 def reset_puts_the_stone_back():
     rows = run("-:4,X:1,-:10,H:90,-:40", at=(36, 13))

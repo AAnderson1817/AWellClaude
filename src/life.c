@@ -229,6 +229,12 @@ static void BeastInit(void) {
     }
 }
 
+int LifeBeastPos(f32 *x, f32 *y) {
+    if (!beast.alive) return 0;
+    *x = beast.x + BEAST_W * 0.5f; *y = beast.y;
+    return 1;
+}
+
 static void BeastStep(void) {
     if (!beast.alive) return;
     float cx = beast.x + BEAST_W * 0.5f, px = PlayerCX(), py = PlayerCY();

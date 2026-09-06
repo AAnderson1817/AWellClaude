@@ -95,6 +95,29 @@ int  RoomMarkPlants(int *txs, int *tys, int max);
 int  RoomMarkStones(int *txs, int *tys, int max);
 void LightAddPoint(f32 px, f32 py, f32 R, f32 peak);   // an occluded point light, this frame
 
+// ---------------------------------------------------------------- zones
+// Every tile belongs to the vault (raw rock, timber, amber) or the city (dressed masonry,
+// stone cornices, green light). Authored as a handful of rectangles per room in room.c.
+// Stone, shelves, seams and the back wall draw by zone; a seam's light is warm or cool by it.
+enum { Z_VAULT = 0, Z_CITY };
+int ZoneAt(int tx, int ty);
+void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak);   // the city's colour of light
+
+// ---------------------------------------------------------------- props
+// The dressing that answers you: a second text grid per room in props.c. Set pieces are
+// text sprites, rows of palette letters. Nothing here is read by a rule.
+typedef struct { int w, h; const char *const *rows; } Sprite;
+void  DrawSprite(const Sprite *s, int px, int py);
+Color SpriteInk(char c);
+void PropsInit(void);        // per room, after the tiles are known
+void PropsStep(void);
+void PropsDrawBack(void);    // after the back wall, before the tiles
+void PropsDrawFront(void);   // after the tiles, before the living things
+void PropsLight(void);       // called by LightStep
+void PropsReset(void);       // the one persistent change (the fire) back to how it began
+int  PropFireLit(int room);
+int  PropsAge(void);         // frames since this room was entered
+
 // ---------------------------------------------------------------- bulbs
 // A dome you land on and leave faster than you arrived. Not solid: you walk through
 // it, you cannot stand on it, it only answers a fall. Every landing throws you the
@@ -151,6 +174,7 @@ void LifeDraw(void);        // before the light pass
 void LifeDrawEyes(void);    // after it
 void LifeLights(void);      // called by LightStep
 void LifePrintStats(void);
+int  LifeBeastPos(f32 *x, f32 *y);   // the animal's centre, if it lives in this room
 extern u8 bushShake[RH][RW];
 
 // ---------------------------------------------------------------- things you can hold
@@ -176,6 +200,7 @@ void ItemsDrawBehind(void); // before the body, before the light pass
 void ItemsDrawHeld(void);   // after the body, before the light pass
 void ItemsDrawCore(void);   // after the light pass
 int  PlayerHolds(void);     // IT_NONE, IT_LAMP or IT_STONE
+int  LampPos(f32 *x, f32 *y);   // the lamp's glass, if the lamp is in this room or in hand
 
 // ---------------------------------------------------------------- input
 // One indirection, so a scripted playtest and a keyboard take the same path.
@@ -195,7 +220,7 @@ void ResetDrawLids(void);   // after the light pass, before your eyes
 // ---------------------------------------------------------------- fx
 // A fixed pool of specks. Nothing here is ever read by a rule; it exists so the
 // room looks like somewhere air moves and water finds its way down.
-enum { FX_MOTE, FX_DRIP, FX_SPLASH, FX_DUST };
+enum { FX_MOTE, FX_DRIP, FX_SPLASH, FX_DUST, FX_SPARK, FX_SHARD };
 typedef struct { f32 x, y, vx, vy; u16 life, maxLife; u8 kind; u8 seed; } Particle;
 #define FX_MAX 160
 void FxInit(void);
@@ -210,6 +235,7 @@ enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SP
        SFX_SWIM, SFX_DRIP, SFX_BULB, SFX_BULB_TIMED,
        SFX_RUSTLE, SFX_WING, SFX_CHIRP, SFX_PAD, SFX_CHIRR, SFX_PLANT0, SFX_PLANT1, SFX_PLANT2,
        SFX_PICKUP, SFX_SETDOWN, SFX_STONE, SFX_STONE_UP, SFX_WAKE,
+       SFX_CREAK, SFX_CLINK, SFX_POT, SFX_SHATTER, SFX_GRIT, SFX_RATTLE, SFX_CATCH, SFX_CRACKLE, SFX_FLAP,
        SFX_COUNT };
 void  AudioInit(int mute);
 void  AudioStep(void);
@@ -234,6 +260,9 @@ extern Color palWater, palWaterLit, palWaterFleck, palSkinWet;
 extern Color palBush, palBushLit, palBerry, palStalk, palLeaf, palPod, palPodLit, palPodDeep;
 extern Color palBird, palBirdLight, palFur, palFurLight, palEyeGreen;
 extern Color palLampIron, palLampGlass, palLampHot, palStone, palStoneLit, palStoneDeep;
+extern Color palAshlar, palAshlarLit, palMortar, palCornice, palCorniceLit, palLichen;
+extern Color palDoor, palDoorGroove, palCityGlass, palCityGlassLit, palIron, palRope;
+extern Color palCloth, palClothLit, palClay, palClayLit, palBone, palEmber, palFlame, palFlameHot;
 
 // ---------------------------------------------------------------- debug
 extern long frameNo;

@@ -166,6 +166,10 @@ void PlayerInit(float x, float y) {
 
 void PlayerStep(void) {
     int wasSubmerged = player.submerged;
+    // Counted down at the START of the step, so the frame a landing sets it to 7 is the
+    // frame everything after the body -- the birds, the props -- reads 7. Decremented at
+    // the end, nothing downstream ever saw the landing at all.
+    if (player.landImpact > 0) player.landImpact--;
     player.onGround = 0;
     if (RectHitsSolid(player.x, player.y + 1, player.w, player.h) ||
         (!in.down && LedgeBlocks(player.y + player.h, player.y + 1, player.w, player.h)))
@@ -302,7 +306,6 @@ void PlayerStep(void) {
     }
     player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;
     player.leanY += (player.vy * 0.35f - player.leanY) * 0.18f;
-    if (player.landImpact > 0) player.landImpact--;
     if (--player.blink < 0) player.blink = 70 + (int)(Hash2((int)frameNo, 3) % 150);
 }
 

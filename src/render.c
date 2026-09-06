@@ -50,6 +50,27 @@ Color palLampHot  = { 255, 250, 232, 255 };
 Color palStone    = {  98,  92,  96, 255 };   // warmer than the walls: it is not part of them
 Color palStoneLit = { 150, 142, 140, 255 };
 Color palStoneDeep= {  54,  50,  56, 255 };
+// the city: dressed stone, a shade greyer and greener than the rock it was cut from
+Color palAshlar    = {  64,  66,  82, 255 };
+Color palAshlarLit = { 118, 122, 142, 255 };
+Color palMortar    = {  40,  40,  54, 255 };
+Color palCornice   = {  92,  96, 104, 255 };
+Color palCorniceLit= { 152, 158, 164, 255 };
+Color palLichen    = { 108, 128, 108, 255 };
+Color palDoor      = {  40,  56,  54, 255 };   // the door's face: iron gone green
+Color palDoorGroove= {  66, 102,  90, 255 };
+Color palCityGlass = { 120, 186, 150, 255 };   // their light. Not yours
+Color palCityGlassLit={ 200, 244, 214, 255 };
+Color palIron      = {  70,  68,  78, 255 };
+Color palRope      = { 132, 104,  72, 255 };
+Color palCloth     = {  48, 108, 110, 255 };   // dyed teal, the one saturated thing they left
+Color palClothLit  = {  92, 160, 158, 255 };
+Color palClay      = { 156,  96,  74, 255 };
+Color palClayLit   = { 206, 146, 112, 255 };
+Color palBone      = { 214, 206, 186, 255 };
+Color palEmber     = { 196,  70,  40, 255 };
+Color palFlame     = { 244, 150,  60, 255 };
+Color palFlameHot  = { 255, 232, 170, 255 };
 
 // Not an overlay: scanline depth is modulated per pixel by luminosity, so a bright
 // pixel blooms across the gap and a dark one sinks into it. X stays bilinear, Y is

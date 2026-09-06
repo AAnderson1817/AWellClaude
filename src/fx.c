@@ -98,10 +98,19 @@ void FxStep(void) {
                 }
             } break;
             case FX_SPLASH:
-            case FX_DUST: {
-                p->vy += (p->kind == FX_SPLASH) ? 0.13f : 0.020f;
+            case FX_DUST:
+            case FX_SHARD: {
+                p->vy += (p->kind == FX_SPLASH) ? 0.13f : (p->kind == FX_SHARD ? 0.12f : 0.020f);
                 p->x += p->vx; p->y += p->vy;
-                p->vx *= 0.90f;
+                p->vx *= (p->kind == FX_SHARD) ? 0.97f : 0.90f;
+                if (TileSolid(TileAtPx(p->x, p->y))) p->life = 0;
+            } break;
+            case FX_SPARK: {
+                // a spark rises, wanders, and goes out before it lands anywhere
+                p->vy += 0.008f;
+                p->vx += (Rnd() - 0.5f) * 0.06f;
+                p->x += p->vx; p->y += p->vy;
+                p->vx *= 0.96f;
                 if (TileSolid(TileAtPx(p->x, p->y))) p->life = 0;
             } break;
             default: break;
@@ -134,6 +143,12 @@ void FxDraw(void) {
                 if (t > 0.6f) c = (Color){ 118, 112, 130, 255 };
                 DrawRectangle(x, y, 1, 1, c);
             } break;
+            case FX_SPARK:
+                DrawRectangle(x, y, 1, 1, t > 0.45f ? palFlameHot : palEmber);
+                break;
+            case FX_SHARD:
+                DrawRectangle(x, y, 1, 1, t > 0.3f ? palClay : palClayLit);
+                break;
             default: break;
         }
     }

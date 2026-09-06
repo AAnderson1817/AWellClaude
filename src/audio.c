@@ -16,7 +16,7 @@ int sfxCount[SFX_COUNT];
 
 // ---------------------------------------------------------------- storage
 // One static pool, carved once. Sounds own a slice; raylib copies it into the device.
-#define POOL_MAX (SR * 24)
+#define POOL_MAX (SR * 30)
 static i16 pool[POOL_MAX];
 static int poolUsed;
 #define WORK_MAX (SR * 7)
@@ -238,6 +238,43 @@ static void Synth(void) {
       for (int i = 0; i < n; i++) work[i] += sv[i] * 0.8f; }
     Reverb(n, 0.30f, 0.80f, 0.35f);
     Register(SFX_WAKE, "wake", n, 0.8f, 0.30f, 1);
+
+    // the props. Each is the answer a thing gives when you touch it, and nothing else.
+    // a rope: fibres under strain, a creak that falls
+    n = (int)(SR * 0.20f); Clear(n); Sine(n, 96, 68, 0.14f, 0.7f); Noise(n, 0.35f); LowPass(n, 900, 500, 0.15f); Env(n, 0.01f, 0.06f); Soft(n, 1.8f);
+    Register(SFX_CREAK, "creak", n, 0.8f, 0.22f, 2);
+    // a chain: two bright partials, very short, a little of the room
+    n = (int)(SR * 0.30f); Clear(n); Sine(n, 2350, 2350, 0, 0.6f); Sine(n, 3560, 3560, 0, 0.3f); Env(n, 0.001f, 0.045f); Noise((int)(SR * 0.006f), 0.4f); Reverb(n, 0.22f, 0.76f, 0.35f);
+    Register(SFX_CLINK, "clink", n, 0.8f, 0.20f, 2);
+    // a pot: a hollow clay knock
+    n = (int)(SR * 0.14f); Clear(n); Sine(n, 540, 470, 0.05f, 0.8f); Noise(n, 0.3f); LowPass(n, 1400, 1400, 0); Env(n, 0.001f, 0.035f);
+    Register(SFX_POT, "pot", n, 0.8f, 0.30f, 2);
+    // a pot breaking: a burst, then three shards ringing
+    n = (int)(SR * 0.45f); Clear(n); Noise(n, 1.0f); HighPass(n, 1100); LowPass(n, 6000, 6000, 0); Env(n, 0.001f, 0.07f);
+    for (int k = 0; k < 3; k++) { int at = (int)(SR * (0.05f + 0.06f * k)); float f = 1800 + 700 * Rnd();
+        for (int i = 0; i < (int)(SR * 0.08f) && at + i < n; i++) work[at + i] += sinf(2 * PI_F * f * i / SR) * 0.35f * expf(-i / (SR * 0.02f)); }
+    Reverb(n, 0.2f, 0.75f, 0.4f);
+    Register(SFX_SHATTER, "shatter", n, 0.8f, 0.42f, 1);
+    // grit: dust let go of a lintel
+    n = (int)(SR * 0.30f); Clear(n); Noise(n, 1.0f); LowPass(n, 2200, 900, 0.25f); HighPass(n, 250); Env(n, 0.02f, 0.09f);
+    Register(SFX_GRIT, "grit", n, 0.8f, 0.16f, 2);
+    // bones: three dry ticks
+    n = (int)(SR * 0.16f); Clear(n);
+    for (int k = 0; k < 3; k++) { int at = (int)(SR * (0.0f + 0.045f * k)); for (int i = 0; i < (int)(SR * 0.03f) && at + i < n; i++) work[at + i] += Rnd() * expf(-i / (SR * 0.004f)) * (1.0f - 0.25f * k); }
+    LowPass(n, 3200, 3200, 0); HighPass(n, 600);
+    Register(SFX_RATTLE, "rattle", n, 0.8f, 0.30f, 1);
+    // the fire catching: a whoomp, low, that opens
+    n = (int)(SR * 0.7f); Clear(n); Noise(n, 1.0f); LowPass(n, 380, 1100, 0.25f); Env(n, 0.035f, 0.18f);
+    { static float sv[16000]; memcpy(sv, work, sizeof(float) * n); Clear(n); Sine(n, 72, 60, 0.3f, 0.5f); Env(n, 0.02f, 0.22f);
+      for (int i = 0; i < n; i++) work[i] += sv[i]; }
+    Soft(n, 1.4f); Reverb(n, 0.2f, 0.75f, 0.4f);
+    Register(SFX_CATCH, "catch", n, 0.8f, 0.45f, 1);
+    // a crackle: one tick of it, played often and quietly
+    n = (int)(SR * 0.05f); Clear(n); Noise(n, 1.0f); HighPass(n, 900); LowPass(n, 5200, 5200, 0); Env(n, 0.001f, 0.012f);
+    Register(SFX_CRACKLE, "crackle", n, 0.8f, 0.20f, 3);
+    // cloth: a flap of air
+    n = (int)(SR * 0.16f); Clear(n); Noise(n, 1.0f); LowPass(n, 1600, 600, 0.12f); HighPass(n, 200); Env(n, 0.012f, 0.05f);
+    Register(SFX_FLAP, "flap", n, 0.8f, 0.18f, 2);
 
     // ambience. Six seconds, looped, ends crossfaded so the seam is not a click.
     for (int r = 0; r < ROOM_COUNT; r++) {

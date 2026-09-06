@@ -35,13 +35,13 @@ static const char *MAPS[ROOM_COUNT][RH] = {
         "#......................................#",
         "#.........................----.........#",
         "#..........----..................,.....#",
-        "#.,...............###.........#.b.m.sb.#",
-        "#b.....,..........###.........#####*####",
+        "#.................###.........#.b.m.sb.#",
+        "#.P...............###.........#####*####",
         "####..----........###.........##########",
         "####..............###.----....##########",
         "#####.............###.........##########",
         "#####*............###.......o.##########",
-        "######.bP...o..b,.###....,.##b##########",
+        "######b...b.o.....###....,.##b##########",
         "#####################------#############",
         "#####################......#############",
     },
@@ -74,6 +74,22 @@ static const char *MAPS[ROOM_COUNT][RH] = {
 u8  tiles[RH][RW];
 u8  roomTiles[ROOM_COUNT][RH][RW];
 int  roomIdx;
+
+// The city, as rectangles of tiles; everything else is the vault. Room 0: the balcony and
+// its mass with the right block above it, and the column, the street and the grate. Room 1
+// is dressed in the next build and stays raw until then.
+typedef struct { i16 x0, y0, x1, y1; } ZRect;
+static const ZRect CITY[ROOM_COUNT][4] = {
+    { { 26, 5, 39, 12 }, { 18, 13, 39, 21 }, { -1, 0, 0, 0 } },
+    { { -1, 0, 0, 0 } },
+};
+int ZoneAt(int tx, int ty) {
+    for (int i = 0; i < 4 && CITY[roomIdx][i].x0 >= 0; i++) {
+        const ZRect *r = &CITY[roomIdx][i];
+        if (tx >= r->x0 && tx <= r->x1 && ty >= r->y0 && ty <= r->y1) return Z_CITY;
+    }
+    return Z_VAULT;
+}
 static int markBeastX = -1, markBeastY = -1;
 static int markPlantN, markPlantX[4], markPlantY[4];
 static int markStoneN, markStoneX[4], markStoneY[4];
@@ -112,40 +128,100 @@ u8 TileAtPx(float px, float py) {
 #define LATT_D 0.706f      // per diagonal step
 #define LPASS  48          // relaxation passes; the grid is 880 cells, this is free
 
-static f32 lstat[RH][RW];              // baked, never changes
-static f32 lnow[RH][RW];               // baked + whatever is moving
-static Color lpix[(RH + 1) * (RW + 1)];   // ambient + seam, multiplied over the frame
-static Color gpix[(RH + 1) * (RW + 1)];   // seam only, added back on top
+// Two bakes, two colours. Warm is flame and flame is the hunters': the seams in raw rock,
+// your lamp, the fire. Cool is the city's own light: its glass, the face, the native. You
+// learn who made a thing by what colour it gives off, so the two never mix in the bake.
+static f32 lstatW[RH][RW], lstatC[RH][RW];   // baked, never changes
+static f32 lnowW[RH][RW],  lnowC[RH][RW];    // baked + whatever is moving
+static Color lpix[(RH + 1) * (RW + 1)];   // ambient + light, multiplied over the frame
+static Color gpix[(RH + 1) * (RW + 1)];   // light only, added back on top
 static Texture2D lightTex, glowTex;
 
 // Cool where nothing reaches, and a shade less cool near the ceiling, so the room
 // feels like it is under something rather than sealed inside it.
 static const f32 AMB_R = 0.118f, AMB_G = 0.130f, AMB_B = 0.222f;
 static const f32 WARM_R = 1.00f, WARM_G = 0.815f, WARM_B = 0.560f;
+static const f32 COOL_R = 0.60f, COOL_G = 0.96f, COOL_B = 0.76f;
 #define GLOW 0.38f
 #define GLOW_CAP 0.60f
 
 static int Opaque(int x, int y) { return (tileFlags[TileGet(x, y)] & TF_OPAQUE) != 0; }
 
-static void LightBake(void) {
-    memset(lstat, 0, sizeof lstat);
-    // A seam lights the open space around it, not itself: light starts where air is.
+// Relaxation, then the faces: stone takes the light off the air beside it. This is the
+// step that draws the shape of the room -- an edge lit from one side and dark on the other.
+static void Relax(f32 l[RH][RW]) {
+    for (int p = 0; p < LPASS; p++) {
+        // Alternating scan direction so a value can travel the width of the room in
+        // far fewer passes than it would crawling one cell at a time.
+        int rev = p & 1;
+        for (int i = 0; i < RH; i++) {
+            int y = rev ? RH - 1 - i : i;
+            for (int j = 0; j < RW; j++) {
+                int x = rev ? RW - 1 - j : j;
+                if (Opaque(x, y)) continue;
+                f32 best = l[y][x];
+                for (int dy = -1; dy <= 1; dy++)
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (!dx && !dy) continue;
+                        int nx = x + dx, ny = y + dy;
+                        if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
+                        if (Opaque(nx, ny)) continue;
+                        f32 c = l[ny][nx] * ((dx && dy) ? LATT_D : LATT_O);
+                        if (TileWater(tiles[y][x])) c *= 0.90f;   // light dies faster under
+                        if (c > best) best = c;
+                    }
+                l[y][x] = best;
+            }
+        }
+    }
+    f32 face[RH][RW];
+    memset(face, 0, sizeof face);
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
-            if (!(tileFlags[tiles[y][x]] & TF_EMIT)) continue;
+            if (!Opaque(x, y)) continue;
+            f32 best = 0.0f;
             for (int dy = -1; dy <= 1; dy++)
                 for (int dx = -1; dx <= 1; dx++) {
                     int nx = x + dx, ny = y + dy;
                     if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
                     if (Opaque(nx, ny)) continue;
-                    if (lstat[ny][nx] < 1.0f) lstat[ny][nx] = 1.0f;
+                    f32 c = l[ny][nx] * ((dx && dy) ? 0.62f : 0.80f);
+                    if (c > best) best = c;
+                }
+            face[y][x] = best;
+        }
+    for (int y = 0; y < RH; y++)
+        for (int x = 0; x < RW; x++)
+            if (Opaque(x, y)) l[y][x] = face[y][x];
+}
+
+static void LightBake(void) {
+    memset(lstatW, 0, sizeof lstatW);
+    memset(lstatC, 0, sizeof lstatC);
+    // A seam lights the open space around it, not itself: light starts where air is.
+    // A seam in the city is one of its glass lamps and lights cool; in raw rock, warm.
+    for (int y = 0; y < RH; y++)
+        for (int x = 0; x < RW; x++) {
+            if (!(tileFlags[tiles[y][x]] & TF_EMIT)) continue;
+            f32 (*l)[RW] = ZoneAt(x, y) == Z_CITY ? lstatC : lstatW;
+            for (int dy = -1; dy <= 1; dy++)
+                for (int dx = -1; dx <= 1; dx++) {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
+                    if (Opaque(nx, ny)) continue;
+                    if (l[ny][nx] < 1.0f) l[ny][nx] = 1.0f;
                 }
         }
     for (int i = 0; i < bulbCount; i++) {
         int bx = bulbs[i].x / TS, by = (bulbs[i].y - 1) / TS;
-        if (bx >= 0 && bx < RW && by >= 0 && by < RH && !Opaque(bx, by) && lstat[by][bx] < 0.42f)
-            lstat[by][bx] = 0.42f;
+        if (bx >= 0 && bx < RW && by >= 0 && by < RH && !Opaque(bx, by) && lstatW[by][bx] < 0.42f)
+            lstatW[by][bx] = 0.42f;
     }
+    // An opening in the floor is lit from beneath by the room below -- the grate over the
+    // cistern glows up through its bars.
+    if (roomIdx < ROOM_COUNT - 1)
+        for (int x = 0; x < RW; x++)
+            if (tiles[RH - 1][x] == T_EMPTY && lstatC[RH - 1][x] < 0.55f) lstatC[RH - 1][x] = 0.55f;
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
             if (!(tileFlags[tiles[y][x]] & TF_EMIT)) continue;
@@ -160,57 +236,20 @@ static void LightBake(void) {
             // from the outside exactly like a seam that does. Say so.
             if (!lit) TraceLog(LOG_WARNING, "seam at %d,%d is walled in", x, y);
         }
-    for (int p = 0; p < LPASS; p++) {
-        // Alternating scan direction so a value can travel the width of the room in
-        // far fewer passes than it would crawling one cell at a time.
-        int rev = p & 1;
-        for (int i = 0; i < RH; i++) {
-            int y = rev ? RH - 1 - i : i;
-            for (int j = 0; j < RW; j++) {
-                int x = rev ? RW - 1 - j : j;
-                if (Opaque(x, y)) continue;
-                f32 best = lstat[y][x];
-                for (int dy = -1; dy <= 1; dy++)
-                    for (int dx = -1; dx <= 1; dx++) {
-                        if (!dx && !dy) continue;
-                        int nx = x + dx, ny = y + dy;
-                        if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
-                        if (Opaque(nx, ny)) continue;
-                        f32 c = lstat[ny][nx] * ((dx && dy) ? LATT_D : LATT_O);
-                        if (TileWater(tiles[y][x])) c *= 0.90f;   // light dies faster under
-                        if (c > best) best = c;
-                    }
-                lstat[y][x] = best;
-            }
-        }
-    }
-    // Now let stone take the light off the air beside it. This is the step that
-    // draws the shape of the room -- an edge lit from one side and dark on the other.
-    f32 face[RH][RW];
-    memset(face, 0, sizeof face);
-    for (int y = 0; y < RH; y++)
-        for (int x = 0; x < RW; x++) {
-            if (!Opaque(x, y)) continue;
-            f32 best = 0.0f;
-            for (int dy = -1; dy <= 1; dy++)
-                for (int dx = -1; dx <= 1; dx++) {
-                    int nx = x + dx, ny = y + dy;
-                    if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
-                    if (Opaque(nx, ny)) continue;
-                    f32 c = lstat[ny][nx] * ((dx && dy) ? 0.62f : 0.80f);
-                    if (c > best) best = c;
-                }
-            if (tileFlags[tiles[y][x]] & TF_EMIT) best = 1.0f;
-            face[y][x] = best;
-        }
+    Relax(lstatW);
+    Relax(lstatC);
+    // A seam's own face is fully lit, in its own colour.
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++)
-            if (Opaque(x, y)) lstat[y][x] = face[y][x];
+            if (tileFlags[tiles[y][x]] & TF_EMIT) {
+                if (ZoneAt(x, y) == Z_CITY) lstatC[y][x] = 1.0f; else lstatW[y][x] = 1.0f;
+            }
 }
 
 // The body carries a little light of its own -- enough to find yourself by, not
 // enough to see the room with. Occluded properly, or it shines through walls.
-static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK) {
+static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK, int cool) {
+    f32 (*lnow)[RW] = cool ? lnowC : lnowW;
     f32 cx = px / TS, cy = py / TS;
     int x0 = (int)(cx - R) - 1, x1 = (int)(cx + R) + 1;
     int y0 = (int)(cy - R) - 1, y1 = (int)(cy + R) + 1;
@@ -237,37 +276,40 @@ static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK) {
 }
 
 static void AddAura(void) {
-    AddPoint(player.x + player.w * 0.5f, player.y + player.h * 0.5f, 4.6f, 0.42f);
+    AddPoint(player.x + player.w * 0.5f, player.y + player.h * 0.5f, 4.6f, 0.42f, 0);
 }
-void LightAddPoint(f32 px, f32 py, f32 R, f32 peak) { AddPoint(px, py, R, peak); }
+void LightAddPoint(f32 px, f32 py, f32 R, f32 peak)     { AddPoint(px, py, R, peak, 0); }
+void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak) { AddPoint(px, py, R, peak, 1); }
 
 void LightStep(void) {
-    memcpy(lnow, lstat, sizeof lnow);
+    memcpy(lnowW, lstatW, sizeof lnowW);
+    memcpy(lnowC, lstatC, sizeof lnowC);
     AddAura();
     LifeLights();
     ItemsLight();
+    PropsLight();
     // A bulb that has just been landed on throws light for a moment; more, and further,
     // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
         if (bulbs[i].flash > 0) {
             f32 t = bulbs[i].flash / (bulbs[i].timed ? 26.0f : 22.0f);
             AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f,
-                     bulbs[i].timed ? 5.4f : 4.2f, t * (bulbs[i].timed ? 0.90f : 0.55f));
+                     bulbs[i].timed ? 5.4f : 4.2f, t * (bulbs[i].timed ? 0.90f : 0.55f), 0);
         }
     // The grid is sampled at tile CORNERS: (RW+1) x (RH+1) values, drawn back over
     // the room half a tile out on every side so each texel centre lands exactly on
     // its corner. Bilinear does the rest, and the falloff comes out smooth.
     for (int j = 0; j <= RH; j++) {
         for (int i = 0; i <= RW; i++) {
-            f32 acc = 0.0f;
+            f32 accW = 0.0f, accC = 0.0f;
             int n = 0;
             for (int dy = -1; dy <= 0; dy++)
                 for (int dx = -1; dx <= 0; dx++) {
                     int x = i + dx, y = j + dy;
                     if (x < 0 || x >= RW || y < 0 || y >= RH) continue;
-                    acc += lnow[y][x]; n++;
+                    accW += lnowW[y][x]; accC += lnowC[y][x]; n++;
                 }
-            f32 v = n ? acc / n : 0.0f;
+            f32 vW = n ? accW / n : 0.0f, vC = n ? accC / n : 0.0f;
             int wn = 0;
             for (int dy = -1; dy <= 0; dy++)
                 for (int dx = -1; dx <= 0; dx++) {
@@ -276,10 +318,10 @@ void LightStep(void) {
                 }
             f32 wf = n ? (f32)wn / n : 0.0f;          // how much of this corner is under
             f32 h = 1.0f - (f32)j / (f32)RH;          // a shade more sky near the ceiling
-            f32 w = powf(v, 1.55f);
-            f32 r = AMB_R * (0.88f + 0.26f * h) + w * WARM_R;
-            f32 g = AMB_G * (0.88f + 0.24f * h) + w * WARM_G;
-            f32 b = AMB_B * (0.92f + 0.22f * h) + w * WARM_B;
+            f32 wW = powf(vW, 1.55f), wC = powf(vC, 1.55f);
+            f32 r = AMB_R * (0.88f + 0.26f * h) + wW * WARM_R + wC * COOL_R;
+            f32 g = AMB_G * (0.88f + 0.24f * h) + wW * WARM_G + wC * COOL_G;
+            f32 b = AMB_B * (0.92f + 0.22f * h) + wW * WARM_B + wC * COOL_B;
             r *= 1.0f - 0.40f * wf;                   // under the water everything goes cold
             g *= 1.0f - 0.10f * wf;
             if (r > 1.0f) r = 1.0f;
@@ -289,10 +331,10 @@ void LightStep(void) {
             // The additive half. Squared, so it stays off everywhere except close in.
             // Capped: past this a lamp in hand blew every channel past 255 and the cast
             // wrapped, red first -- a cyan blotch where the light was strongest.
-            f32 q = v * v * GLOW;
-            if (q > GLOW_CAP) q = GLOW_CAP;
-            gpix[j * (RW + 1) + i] = (Color){ (u8)(q * WARM_R * 255), (u8)(q * WARM_G * 255),
-                                              (u8)(q * WARM_B * 255), 255 };
+            f32 qW = vW * vW * GLOW, qC = vC * vC * GLOW;
+            if (qW + qC > GLOW_CAP) { f32 k = GLOW_CAP / (qW + qC); qW *= k; qC *= k; }
+            f32 gr = qW * WARM_R + qC * COOL_R, gg = qW * WARM_G + qC * COOL_G, gb = qW * WARM_B + qC * COOL_B;
+            gpix[j * (RW + 1) + i] = (Color){ (u8)(gr * 255), (u8)(gg * 255), (u8)(gb * 255), 255 };
         }
     }
     UpdateTexture(lightTex, lpix);
@@ -352,6 +394,7 @@ void RoomEnter(int idx) {
     roomIdx = idx;
     ParseRoom(idx, tiles);          // sets the bulbs for this room too
     FindSurfaces();
+    PropsInit();
     LightBake();
     memset(surfH, 0, sizeof surfH);
     memset(surfV, 0, sizeof surfV);
@@ -446,6 +489,24 @@ static void DrawStone(int x, int y, int px, int py) {
     int up = Massive(x, y - 1), dn = Massive(x, y + 1);
     int lf = Massive(x - 1, y), rt = Massive(x + 1, y);
     int buried = up && dn && lf && rt;
+    int city = ZoneAt(x, y) == Z_CITY;
+
+    if (city) {
+        // Dressed stone: ashlar, coursed, with the joints offset every other row. The
+        // same eight pixels as the rock; what makes it built is that someone lined it up.
+        DrawRectangle(px, py, TS, TS, buried ? palRockDeep : palAshlar);
+        if (!buried) {
+            DrawRectangle(px, py + TS - 1, TS, 1, palMortar);
+            DrawRectangle(px + ((y & 1) ? 4 : 0), py, 1, TS - 1, palMortar);
+            u32 h = Hash2(x * 3 + 1, y * 5 + 2);
+            DrawRectangle(px + 1 + ((h >> 2) & 5), py + 1 + ((h >> 5) & 5), 1, 1, ((h & 1) ? palMortar : palAshlarLit));
+        }
+        if (!up) DrawRectangle(px, py, TS, 1, palAshlarLit);
+        if (!dn) DrawRectangle(px, py + TS - 1, TS, 1, palRockDeep);
+        if (!up && !lf) DrawRectangle(px, py, 1, 1, palBack);
+        if (!up && !rt) DrawRectangle(px + TS - 1, py, 1, 1, palBack);
+        return;
+    }
 
     DrawRectangle(px, py, TS, TS, buried ? palRockDeep : palRock);
 
@@ -474,6 +535,15 @@ static void DrawStone(int x, int y, int px, int py) {
 
 static void DrawVein(int x, int y, int px, int py) {
     DrawStone(x, y, px, py);
+    if (ZoneAt(x, y) == Z_CITY) {
+        // In the city a seam is one of their lamps: a pane of glass set into the stone in
+        // an iron frame, still lit after all this time. Not a vein of anything.
+        DrawRectangle(px + 1, py + 1, 6, 6, palIron);
+        DrawRectangle(px + 2, py + 2, 4, 4, palCityGlass);
+        u32 h = Hash2(x * 7 + (int)(frameNo / 13), y);
+        DrawRectangle(px + 2 + (h & 3), py + 2 + ((h >> 2) & 3), 1, 1, palCityGlassLit);
+        return;
+    }
     // A seam running through the stone. Its shape is hashed from where it is, so
     // no two look alike and all of them look like the same mineral.
     u32 h = Hash2(x * 7 + 1, y * 13 + 3);
@@ -491,6 +561,16 @@ static void DrawVein(int x, int y, int px, int py) {
 
 static void DrawLedge(int x, int y, int px, int py) {
     int lf = TileGet(x - 1, y) == T_LEDGE, rt = TileGet(x + 1, y) == T_LEDGE;
+    if (ZoneAt(x, y) == Z_CITY) {
+        // A stone cornice, not a plank: the same three pixels of shelf, in dressed stone,
+        // with dentils along its underside instead of pegs.
+        DrawRectangle(px, py, TS, 3, palCornice);
+        DrawRectangle(px, py, TS, 1, palCorniceLit);
+        DrawRectangle(px + 1, py + 2, 1, 1, palRockDeep); DrawRectangle(px + 4, py + 2, 1, 1, palRockDeep); DrawRectangle(px + 7, py + 2, 1, 1, palRockDeep);
+        if (!lf) { DrawRectangle(px, py, 1, 1, palBack); DrawRectangle(px, py + 2, 1, 1, palBack); }
+        if (!rt) { DrawRectangle(px + TS - 1, py, 1, 1, palBack); DrawRectangle(px + TS - 1, py + 2, 1, 1, palBack); }
+        return;
+    }
     // Three pixels of shelf, and nothing at all below it. A one-way surface has to
     // look like a thing you land on top of, or landing on top of it is a surprise.
     DrawRectangle(px, py, TS, 3, palLedge);
@@ -543,6 +623,12 @@ static void DrawBush(int x, int y, int px, int py) {
 
 static void DrawMoss(int x, int y, int px, int py) {
     u32 h = Hash2(x * 11 + 5, y * 17);
+    if (ZoneAt(x, y) == Z_CITY) {
+        // lichen on the masonry: flat patches, not hanging strands
+        for (int i = 0; i < 3; i++)
+            DrawRectangle(px + ((h >> (i * 5)) & 5), py + 1 + ((h >> (i * 5 + 2)) & 5), 2, 1, palLichen);
+        return;
+    }
     int down = Massive(x, y - 1) || TileGet(x, y - 1) == T_LEDGE;
     for (int i = 0; i < 4; i++) {
         int gx = px + 1 + ((h >> (i * 4)) & 5);
@@ -568,10 +654,18 @@ void RoomDraw(void) {
         for (int x = 0; x < RW; x++) {
             if (tiles[y][x] != T_EMPTY) continue;
             u32 h = Hash2(x + 91, y + 17);
+            if (ZoneAt(x, y) == Z_CITY) {
+                // The far wall of the city is coursed tighter: a joint every tile, offset by
+                // half a tile on alternate rows. Still barely a shade off the dark.
+                DrawRectangle(x * TS, ROOM_Y + y * TS + TS - 1, TS, 1, palBackLit);
+                DrawRectangle(x * TS + ((y & 1) ? 4 : 0), ROOM_Y + y * TS, 1, TS - 1, palBackLit);
+                continue;
+            }
             if ((h & 7) == 0)
                 DrawRectangle(x * TS + (h >> 3 & 7), ROOM_Y + y * TS + (h >> 6 & 7), 1, 1,
                               (Color){ 30, 29, 44, 255 });
         }
+    PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone
 
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {

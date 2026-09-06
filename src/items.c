@@ -49,6 +49,14 @@ void ItemsHome(void) {
 
 int PlayerHolds(void) { return heldItem < 0 ? IT_NONE : items[heldItem].kind; }
 
+// The lamp's glass, for things that answer light: the fire, the door, the pack's dead lamp.
+int LampPos(f32 *x, f32 *y) {
+    if (itemCount < 1 || items[0].kind != IT_LAMP) return 0;
+    if (heldItem != 0 && items[0].room != roomIdx) return 0;
+    *x = items[0].x + 2.0f; *y = items[0].y + 2.0f;
+    return 1;
+}
+
 // Where a held thing hangs: at your side, a little behind your lean; a stone lower.
 static void HeldPos(const Item *it, float *x, float *y) {
     int bob = (player.onGround && fabsf(player.vx) > 0.05f) ? ((int)player.animT & 1) : 0;

@@ -39,6 +39,7 @@ need. No allocator, no world grid, no room format, no entity system.
 | `src/fx.c` | motes, drips, landing dust. Nothing here is read by a rule |
 | `src/render.c` | palette, 320x180 target, the CRT pass |
 | `src/main.c` | window, fixed timestep, the switches the headless checks need |
+| `src/props.c` | the dressing that answers you: a props grid per room, text sprites, the door, the camp |
 
 Resolution, tile size and the CRT pass are unchanged from before: 320x180, 8px tiles,
 40x22 room, scanline depth modulated per pixel by luminosity, static dither against
@@ -247,6 +248,57 @@ exist only in the dark. First the user plays it cold. X and C came off the jump 
 `--lamp ROOM,TX,TY` places the lamp for a probe; stones are authored with `s`. The
 trace carries `hold=<0|1|2>`, the lamp's and first stone's room and position, and
 `fade=` (the reset's lids, 0..1). In a plan, `H` holds R.
+
+### The Vault Mouth (build 1 of the redesign)
+
+The premise changed (see `claude/PREMISE.md`; the salt-works is parked): you are a
+treasure hunter and the vault sealed behind you; under it is the city of the people who
+built it and of the hunters who came before. The two rooms are being redressed to it, one
+build at a time, against the response tables in `claude/ROOMS.md`. Geometry is frozen and
+both sweeps guard it. This build is room 0's dressing and everything on it that answers.
+
+**The light rule.** Two bakes now, never mixed: amber is flame and flame is the hunters'
+(your lamp, the fire, the seams in raw rock); green-white is the city's (its glass lamps,
+the hanging lamp, the grate's underlight from the cistern). A seam in the city zone is
+drawn as a pane of glass in an iron frame and lights cool. You learn who made a thing by
+what colour it gives off.
+
+**Zones.** Tiles belong to the vault or the city by a few rectangles per room. City stone
+is ashlar with offset joints, city shelves are stone cornices with dentils, the city's far
+wall is coursed tighter, its moss is lichen. Room 1 stays raw until build 2.
+
+**Props** (`src/props.c`): a second text grid per room, one letter per thing, and text
+sprites for the set pieces -- the door is 40x48 rows of palette letters whose spiral is
+the same formula the glint follows. What room 0 has, and what each answers:
+
+- **The door**, shut, in the back wall at the top left. You start on the step beside it
+  with your lamp at your feet (D5). Dust sifts from the rock above it for the first three
+  seconds and again when you land hard near its foot; your lamp within three tiles sends a
+  glint once around the spiral. Nothing opens it.
+- **Ropes** from the step's edge and under shelf A8, **roots** from the ceiling and under
+  A5, and an **iron chain with a green glass lamp** over shelf A3: rigid pendulums, swung
+  by passing through them and by a landing near their foot. Rope creaks, chain clinks, and
+  the lamp's light swings with it.
+- **The camp** on the vault floor: a bedroll that dents under your feet, a **cold fire**
+  that catches when your lamp is within two tiles for two seconds and then stays lit (D6:
+  the first change you make that persists; the reset puts it out), a cairn, and a pack
+  with a dead lamp like yours whose glass glints when your light is on it.
+- **Bones** at the right end of A9: land on the shelf and the skull tips with a rattle.
+- **Pots**: two on the balcony, one on the edge of shelf B7. A landing within a tile or
+  walking through knocks one; knocked twice on an edge it falls and shatters on the grate.
+- **The city's edge**: a capital and base on the pillar, a balustrade on the balcony's
+  wall, a teal banner on the wall face below it that ripples when you or the animal pass,
+  iron bars over the grate lit from beneath, and the balcony's seam as a glass floor lamp.
+
+    measured   route and escape green with the new start (36/36 home)
+               fire catches 108 frames after the lamp is set beside it; pot: knock,
+               knock, shatter on the grate; bones rattle on a landing; grit on a hard
+               landing at the door; creak on passing the rope; clink on the chain
+
+One bug fixed on the way: the landing flag was decremented at the end of the body's step,
+so every system that runs after the body -- the birds' startle, now the props -- read 6
+on the landing frame and never saw it. It is counted down at the start now, and birds
+startle at a hard landing nearby for the first time.
 
 ### Starting over
 

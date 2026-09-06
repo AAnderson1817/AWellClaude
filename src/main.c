@@ -147,6 +147,7 @@ long dbgResets = 0;
 
 static void BeginAgain(void) {
     ItemsHome();
+    PropsReset();
     RoomEnter(0);
     PlayerInit(RoomStartTx() * TS + 1.0f, (RoomStartTy() + 1) * TS - 11.0f);
     dbgResets++;
@@ -195,6 +196,7 @@ static void Sim(void) {
     WaterStep();
     FxStep();
     LifeStep();
+    PropsStep();
     if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
         && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
@@ -227,6 +229,7 @@ static void Frame(void) {
         LightStep();
         RenderBegin();
             RoomDraw();
+            PropsDrawFront();
             BulbsDraw();
             LifeDraw();
             ItemsDrawBehind();
@@ -267,7 +270,7 @@ static void Frame(void) {
 
 int main(int argc, char **argv) {
     int winScale = 4, atx = -1, aty = -1, startRoom = 0;
-    int lampRoom = 0, lampTx = 10, lampTy = 19;
+    int lampRoom = 0, lampTx = 1, lampTy = 14;     // at your feet, at the foot of the door
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");
@@ -311,7 +314,7 @@ int main(int argc, char **argv) {
     SetTargetFPS(dbgFixedStep ? 0 : 60);
     RenderInit();
     ItemsReset();
-    ItemsAdd(IT_LAMP, lampRoom, lampTx, lampTy);   // items[0]: by default on the floor, three steps right of the start
+    ItemsAdd(IT_LAMP, lampRoom, lampTx, lampTy);   // items[0]: by default beside you where you begin
     RoomLoad();
     // Headless runs do not open a device: the container has none, and probing for one
     // is slow. Every sound still gets synthesized and counted, so the trace can say

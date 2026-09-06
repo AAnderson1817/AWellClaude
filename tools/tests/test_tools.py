@@ -25,7 +25,7 @@ def fake_run(plan, at=None, frames=None, room=None):
     if plan.startswith("-:110,L"):           return [row(y=37.0, x=30.0)]            # water -> left island: row 6, col 3
     if plan.startswith("-:110,R"):           return [row(y=37.0, x=250.0)]           # water -> right island: row 6, col 31
     if plan == "-:6,J:6,-:6,D:120":          return [row(wet=1)]                     # through A1 with Down
-    if plan.endswith("H:90,-:60"):           return [row(wet=1, hold=2)] * 20 + [row(room=0, x=65.0, y=149.0)]   # reset from the deep
+    if plan.endswith("H:90,-:60"):           return [row(wet=1, hold=2)] * 20 + [row(room=0, x=17.0, y=109.0)]   # reset from the deep: the start, beside the door
     if plan.endswith("H:90,-:40"):           return [row(hold=2, stoneX=290)] * 20 + [row(hold=0, stoneX=290)]   # the stone goes home
     if plan.endswith("H:40,-:40"):           return [row(hold=2, fade=0.44)] * 20 + [row(hold=2, fade=0.0)]      # let go early
     return [row()]                                                                    # on A1: row 1, col 21
