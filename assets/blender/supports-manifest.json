@@ -222,8 +222,8 @@
       "material_families": [
         "wood",
         "wood",
-        "wood",
-        "wood",
+        "endgrain",
+        "endgrain",
         "metal",
         "metal",
         "stone",
@@ -298,6 +298,7 @@
     "stone": 1,
     "wood": 3,
     "rear_rock": 5,
-    "rear_stone": 6
+    "rear_stone": 6,
+    "endgrain": 7
   }
 }

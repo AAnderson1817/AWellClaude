@@ -1,0 +1,445 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-09-20T20:57:53.999976+00:00",
+  "scope": "Technical map conversion only; source art preserved. No artistic acceptance.",
+  "tool_sha256": "cabf5ae5530ba666ca42882f6bce17d55daa24bce20396d3dd5973b9105e23fd",
+  "runtime_resolution": [
+    512,
+    512
+  ],
+  "material_order": [
+    "city-stone",
+    "vault-basalt",
+    "aged-timber"
+  ],
+  "versions": {
+    "python": "3.12.14",
+    "Pillow": "12.3.0",
+    "numpy": "2.3.5",
+    "zlib": "1.3.2"
+  },
+  "filtering": {
+    "basecolor": "sRGB decode -> linear-light area box -> sRGB encode -> nearest RGB8",
+    "normal": "RGB8 to XYZ, normalize each source vector, area box, renormalize, nearest RGB8; no green flip (+Y)",
+    "roughness": "linear scalar area box -> nearest R8 stored in detail alpha",
+    "runtime_sampling": "Sample detail as linear data and normalize decoded normal after bilinear/mip sampling. Base means are encoded RGB means, not linear luminance.",
+    "mips": "Only level zero is packaged; runtime generates mips. GPU normal mip averages require renormalization after sampling."
+  },
+  "materials": [
+    {
+      "name": "city-stone",
+      "sources": {
+        "basecolor": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/city-stone/basecolor.png",
+          "mode": "RGB",
+          "sha256": "ddd80a00f4d83ea9a7a80f004dd801bd5acaec4f57b8504eca6229587ca3ddae",
+          "file_bytes": 514037
+        },
+        "normal": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/city-stone/normal.png",
+          "mode": "RGB",
+          "sha256": "d75011a0571cd81d0d8821d3e59ba8b7774ae4499fdb4133688147917019cb11",
+          "file_bytes": 1524887
+        },
+        "roughness": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/city-stone/roughness.png",
+          "mode": "RGB",
+          "sha256": "4f6e846dec3b35a14f99211d14429aea266b54159370011d8a52fca8cdac94d7",
+          "file_bytes": 533145
+        }
+      },
+      "basecolor": {
+        "width": 512,
+        "height": 512,
+        "channel_bits": 8,
+        "png_color_type": 2,
+        "compression": 0,
+        "filter_method": 0,
+        "interlace": 0,
+        "path": "public/materials/runtime/city-stone/basecolor.png",
+        "file_bytes": 122090,
+        "sha256": "e9f9e9790bbdaf3588fee4d22c5451c709aa0ee941b196abc22ea192b8665e60",
+        "encoded_rgb_mean": [
+          0.4180634592093673,
+          0.46725317263135724,
+          0.4866136139514399
+        ]
+      },
+      "detail": {
+        "width": 512,
+        "height": 512,
+        "channel_bits": 8,
+        "png_color_type": 6,
+        "compression": 0,
+        "filter_method": 0,
+        "interlace": 0,
+        "path": "public/materials/runtime/city-stone/detail.png",
+        "file_bytes": 401082,
+        "sha256": "f2a0ec01656e42662394fa875c9eeffcca155ac77a76b71abe18cbf32cb95609",
+        "channels": "RGB: OpenGL +Y tangent normal, A: linear roughness"
+      },
+      "normal_source": {
+        "length_min": 0.9941543869143995,
+        "length_max": 1.005658729872544,
+        "length_error_mean": 0.0005035478638097059,
+        "length_error_max": 0.005845613085600498,
+        "length_error_p99": 0.0035155428935378374,
+        "negative_z_texels": 0
+      },
+      "normal_runtime": {
+        "length_min": 0.9948966279313278,
+        "length_max": 1.005291650887874,
+        "length_error_mean": 0.0003592748817187807,
+        "length_error_max": 0.005291650887873978,
+        "length_error_p99": 0.003576840323106678,
+        "negative_z_texels": 0,
+        "float_length_error_max_before_quantization": 2.220446049250313e-16,
+        "shortest_average_vector_before_normalization": 0.8623754252292747
+      },
+      "roughness_source_range": [
+        194,
+        217
+      ],
+      "roughness_runtime_range": [
+        194,
+        216
+      ],
+      "roughness_runtime_normalized_range": [
+        0.7607843137254902,
+        0.8470588235294118
+      ],
+      "png_round_trip": "exact pixel equality"
+    },
+    {
+      "name": "vault-basalt",
+      "sources": {
+        "basecolor": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/vault-basalt/basecolor.png",
+          "mode": "RGB",
+          "sha256": "2d526239ebe4cdc30156f465afdbe964966c8bc958699a528c2f5db328c52598",
+          "file_bytes": 161233
+        },
+        "normal": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/vault-basalt/normal.png",
+          "mode": "RGB",
+          "sha256": "e35554f4ea3c4cd34e871a86ee2e9f56f0b52bc48d3cd149b356a68254847ad4",
+          "file_bytes": 1758943
+        },
+        "roughness": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/vault-basalt/roughness.png",
+          "mode": "RGB",
+          "sha256": "19b603d0e9058d17bb427221bb4dfcaef86ae3f824b6c3910cf9223890a6ee27",
+          "file_bytes": 428510
+        }
+      },
+      "basecolor": {
+        "width": 512,
+        "height": 512,
+        "channel_bits": 8,
+        "png_color_type": 2,
+        "compression": 0,
+        "filter_method": 0,
+        "interlace": 0,
+        "path": "public/materials/runtime/vault-basalt/basecolor.png",
+        "file_bytes": 34733,
+        "sha256": "7b617dfeff62bb6dbdeba1d30fc1996392bd1c9665030f12c47401e9cb5be55d",
+        "encoded_rgb_mean": [
+          0.2362990285836014,
+          0.2590125140021829,
+          0.270436933928845
+        ]
+      },
+      "detail": {
+        "width": 512,
+        "height": 512,
+        "channel_bits": 8,
+        "png_color_type": 6,
+        "compression": 0,
+        "filter_method": 0,
+        "interlace": 0,
+        "path": "public/materials/runtime/vault-basalt/detail.png",
+        "file_bytes": 454842,
+        "sha256": "25cf2ea5a891862439359298cef5adabb280be2e880b34a0d302bf723b502d5d",
+        "channels": "RGB: OpenGL +Y tangent normal, A: linear roughness"
+      },
+      "normal_source": {
+        "length_min": 0.9942162614970368,
+        "length_max": 1.0060868194131394,
+        "length_error_mean": 0.001431229671919357,
+        "length_error_max": 0.006086819413139377,
+        "length_error_p99": 0.003944546305671759,
+        "negative_z_texels": 0
+      },
+      "normal_runtime": {
+        "length_min": 0.9946492758018444,
+        "length_max": 1.0054140254406958,
+        "length_error_mean": 0.0011511800071643528,
+        "length_error_max": 0.005414025440695802,
+        "length_error_p99": 0.003821992610694158,
+        "negative_z_texels": 0,
+        "float_length_error_max_before_quantization": 2.220446049250313e-16,
+        "shortest_average_vector_before_normalization": 0.8258946347846025
+      },
+      "roughness_source_range": [
+        178,
+        214
+      ],
+      "roughness_runtime_range": [
+        178,
+        213
+      ],
+      "roughness_runtime_normalized_range": [
+        0.6980392156862745,
+        0.8352941176470589
+      ],
+      "png_round_trip": "exact pixel equality"
+    },
+    {
+      "name": "aged-timber",
+      "sources": {
+        "basecolor": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/aged-timber/basecolor.png",
+          "mode": "RGB",
+          "sha256": "a8f514a61c0f16623e1ca4dd67ca33424c505412d037b038fa8b40a6d5e98f54",
+          "file_bytes": 296481
+        },
+        "normal": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/aged-timber/normal.png",
+          "mode": "RGB",
+          "sha256": "fa5acfbd7cde325b9526114945113a789500626dd26a0ec92f72828b4bc9aed0",
+          "file_bytes": 189091
+        },
+        "roughness": {
+          "width": 1024,
+          "height": 1024,
+          "channel_bits": 8,
+          "png_color_type": 2,
+          "compression": 0,
+          "filter_method": 0,
+          "interlace": 0,
+          "path": "public/materials/aged-timber/roughness.png",
+          "mode": "RGB",
+          "sha256": "751cb839edb17475ae2594737caf82f4f61e003ecf924ba6fa75230a30786f0e",
+          "file_bytes": 100382
+        }
+      },
+      "basecolor": {
+        "width": 512,
+        "height": 512,
+        "channel_bits": 8,
+        "png_color_type": 2,
+        "compression": 0,
+        "filter_method": 0,
+        "interlace": 0,
+        "path": "public/materials/runtime/aged-timber/basecolor.png",
+        "file_bytes": 62473,
+        "sha256": "3f769e78117c46dc6afbee8eedaac214b716d29d97dd3b81fbf7051e81b6ef88",
+        "encoded_rgb_mean": [
+          0.4126322577981388,
+          0.3291142183191636,
+          0.23419014425838694
+        ]
+      },
+      "detail": {
+        "width": 512,
+        "height": 512,
+        "channel_bits": 8,
+        "png_color_type": 6,
+        "compression": 0,
+        "filter_method": 0,
+        "interlace": 0,
+        "path": "public/materials/runtime/aged-timber/detail.png",
+        "file_bytes": 55900,
+        "sha256": "4140c0898ed844de9539812ee83111f4e3aa6d921538af6460bb274d7296168c",
+        "channels": "RGB: OpenGL +Y tangent normal, A: linear roughness"
+      },
+      "normal_source": {
+        "length_min": 0.994463721329812,
+        "length_max": 1.0055363851004404,
+        "length_error_mean": 0.0005489695011000014,
+        "length_error_max": 0.005536385100440411,
+        "length_error_p99": 0.003392936800391766,
+        "negative_z_texels": 0
+      },
+      "normal_runtime": {
+        "length_min": 0.9953293462453102,
+        "length_max": 1.004985649312902,
+        "length_error_mean": 0.0003817220155199314,
+        "length_error_max": 0.0049856493129019075,
+        "length_error_p99": 0.002779681475911344,
+        "negative_z_texels": 0,
+        "float_length_error_max_before_quantization": 2.220446049250313e-16,
+        "shortest_average_vector_before_normalization": 0.8167509096123836
+      },
+      "roughness_source_range": [
+        186,
+        212
+      ],
+      "roughness_runtime_range": [
+        186,
+        211
+      ],
+      "roughness_runtime_normalized_range": [
+        0.7294117647058823,
+        0.8274509803921568
+      ],
+      "png_round_trip": "exact pixel equality"
+    }
+  ],
+  "gpu_memory_estimate": {
+    "assumption": "Uncompressed full mip chain, RGB8 base plus RGBA8 detail; driver may expand RGB8 to RGBA8.",
+    "levels_per_texture": 10,
+    "mip_levels": [
+      {
+        "size": [
+          512,
+          512
+        ],
+        "texels": 262144
+      },
+      {
+        "size": [
+          256,
+          256
+        ],
+        "texels": 65536
+      },
+      {
+        "size": [
+          128,
+          128
+        ],
+        "texels": 16384
+      },
+      {
+        "size": [
+          64,
+          64
+        ],
+        "texels": 4096
+      },
+      {
+        "size": [
+          32,
+          32
+        ],
+        "texels": 1024
+      },
+      {
+        "size": [
+          16,
+          16
+        ],
+        "texels": 256
+      },
+      {
+        "size": [
+          8,
+          8
+        ],
+        "texels": 64
+      },
+      {
+        "size": [
+          4,
+          4
+        ],
+        "texels": 16
+      },
+      {
+        "size": [
+          2,
+          2
+        ],
+        "texels": 4
+      },
+      {
+        "size": [
+          1,
+          1
+        ],
+        "texels": 1
+      }
+    ],
+    "rgb8_base_rgba8_detail_bytes_all_materials": 7340025,
+    "rgb8_base_rgba8_detail_mib_all_materials": 6.999993324279785,
+    "both_rgba8_bytes_all_materials": 8388600,
+    "both_rgba8_mib_all_materials": 7.999992370605469,
+    "exclusions": "Driver alignment, upload staging, source PNG memory and sampling overhead are not included."
+  },
+  "synthetic_checks": {
+    "status": "pass",
+    "probes": [
+      "linear-light color averaging",
+      "opposing normal slope cancellation",
+      "+Y convention preserved",
+      "linear scalar roughness",
+      "lossless detail PNG channel packing"
+    ]
+  },
+  "header": {
+    "path": "src/generated/material_textures.h",
+    "sha256": "027475180be9e1700fcd79014e19d206b5e0119fb333303fdd426523dbff5f6f",
+    "file_bytes": 5704269,
+    "png_payload_bytes": 1131120,
+    "size_fields": "(int)sizeof corresponding static unsigned char PNG arrays"
+  },
+  "source_preservation": "All nine input byte hashes unchanged after processing; no source writes.",
+  "status": "pass"
+}

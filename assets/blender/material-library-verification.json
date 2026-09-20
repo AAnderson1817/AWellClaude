@@ -1,0 +1,204 @@
+{
+  "source_reopened": true,
+  "source_sha256": "f212cf541e7504bd5d05cb1992cffb532799bdc278733a85ee333d08db6b3c6c",
+  "editable_source_nodes": 174,
+  "materials": {
+    "city-stone": {
+      "basecolor": {
+        "sha256": "ddd80a00f4d83ea9a7a80f004dd801bd5acaec4f57b8504eca6229587ca3ddae",
+        "bytes": 514037,
+        "colorspace": "sRGB",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.08650046586990356,
+        "linear_max": 0.29177069664001465,
+        "wrap_edge_mean_delta": 0.0008808209677226841,
+        "near_edge_mean_delta": 0.0008986927568912506,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3,
+        "mean_linear_rgb": [
+          0.14647665545696498,
+          0.1854781020595695,
+          0.20219610657706255
+        ],
+        "mean_srgb_rgb_0_255": [
+          106.5535792261015,
+          119.10065507288891,
+          124.04721086935979
+        ],
+        "runtime_note": "Absolute intrinsic albedo. Do not multiply by another dark base color without family mean normalization."
+      },
+      "normal": {
+        "sha256": "d75011a0571cd81d0d8821d3e59ba8b7774ae4499fdb4133688147917019cb11",
+        "bytes": 1524887,
+        "colorspace": "Non-Color",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.16078431904315948,
+        "linear_max": 1.0,
+        "wrap_edge_mean_delta": 0.007960579358041286,
+        "near_edge_mean_delta": 0.00916245300322771,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3,
+        "mean_vector_length": 1.0003204345703125,
+        "max_vector_length_error": 0.005845427513122559,
+        "minimum_z": 0.7098040580749512,
+        "channel_convention": "+Y OpenGL tangent"
+      },
+      "roughness": {
+        "sha256": "4f6e846dec3b35a14f99211d14429aea266b54159370011d8a52fca8cdac94d7",
+        "bytes": 533145,
+        "colorspace": "Non-Color",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.760784387588501,
+        "linear_max": 0.8509804606437683,
+        "wrap_edge_mean_delta": 0.0023628983180969954,
+        "near_edge_mean_delta": 0.002265241928398609,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3
+      }
+    },
+    "vault-basalt": {
+      "basecolor": {
+        "sha256": "2d526239ebe4cdc30156f465afdbe964966c8bc958699a528c2f5db328c52598",
+        "bytes": 161233,
+        "colorspace": "sRGB",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.03560132533311844,
+        "linear_max": 0.07818742841482162,
+        "wrap_edge_mean_delta": 0.00014871833263896406,
+        "near_edge_mean_delta": 0.00012191073619760573,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3,
+        "mean_linear_rgb": [
+          0.04558273012521141,
+          0.05457325771059374,
+          0.05945469483186727
+        ],
+        "mean_srgb_rgb_0_255": [
+          60.244495585889126,
+          66.03747161999536,
+          68.95181909490731
+        ],
+        "runtime_note": "Absolute intrinsic albedo. Do not multiply by another dark base color without family mean normalization."
+      },
+      "normal": {
+        "sha256": "e35554f4ea3c4cd34e871a86ee2e9f56f0b52bc48d3cd149b356a68254847ad4",
+        "bytes": 1758943,
+        "colorspace": "Non-Color",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.14509804546833038,
+        "linear_max": 1.0,
+        "wrap_edge_mean_delta": 0.011381098069250584,
+        "near_edge_mean_delta": 0.013967392034828663,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3,
+        "mean_vector_length": 1.0008652210235596,
+        "max_vector_length_error": 0.006086945533752441,
+        "minimum_z": 0.7019609212875366,
+        "channel_convention": "+Y OpenGL tangent"
+      },
+      "roughness": {
+        "sha256": "19b603d0e9058d17bb427221bb4dfcaef86ae3f824b6c3910cf9223890a6ee27",
+        "bytes": 428510,
+        "colorspace": "Non-Color",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.6980392336845398,
+        "linear_max": 0.8392157554626465,
+        "wrap_edge_mean_delta": 0.002098653931170702,
+        "near_edge_mean_delta": 0.002087164903059602,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3
+      }
+    },
+    "aged-timber": {
+      "basecolor": {
+        "sha256": "a8f514a61c0f16623e1ca4dd67ca33424c505412d037b038fa8b40a6d5e98f54",
+        "bytes": 296481,
+        "colorspace": "sRGB",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.0284260381013155,
+        "linear_max": 0.17788846790790558,
+        "wrap_edge_mean_delta": 0.00215609697625041,
+        "near_edge_mean_delta": 0.003771575167775154,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3,
+        "mean_linear_rgb": [
+          0.14170850672888236,
+          0.08835574767860166,
+          0.04468281090329107
+        ],
+        "mean_srgb_rgb_0_255": [
+          105.07434476653373,
+          83.7906949346845,
+          59.604009859848475
+        ],
+        "runtime_note": "Absolute intrinsic albedo. Do not multiply by another dark base color without family mean normalization."
+      },
+      "normal": {
+        "sha256": "fa5acfbd7cde325b9526114945113a789500626dd26a0ec92f72828b4bc9aed0",
+        "bytes": 189091,
+        "colorspace": "Non-Color",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.1411764770746231,
+        "linear_max": 1.0,
+        "wrap_edge_mean_delta": 0.004711116198450327,
+        "near_edge_mean_delta": 0.0034205203410238028,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3,
+        "mean_vector_length": 1.000496506690979,
+        "max_vector_length_error": 0.005536556243896484,
+        "minimum_z": 0.6941177845001221,
+        "channel_convention": "+Y OpenGL tangent"
+      },
+      "roughness": {
+        "sha256": "751cb839edb17475ae2594737caf82f4f61e003ecf924ba6fa75230a30786f0e",
+        "bytes": 100382,
+        "colorspace": "Non-Color",
+        "size": [
+          1024,
+          1024
+        ],
+        "linear_min": 0.729411780834198,
+        "linear_max": 0.8313726186752319,
+        "wrap_edge_mean_delta": 0.001520373742096126,
+        "near_edge_mean_delta": 0.0027343768160790205,
+        "png_channel_bits": 8,
+        "png_color_type": 2,
+        "channels": 3
+      }
+    }
+  },
+  "scope": "Portable PNG/source/tiling evidence. Does not certify AAA or the game shader.",
+  "technical_status": "pass"
+}

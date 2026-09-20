@@ -1,6 +1,16 @@
 # Verification
 
-The current architecture revision has a separate [final geometry audit](evidence/architecture/final-v12.json)
+The current material revision 13 has an [embedded-map packing report](evidence/materials/runtime-package.json),
+[architecture/material binding audit](evidence/materials/architecture-material-integration.json)
+with 19 adversarial mutations, [matched native texture comparison](evidence/materials/native/manifest.json),
+and [WebGL smoke record](evidence/materials/web-smoke.json). All 6,640 rendered
+original-state comparisons pass again across 15 scenarios in both presentation modes.
+The [material record](materials.md) details mapping, provenance, memory and local
+frame-loop timings. The [whole-brief artistic review](artistic-review-v13.md) remains
+**rework**; material validity does not establish finished craftsmanship or immersion.
+
+
+The previous architecture revision has a separate [final geometry audit](evidence/architecture/final-v12.json)
 and [independent whole-brief review](artistic-review-v12.md). The geometry audit
 checks the actual delivered C arrays, 2D landing contacts, normals, indices,
 recessed support placement, and renderer integration; seven deliberately broken

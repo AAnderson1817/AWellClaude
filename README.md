@@ -21,7 +21,9 @@ The architecture revision adds editable Blender shelf assemblies, recessed faça
 turned columns and rooted foliage, with local contact shading derived from actual
 visible geometry. The [art gallery](docs/art-direction.html) includes current game
 frames, Blender source previews and GLB links alongside the 60 reference images.
-The [independent review](docs/artistic-review-v12.md) still requires substantial
+The material revision adds authored stone, basalt and timber maps with embedded
+runtime delivery and editable [Blender material sources](docs/materials.md).
+The [independent review](docs/artistic-review-v13.md) still requires substantial
 material and hero-asset refinement before the requested AAA target is met.
 
 **Status:** a playable presentation development branch. AAA visual quality and human

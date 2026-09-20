@@ -3,7 +3,7 @@
 This branch extends the existing two-room C/raylib game. It is a working 3D
 presentation and city response candidate, with original mechanics retained and
 native and web builds. The overall goal remains active. This status describes the
-architecture revision 12 after the city response milestone.
+material revision 13 after the architecture and city response milestones.
 
 ## Delivered
 
@@ -15,6 +15,9 @@ architecture revision 12 after the city response milestone.
   façade openings, turned columns and rooted volumetric foliage. Geometry-derived
   contact shading replaces the old depth-based darkening. Source/GLB packages and
   actual C arrays are checked separately against the original landing edges.
+- Authored city stone, basalt and timber surface maps from an editable Blender
+  material library, embedded with mip filtering and separate endgrain treatment.
+  See [material integration and evidence](materials.md).
 - Existing responsive props, wildlife, bulbs, lamp/stone behavior, water and reset
   presented in 3D; flat presentation available with F2.
 - Authored mural concealment/recovery, four reactive windows, seven-second face eye
@@ -30,7 +33,7 @@ architecture revision 12 after the city response milestone.
 
 ## Acceptance still open
 
-The [current whole-brief review](artistic-review-v12.md) returns **rework**. The
+The [current whole-brief review](artistic-review-v13.md) returns **rework**. The
 playable surfaces, structural supports and inhabited architecture remain below the
 governing references. The new face, fish, windows and mural have observed responses,
 connecting material culture with behavior, but do not settle the broader quality

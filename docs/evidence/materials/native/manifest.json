@@ -1,0 +1,11 @@
+{
+  "capturedUtc": "2026-09-20T20:59:23.2437316Z",
+  "sourceHashes": {
+    "src/generated/material_textures.h": "027475180be9e1700fcd79014e19d206b5e0119fb333303fdd426523dbff5f6f",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "src/depth.c": "9a489544e28e58773756b1c98dc14a267c7ff39a2ccb0e4f595f90a703ca023c",
+    "src/generated/terrain_assets.h": "a2a40cb88bea0b0e3c76b2e076101d855a97e99a02f0ffcd3e902467f803101a",
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404"
+  },
+  "scope": "Same source/geometry, surface textures build control only; actual native images and local frame-loop wall timing. Not GPU-only timing or hardware-wide performance acceptance."
+}

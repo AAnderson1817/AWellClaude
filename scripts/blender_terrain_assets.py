@@ -473,6 +473,8 @@ for room,col in enumerate(collections):
         triangles+=len(g['indices'])//3
     lines.append('static const FoundryMeshData '+ident+'_MESHES[] = {'+','.join(descriptors)+'};')
     lines.append('static const FoundryAssetData '+ident+' = {'+ident+'_MESHES,'+str(len(groups))+',{40.0f,22.0f,'+fmt(hi[2]-lo[2])+'}};')
+    families=[0 if g['mat'].node_tree.nodes.get('Principled BSDF').inputs['Metallic'].default_value>.25 else (2 if any(word in g['mat'].name for word in ('slate','shale','sediment')) else 1) for g in groups.values()]
+    lines.append('static const unsigned char '+ident+'_SUBSTRATES[] = {'+','.join(map(str,families))+'};')
     for o in scene.objects:o.select_set(False)
     for o in copies:o.select_set(True)
     bpy.context.view_layer.objects.active=copies[0];bpy.ops.object.join();joined=copies[0];joined.name=slug

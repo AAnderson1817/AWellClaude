@@ -13,6 +13,7 @@
 #include "generated/mural_assets.h"
 #include "generated/foliage_assets.h"
 #include "generated/support_assets.h"
+#include "generated/material_textures.h"
 #include <math.h>
 #include <string.h>
 
@@ -27,6 +28,7 @@ static Texture2D waterMask;
 static Model cube, orb, cylinder, cone, torus, leaf, archPane;
 static Texture2D mattes[2];
 static Texture2D depthLight;
+static Texture2D materialBase[3],materialDetail[3],materialWhite;
 static Model doorModels[8],orreryModels[8];
 static Model terrainModels[ROOM_COUNT][12];
 static Model faceModels[12],eyeModels[4];
@@ -39,6 +41,7 @@ static int metalLoc, roughLoc, emissionLoc, cameraLoc, timeLoc, substrateLoc, wa
 static float substrate;
 static float plantBend;
 static int geometryPassLoc;
+static int textureUseLoc,materialMeanLoc;
 static const Color BASALT = {60,72,82,255};
 static const Color STONE = {95,108,112,255};
 static const Color BRONZE = {139,114,73,255};
@@ -66,11 +69,23 @@ static const char *FRAG = FHEADER
 "uniform vec4 colDiffuse; uniform sampler2D lightMap; uniform vec3 eye;\n"
 "uniform float metalness; uniform float roughness; uniform float emission; uniform float substrate; uniform float waterLevel;\n"
 "uniform float geometryPass;\n"
+"uniform sampler2D texture0;uniform sampler2D surfaceMap;uniform float textureUse;uniform vec3 materialMean;\n"
 "float hash(vec3 v){return fract(sin(dot(v,vec3(12.9898,78.233,32.21)))*43758.5453);}\n"
 "float noise3(vec3 v){vec3 i=floor(v),f=fract(v);f=f*f*(3.-2.*f);\n"
 " float a=mix(hash(i),hash(i+vec3(1,0,0)),f.x),b=mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x);\n"
 " float c=mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),d=mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x);\n"
 " return mix(mix(a,b,f.y),mix(c,d,f.y),f.z);}\n"
+"void mappedSurface(vec3 pos,vec3 N,out vec3 albedo,out vec3 mappedN,out float rough){\n"
+" vec3 w=pow(abs(N),vec3(4.));w/=max(dot(w,vec3(1.)),.001);"
+" vec3 s=vec3(N.x<0.?-1.:1.,N.y<0.?-1.:1.,N.z<0.?-1.:1.);vec3 q=pos/5.;"
+" vec2 ux=vec2(-q.z*s.x,q.y),uy=vec2(q.x,-q.z*s.y),uz=vec2(q.x*s.z,q.y);"
+" albedo=SAMPLE(texture0,ux).rgb*w.x+SAMPLE(texture0,uy).rgb*w.y+SAMPLE(texture0,uz).rgb*w.z;"
+" vec4 dx=SAMPLE(surfaceMap,ux),dy=SAMPLE(surfaceMap,uy),dz=SAMPLE(surfaceMap,uz);"
+" rough=dx.a*w.x+dy.a*w.y+dz.a*w.z;"
+" vec3 nx=dx.rgb*2.-1.,ny=dy.rgb*2.-1.,nz=dz.rgb*2.-1.;"
+" nx.xy/=max(nx.z,.2);ny.xy/=max(ny.z,.2);nz.xy/=max(nz.z,.2);"
+" vec3 perturb=vec3(0.,nx.y,-nx.x*s.x)*w.x+vec3(ny.x,0.,-ny.y*s.y)*w.y+vec3(nz.x*s.z,nz.y,0.)*w.z;"
+" mappedN=normalize(N+(perturb-N*dot(N,perturb))*.75);}\n"
 "void main(){\n"
 " vec3 N=normalize(n); vec3 V=normalize(eye-p); vec3 L=normalize(vec3(-.45,.8,.6));vec3 H=normalize(L+V);\n"
 " if(geometryPass>.5){vec3 en=N/(abs(N.x)+abs(N.y)+abs(N.z));vec2 oct=en.xy;"
@@ -80,7 +95,10 @@ static const char *FRAG = FHEADER
 " vec2 luv=vec2((p.x+.5)/41.,(22.-p.y+.5)/23.);\n"
 " vec3 baked=SAMPLE(lightMap,clamp(luv,vec2(.01),vec2(.99))).rgb;\n"
 " vec3 base=colDiffuse.rgb*vc.rgb; float rough=roughness;\n"
-" if((substrate>.5 && substrate<2.5) || substrate>4.5){\n"
+" if(textureUse>.5){vec3 albedo,mappedN;float mappedRough;mappedSurface(p,N,albedo,mappedN,mappedRough);"
+" base*=mix(vec3(1.),albedo/max(materialMean,vec3(.03)),.85);N=mappedN;rough=mix(rough,mappedRough,.85);"
+" float damp=(1.-smoothstep(waterLevel-.8,waterLevel+.28,p.y))*.11;base*=1.-damp;rough=max(.35,rough-damp*.65);"
+" } else if((substrate>.5 && substrate<2.5) || (substrate>4.5 && substrate<6.5)){\n"
 "  vec3 q=localP*vec3(1.1,2.8,1.3);float bed=noise3(q*.34);float pores=noise3(q*7.);\n"
 "  float stratum=sin(localP.y*13.+noise3(localP*.8)*5.);\n"
 "  base*=.89+bed*.21+pores*.045+stratum*.018;\n"
@@ -112,7 +130,7 @@ static const char *FRAG = FHEADER
 " vec3 c=base*light*(.48+ndl*.55)+base*vec3(.024,.035,.034)*grazing;\n"
 " c+=mix(vec3(.65,.75,.78),base,metalness)*spec*(.03+length(baked)*.8);\n"
 " c+=base*edge*.045+base*emission;\n"
-" float fog=substrate>4.5?1.-exp(-max(-p.z-1.,0.)*.15):1.-exp(-max(-p.z-5.,0.)*.072);\n"
+" float fog=(substrate>4.5 && substrate<6.5)?1.-exp(-max(-p.z-1.,0.)*.15):1.-exp(-max(-p.z-5.,0.)*.072);\n"
 " c=mix(c,vec3(.075,.13,.145),fog);\n"
 " RESULT=vec4(c,colDiffuse.a);}\n";
 static const char *OCCLUSION_FRAG = FHEADER
@@ -220,11 +238,25 @@ static void Init(void){
     surface.locs[SHADER_LOC_MATRIX_MODEL]=GetShaderLocation(surface,"matModel");
     surface.locs[SHADER_LOC_MATRIX_NORMAL]=GetShaderLocation(surface,"matNormal");
     surface.locs[SHADER_LOC_MAP_EMISSION]=GetShaderLocation(surface,"lightMap");
+    surface.locs[SHADER_LOC_MAP_NORMAL]=GetShaderLocation(surface,"surfaceMap");
     metalLoc=GetShaderLocation(surface,"metalness");roughLoc=GetShaderLocation(surface,"roughness");emissionLoc=GetShaderLocation(surface,"emission");cameraLoc=GetShaderLocation(surface,"eye");timeLoc=GetShaderLocation(finish,"time");
     substrateLoc=GetShaderLocation(surface,"substrate");waterLevelLoc=GetShaderLocation(surface,"waterLevel");
     plantBendLoc=GetShaderLocation(surface,"plantBend");
     geometryPassLoc=GetShaderLocation(surface,"geometryPass");
+    textureUseLoc=GetShaderLocation(surface,"textureUse");materialMeanLoc=GetShaderLocation(surface,"materialMean");
     cube=LoadModelFromMesh(RoundedMesh());orb=LoadModelFromMesh(GenMeshSphere(1,16,24));
+    materialWhite=cube.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture;
+    for(int i=0;i<3;i++){
+        const FoundrySurfaceImages *s=&FOUNDRY_SURFACE_IMAGES[i];
+        Image color=LoadImageFromMemory(".png",s->base,s->base_size),detail=LoadImageFromMemory(".png",s->detail,s->detail_size);
+        // PNG scanlines start at the top. World-space +V follows the Blender
+        // bake's upward tangent, so flip both images together before upload.
+        ImageFlipVertical(&color);ImageFlipVertical(&detail);
+        materialBase[i]=LoadTextureFromImage(color);materialDetail[i]=LoadTextureFromImage(detail);UnloadImage(color);UnloadImage(detail);
+        GenTextureMipmaps(&materialBase[i]);GenTextureMipmaps(&materialDetail[i]);
+        SetTextureFilter(materialBase[i],TEXTURE_FILTER_TRILINEAR);SetTextureFilter(materialDetail[i],TEXTURE_FILTER_TRILINEAR);
+        SetTextureWrap(materialBase[i],TEXTURE_WRAP_REPEAT);SetTextureWrap(materialDetail[i],TEXTURE_WRAP_REPEAT);
+    }
     cylinder=LoadModelFromMesh(GenMeshCylinder(1,1,24));cone=LoadModelFromMesh(GenMeshCone(1,1,16));
     torus=LoadModelFromMesh(GenMeshTorus(.035f,1.f,12,64));leaf=LoadModelFromMesh(LeafMesh());
     archPane=LoadModelFromMesh(ArchPaneMesh());Setup(&archPane);
@@ -262,6 +294,16 @@ static void Draw(Model *m,Vector3 pos,Vector3 scale,Vector3 axis,float angle,Col
     SetShaderValue(surface,metalLoc,&metal,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,roughLoc,&rough,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,emissionLoc,&glow,SHADER_UNIFORM_FLOAT);
     float family=metal>.25f||glow>.1f?0:substrate;
     SetShaderValue(surface,substrateLoc,&family,SHADER_UNIFORM_FLOAT);
+    int materialIndex=family==1||family==6?0:(family==2||family==5?1:(family==3?2:-1));
+    float textureUse=materialIndex>=0&&materialBase[materialIndex].id&&materialDetail[materialIndex].id?1.f:0.f;
+#if defined(AWELL_DEPTH_NO_SURFACE_TEXTURES)
+    // Native review control; the released game always uses the delivered maps.
+    textureUse=0;
+#endif
+    SetShaderValue(surface,textureUseLoc,&textureUse,SHADER_UNIFORM_FLOAT);
+    m->materials[0].maps[MATERIAL_MAP_DIFFUSE].texture=textureUse?materialBase[materialIndex]:materialWhite;
+    m->materials[0].maps[MATERIAL_MAP_NORMAL].texture=textureUse?materialDetail[materialIndex]:(Texture2D){0};
+    if(textureUse)SetShaderValue(surface,materialMeanLoc,FOUNDRY_SURFACE_IMAGES[materialIndex].mean,SHADER_UNIFORM_VEC3);
     SetShaderValue(surface,plantBendLoc,&plantBend,SHADER_UNIFORM_FLOAT);
     DrawModelEx(*m,pos,axis,angle,scale,color);
 }
@@ -404,16 +446,18 @@ static void DrownedFronds(void){
     }
 }
 static int IsCity(int x,int y){return roomIdx==1||ZoneAt(x,y)==Z_CITY;}
+static void ClassifiedAsset(const FoundryAssetData *asset,Model *models,const unsigned char *families){
+    for(int i=0;i<asset->mesh_count;i++){
+        const FoundryMeshData *m=&asset->meshes[i];substrate=families[i];
+        Color c={m->color[0],m->color[1],m->color[2],m->color[3]};
+        Draw(&models[i],(Vector3){0,0,0},(Vector3){1,1,1},(Vector3){0,1,0},0,c,m->metallic,m->roughness,m->emission);
+    }
+}
 static void Terrain(void){
-    substrate=1;
-    Asset(roomIdx==0?&FOUNDRY_VAULT_TERRAIN:&FOUNDRY_DROWNED_TERRAIN,terrainModels[roomIdx],(Vector3){0,0,0},1);
+    ClassifiedAsset(roomIdx==0?&FOUNDRY_VAULT_TERRAIN:&FOUNDRY_DROWNED_TERRAIN,terrainModels[roomIdx],roomIdx==0?FOUNDRY_VAULT_TERRAIN_SUBSTRATES:FOUNDRY_DROWNED_TERRAIN_SUBSTRATES);
     const FoundryAssetData *supports=roomIdx==0?&FOUNDRY_VAULT_SUPPORTS:&FOUNDRY_DROWNED_SUPPORTS;
     const unsigned char *families=roomIdx==0?FOUNDRY_VAULT_SUPPORTS_SUBSTRATES:FOUNDRY_DROWNED_SUPPORTS_SUBSTRATES;
-    for(int i=0;i<supports->mesh_count;i++){
-        const FoundryMeshData *m=&supports->meshes[i];substrate=families[i];
-        Color c={m->color[0],m->color[1],m->color[2],m->color[3]};
-        Draw(&supportModels[roomIdx][i],(Vector3){0,0,0},(Vector3){1,1,1},(Vector3){0,1,0},0,c,m->metallic,m->roughness,m->emission);
-    }
+    ClassifiedAsset(supports,supportModels[roomIdx],families);
     substrate=0;
     for(int y=0;y<RH;y++)for(int x=0;x<RW;x++){
         int t=tiles[y][x],city=IsCity(x,y);float yy=22-y;
@@ -731,5 +775,6 @@ void DepthUnload(void){
     UnloadShader(waterShader);UnloadRenderTexture(waterTarget);UnloadTexture(waterMask);
     UnloadShader(occlusionShader);UnloadRenderTexture(geometryTarget);UnloadRenderTexture(occludedTarget);
     UnloadTexture(depthLight);
+    for(int i=0;i<3;i++){UnloadTexture(materialBase[i]);UnloadTexture(materialDetail[i]);}
     for(int i=0;i<2;i++)if(mattes[i].id)UnloadTexture(mattes[i]);
 }

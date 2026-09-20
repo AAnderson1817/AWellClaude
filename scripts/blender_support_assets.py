@@ -255,13 +255,14 @@ def export(scene,cols):
             pre=slug.replace('-','_')+'_'+str(j);nv=len(g['p'])//3;assert nv<65536
             for suffix,ctype in [('p','float'),('n','float'),('i','unsigned short')]:arr(pre+'_'+suffix,ctype,g[suffix])
             n=next(n for n in g['mat'].node_tree.nodes if n.type=='BSDF_PRINCIPLED');rgba=[round(srgb(c)*255) for c in n.inputs['Base Color'].default_value[:3]]+[255]
-            desc.append('{'+','.join([pre+'_p',pre+'_n',pre+'_i',str(nv),str(len(g['i'])),'{'+','.join(map(str,rgba))+'}',fmt(n.inputs['Metallic'].default_value),fmt(n.inputs['Roughness'].default_value),'0.0f'])+'}');tris+=len(g['i'])//3;roles.append(g['mat']['runtime_family'])
+            desc.append('{'+','.join([pre+'_p',pre+'_n',pre+'_i',str(nv),str(len(g['i'])),'{'+','.join(map(str,rgba))+'}',fmt(n.inputs['Metallic'].default_value),fmt(n.inputs['Roughness'].default_value),'0.0f'])+'}');tris+=len(g['i'])//3;roles.append('endgrain' if 'endgrain' in g['mat'].name else g['mat']['runtime_family'])
         lines.append('static const FoundryMeshData '+symbol+'_MESHES[] = {'+','.join(desc)+'};')
         lines.append('static const FoundryAssetData '+symbol+' = {'+symbol+'_MESHES,'+str(len(groups))+',{'+','.join(fmt(hi[i]-lo[i]) for i in range(3))+'}};')
         # Additional generated family codes let renderer apply material-specific
         # shading without guessing from RGB. 0 none/metal,1stone,3wood;
         # 5 rear rock and 6 rear masonry use recessed receiver atmosphere.
-        lines.append('static const unsigned char '+symbol+'_SUBSTRATES[] = {'+','.join(str({'wood':3,'stone':1,'rear_rock':5,'rear_stone':6,'metal':0}[r]) for r in roles)+'};')
+        # 7 preserves modeled endgrain without a longitudinal surface map.
+        lines.append('static const unsigned char '+symbol+'_SUBSTRATES[] = {'+','.join(str({'wood':3,'stone':1,'rear_rock':5,'rear_stone':6,'metal':0,'endgrain':7}[r]) for r in roles)+'};')
         for ob in scene.objects:ob.select_set(False)
         for ob in copies:ob.select_set(True)
         bpy.context.view_layer.objects.active=copies[0];bpy.ops.object.join();joined=copies[0];joined.name=slug
@@ -270,7 +271,7 @@ def export(scene,cols):
         manifest['assets'][slug]={'symbol':symbol,'triangles':tris,'material_meshes':len(groups),'materials':list(groups),'material_families':roles,'bounds_min':lo,'bounds_max':hi,'dimensions':[hi[i]-lo[i] for i in range(3)],'source_objects':len(col.objects),'one_way_runs':sum(1 for r in RUNS if r['room']==room)}
     lines.append('#endif');HEADER.write_text('\n'.join(lines)+'\n');manifest['total_triangles']=sum(v['triangles'] for v in manifest['assets'].values())
     manifest['projection_contract'].update({'rear_receiver_front_z':-5.055,'rear_receiver_back_z':-5.898,'receiver_form':'0.46-tile narrow chamfered spines on actual anchor axes; no broad wall bays','brackets_and_corbels':'z<=-.45 below near fascia; no added collision or gameplay surfaces'})
-    manifest['substrate_codes']={'metal':0,'stone':1,'wood':3,'rear_rock':5,'rear_stone':6}
+    manifest['substrate_codes']={'metal':0,'stone':1,'wood':3,'rear_rock':5,'rear_stone':6,'endgrain':7}
     for r in manifest['runs']:
         if r['kind']!='grate':r['receiver_front_z']=-5.055;r['receiver_back_z']=-5.898
     (OUT/'supports-manifest.json').write_text(json.dumps(manifest,indent=2));return manifest

@@ -1,0 +1,94 @@
+{
+  "blender_version": "5.2.0 LTS",
+  "source": "assets/blender/material-library.blend",
+  "resolution": [
+    1024,
+    1024
+  ],
+  "png_channel_bits": 8,
+  "tile_meters": [
+    2.0,
+    2.0
+  ],
+  "provisional_game_mapping": {
+    "meters_per_game_unit": 0.4,
+    "game_units_per_tile": 5,
+    "status": "assumption; runtime may set mapping"
+  },
+  "runtime_metallic": 0,
+  "texture_budget": {
+    "portable_maps": 9,
+    "rgb8_uncompressed_bytes_without_mips": 28311552,
+    "rgba8_gpu_bytes_with_full_mips_approx": 50331648
+  },
+  "texture_roles": {
+    "basecolor": "sRGB intrinsic albedo, no directional light or AO",
+    "normal": "Non-Color tangent-space +Y OpenGL; RGB=XYZ",
+    "roughness": "Non-Color scalar in all RGB channels"
+  },
+  "normal_bake": {
+    "space": "TANGENT",
+    "swizzle": [
+      "POS_X",
+      "POS_Y",
+      "POS_Z"
+    ],
+    "margin": 0,
+    "target": "triangulated 2m UV square with +Z normal and +U/+V tangents",
+    "source": "editable periodic Bump shader",
+    "strength": 1
+  },
+  "periodicity": "UV mapped to 4D torus; smooth periodic value and derivative in U and V",
+  "resource_limit": {
+    "engine": "Cycles CPU",
+    "threads": 16,
+    "logical_cpus": 24,
+    "gpu": "not used",
+    "review_samples": 24
+  },
+  "materials": {
+    "city-stone": {
+      "source_material": "SOURCE | city-stone",
+      "references": [
+        "public/art/references/drowned-quarter/20-carved-cornice.png",
+        "public/art/references/drowned-quarter/27-underwater-material.png"
+      ],
+      "grain_axis": "isotropic with broad variation",
+      "maps": {
+        "basecolor": "public/materials/city-stone/basecolor.png",
+        "normal": "public/materials/city-stone/normal.png",
+        "roughness": "public/materials/city-stone/roughness.png"
+      }
+    },
+    "vault-basalt": {
+      "source_material": "SOURCE | vault-basalt",
+      "references": [
+        "public/art/references/vault-mouth/27-raw-rock-seam.png"
+      ],
+      "grain_axis": "isotropic with broad variation",
+      "maps": {
+        "basecolor": "public/materials/vault-basalt/basecolor.png",
+        "normal": "public/materials/vault-basalt/normal.png",
+        "roughness": "public/materials/vault-basalt/roughness.png"
+      }
+    },
+    "aged-timber": {
+      "source_material": "SOURCE | aged-timber",
+      "references": [
+        "public/art/references/vault-mouth/11-hunters-rope.png"
+      ],
+      "grain_axis": "+U longitudinal",
+      "maps": {
+        "basecolor": "public/materials/aged-timber/basecolor.png",
+        "normal": "public/materials/aged-timber/normal.png",
+        "roughness": "public/materials/aged-timber/roughness.png"
+      }
+    }
+  },
+  "scope_limits": [
+    "Texture surface only; edge chips, masonry joints and deep fractures remain geometry responsibilities.",
+    "No local contact dirt, waterline, ambient occlusion, emissive ore or directional lighting baked into albedo.",
+    "No runtime shader integration included; target-camera response remains unverified."
+  ],
+  "overall_state": "work_in_progress"
+}

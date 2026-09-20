@@ -231,12 +231,16 @@ def audit(asset,rows,role,camera):
     errors=[];triangles=[];positions=[]
     metrics={'vertices':0,'triangles':0,'materials':len(asset.meshes),'invalid_normals':0,'degenerate_triangles':0,'reversed_normal_triangles':0}
     if len(asset.meshes)>12:errors.append('More than 12 material meshes; exceeds the agreed runtime architecture slots')
-    if role=='supports':
-        metrics['substrates']=asset.substrates
-        if asset.substrates is None or len(asset.substrates)!=len(asset.meshes):
-            errors.append('Support substrate storage must match the material mesh count')
-        elif any(code not in (0,1,2,3,5,6) for code in asset.substrates):
-            errors.append('Support substrate code is not an approved foreground/rear architecture family')
+    metrics['substrates']=asset.substrates
+    approved=(0,1,2) if role=='terrain' else (0,1,2,3,5,6,7)
+    if asset.substrates is None or len(asset.substrates)!=len(asset.meshes):
+        errors.append('Architecture substrate storage must match the material mesh count')
+    elif any(code not in approved for code in asset.substrates):
+        errors.append(f'{role}: substrate code is not an approved architecture family: {approved}')
+    else:
+        for index,(mesh,code) in enumerate(zip(asset.meshes,asset.substrates)):
+            if mesh.metallic>.25 and code!=0:
+                errors.append(f'mesh {index}: metallic architecture must use substrate 0, not a stone/wood map')
     for index,mesh in enumerate(asset.meshes):
         positions.extend(mesh.positions);metrics['vertices']+=len(mesh.positions)
         if len(mesh.positions)>65535 or len(mesh.indices)%3 or any(i<0 or i>=len(mesh.positions) for i in mesh.indices):
@@ -308,29 +312,87 @@ def audit(asset,rows,role,camera):
             'contact_examples':contacts[:40], 'front_leak_examples':[[round((i%(RW*RASTER)+.5)/RASTER,4),round((i//(RW*RASTER)+.5)/RASTER,4)] for i in leaks[:40]]}
 
 
+def function_body(source,name):
+    """Read one C function; unrelated draws/comments cannot satisfy a binding."""
+    clean=re.sub(r'/\*.*?\*/|//[^\n]*','',source,flags=re.S)
+    match=re.search(r'\bstatic\s+void\s+'+re.escape(name)+r'\s*\([^)]*\)\s*\{',clean)
+    if not match:return ''
+    depth=1;start=match.end();end=start
+    while end<len(clean) and depth:
+        depth+=(clean[end]=='{')-(clean[end]=='}');end+=1
+    return re.sub(r'\s+','',clean[start:end-1]) if not depth else ''
+
+
 def binding_status(source,name):
-    for call in re.findall(r"\bAsset\s*\((.*?)\);",source,re.S):
-        if name in call and re.search(r",\s*\(Vector3\)\s*\{\s*0\s*,\s*0\s*,\s*0\s*\}\s*,\s*1\s*$",call):return 'identity draw found'
-    # Supports select material substrate per mesh, so their identity draw is a
-    # direct loop. Recognize this explicit source binding, not any nearby Draw.
     compact=re.sub(r'\s+','',source)
-    selection='constFoundryAssetData*supports=roomIdx==0?&FOUNDRY_VAULT_SUPPORTS:&FOUNDRY_DROWNED_SUPPORTS;'
-    loop='for(inti=0;i<supports->mesh_count;i++){'
-    draw='Draw(&supportModels[roomIdx][i],(Vector3){0,0,0},(Vector3){1,1,1},(Vector3){0,1,0},0,c,m->metallic,m->roughness,m->emission);'
-    if name.endswith('_SUPPORTS') and selection in compact and loop in compact:
-        body=compact.split(loop,1)[1].split('substrate=0;',1)[0]
-        load=f'LoadAsset(&{name},supportModels[{0 if "VAULT" in name else 1}]);'
-        if load in compact and draw in body and 'constFoundryMeshData*m=&supports->meshes[i];' in body:
-            return 'identity per-material support draw found'
-    return 'unverified: no recognized literal identity asset draw found; inspect integration'
+    helper=function_body(source,'ClassifiedAsset');terrain=function_body(source,'Terrain')
+    required=(
+        'for(inti=0;i<asset->mesh_count;i++){',
+        'constFoundryMeshData*m=&asset->meshes[i];substrate=families[i];',
+        'Colorc={m->color[0],m->color[1],m->color[2],m->color[3]};',
+        'Draw(&models[i],(Vector3){0,0,0},(Vector3){1,1,1},(Vector3){0,1,0},0,c,m->metallic,m->roughness,m->emission);')
+    if not all(s in helper for s in required):
+        return 'unverified: ClassifiedAsset does not bind each mesh/family to the literal identity draw'
+    index=0 if 'VAULT' in name else 1
+    if name.endswith('_TERRAIN'):
+        call='ClassifiedAsset(roomIdx==0?&FOUNDRY_VAULT_TERRAIN:&FOUNDRY_DROWNED_TERRAIN,terrainModels[roomIdx],roomIdx==0?FOUNDRY_VAULT_TERRAIN_SUBSTRATES:FOUNDRY_DROWNED_TERRAIN_SUBSTRATES);'
+        bound=call in terrain;models='terrainModels'
+    else:
+        required=(
+            'constFoundryAssetData*supports=roomIdx==0?&FOUNDRY_VAULT_SUPPORTS:&FOUNDRY_DROWNED_SUPPORTS;',
+            'constunsignedchar*families=roomIdx==0?FOUNDRY_VAULT_SUPPORTS_SUBSTRATES:FOUNDRY_DROWNED_SUPPORTS_SUBSTRATES;',
+            'ClassifiedAsset(supports,supportModels[roomIdx],families);')
+        bound=all(s in terrain for s in required);models='supportModels'
+    if bound and f'LoadAsset(&{name},{models}[{index}]);' in compact:
+        return 'identity per-material classified draw and matching asset/model/family load found'
+    return 'unverified: no matching classified asset/model/family binding and load found'
 
 
-def self_test():
+def material_bindings(source):
+    """Source contract, not a claim of shader execution or visual correctness."""
+    body=function_body(source,'Draw');compact=re.sub(r'\s+','',source)
+    required={
+        'metal/emissive bypass':'floatfamily=metal>.25f||glow>.1f?0:substrate;',
+        'family map; endgrain 7 untextured':'intmaterialIndex=family==1||family==6?0:(family==2||family==5?1:(family==3?2:-1));',
+        'both images required':'floattextureUse=materialIndex>=0&&materialBase[materialIndex].id&&materialDetail[materialIndex].id?1.f:0.f;',
+        'per-draw enable':'SetShaderValue(surface,textureUseLoc,&textureUse,SHADER_UNIFORM_FLOAT);',
+        'base texture or white reset':'m->materials[0].maps[MATERIAL_MAP_DIFFUSE].texture=textureUse?materialBase[materialIndex]:materialWhite;',
+        'detail texture or zero reset':'m->materials[0].maps[MATERIAL_MAP_NORMAL].texture=textureUse?materialDetail[materialIndex]:(Texture2D){0};'}
+    errors=[label for label,snippet in required.items() if snippet not in body]
+    if 'surface.locs[SHADER_LOC_MAP_NORMAL]=GetShaderLocation(surface,"surfaceMap");' not in compact:
+        errors.append('packed detail sampler hookup')
+    return {'status':'fail' if errors else 'pass','errors':errors,
+        'family_map':{'0':'untextured/metal','1':'city-stone','2':'vault-basalt','3':'longitudinal timber',
+                      '5':'vault-basalt with rear fog','6':'city-stone with rear fog','7':'untextured modeled endgrain'},
+        'scope':'Static source binding validation; does not prove GPU sampling, normal orientation, or visual quality.'}
+
+
+def named_classification_errors(asset,labels,role):
+    """Cross-check authored labels independently; never substitute for geometry."""
+    if len(labels)!=len(asset.meshes) or asset.substrates is None or len(asset.substrates)!=len(labels):
+        return ['Authored material labels, classifications, and mesh storage do not agree in count']
+    errors=[]
+    for index,(label,mesh,code) in enumerate(zip(labels,asset.meshes,asset.substrates)):
+        label=label.lower()
+        if mesh.metallic>.25:expected=0
+        elif role=='terrain':expected=2 if any(s in label for s in ('slate','shale','sediment')) else 1
+        elif 'endgrain' in label:expected=7
+        elif 'recessed rock receiver' in label:expected=5
+        elif 'recessed masonry receiver' in label:expected=6
+        elif 'oak' in label or 'timber' in label:expected=3
+        elif any(s in label for s in ('stone','masonry')):expected=1
+        else:
+            errors.append(f'mesh {index}: unrecognized authored material label {label!r}; classify explicitly');continue
+        if code!=expected:errors.append(f'mesh {index}: {label!r} requires family {expected}, found {code}')
+    return errors
+
+
+def self_test(source):
     """Adversarial geometry fixtures show which real failure classes are caught."""
     import copy
     rows=['.'*RW for _ in range(RH)];rows[10]='.'*10+'##'+'.'*28
     mesh=Mesh([(10,11,0),(12,11,0),(12,12,0),(10,12,0)],[(0,0,1)]*4,[0,1,2,0,2,3],[100,110,120,255],0,.8,0)
-    base=Asset('hand_authored_two_tile_front',[mesh],(2,1,0));camera=Camera()
+    base=Asset('hand_authored_two_tile_front',[mesh],(2,1,0),[1]);camera=Camera()
     assert audit(base,rows,'terrain',camera)['status']=='pass'
     cases={}
     for label,mutate in (
@@ -340,6 +402,10 @@ def self_test():
         ('inverted normals',lambda a:setattr(a.meshes[0],'normals',[(0,0,-1)]*4)),
         ('non-emissive rule',lambda a:setattr(a.meshes[0],'emission',.2)),
         ('invalid index',lambda a:setattr(a.meshes[0],'indices',[0,1,99])),
+        ('missing terrain classifications',lambda a:setattr(a,'substrates',None)),
+        ('terrain classification count',lambda a:setattr(a,'substrates',[1,2])),
+        ('wood code on terrain',lambda a:setattr(a,'substrates',[3])),
+        ('metal classified as stone',lambda a:setattr(a.meshes[0],'metallic',.8)),
     ):
         asset=copy.deepcopy(base);mutate(asset);result=audit(asset,rows,'terrain',camera)
         assert result['status']=='fail',label
@@ -353,7 +419,38 @@ def self_test():
     result=audit(support,support_rows,'supports',camera)
     assert any('rear stand-off' in error for error in result['errors'])
     cases['unrecessed rear receiver']=result['errors']
-    return {'status':'passed','valid_fixture':'passed','valid_recessed_support':'passed','rejected_mutations':cases}
+    support.substrates=[1,4]
+    result=audit(support,support_rows,'supports',camera)
+    assert any('approved architecture family' in e for e in result['errors'])
+    cases['plant code on support']=result['errors']
+    endgrain=Asset('hand_authored_endgrain',[copy.deepcopy(mesh)],(2,1,0),[7])
+    assert not named_classification_errors(endgrain,['Support | modeled endgrain'],'supports')
+    endgrain.substrates=[3]
+    cases['longitudinal map on endgrain']=named_classification_errors(endgrain,['Support | modeled endgrain'],'supports')
+    assert cases['longitudinal map on endgrain']
+    # Exercise the actual current integration source. These are deliberately
+    # broken bindings, not tests that merely restate generation formulas.
+    symbol='FOUNDRY_VAULT_TERRAIN'
+    assert not binding_status(source,symbol).startswith('unverified'), 'Live classified binding invalid'
+    assert material_bindings(source)['status']=='pass', 'Live material map binding invalid'
+    for label,old,new in (
+        ('wrong room family array','FOUNDRY_VAULT_TERRAIN_SUBSTRATES:FOUNDRY_DROWNED_TERRAIN_SUBSTRATES','FOUNDRY_DROWNED_TERRAIN_SUBSTRATES:FOUNDRY_VAULT_TERRAIN_SUBSTRATES'),
+        ('constant family instead of per-mesh','substrate=families[i];','substrate=1;'),
+        ('classified geometry translated','Draw(&models[i],(Vector3){0,0,0}','Draw(&models[i],(Vector3){1,0,0}'),
+    ):
+        assert old in source,label
+        broken=source.replace(old,new)
+        result=binding_status(broken,symbol);assert result.startswith('unverified'),label
+        cases[label]=[result]
+    for label,old,new in (
+        ('endgrain longitudinal texture binding','(family==3?2:-1)','(family==3||family==7?2:-1)'),
+        ('stale texture enable','SetShaderValue(surface,textureUseLoc,&textureUse,SHADER_UNIFORM_FLOAT);',''),
+        ('stale detail texture','textureUse?materialDetail[materialIndex]:(Texture2D){0}','materialDetail[materialIndex]'),
+    ):
+        assert old in source,label
+        result=material_bindings(source.replace(old,new));assert result['status']=='fail',label
+        cases[label]=result['errors']
+    return {'status':'passed','valid_fixture':'passed','valid_recessed_support':'passed','valid_endgrain_family':'passed','rejected_mutations':cases}
 
 
 def main():
@@ -365,29 +462,39 @@ def main():
     parser.add_argument('--self-test',action='store_true')
     parser.add_argument('--report',type=Path,default=ROOT/'build/architecture-check.json')
     args=parser.parse_args();room_path=ROOT/'src/room.c';depth_path=ROOT/'src/depth.c'
-    report={'schema_version':1,'verified_utc':datetime.now(timezone.utc).isoformat(),'scope':'Delivered arrays, calibrated camera, collision contacts and recessed architecture. Not artistic/AAA acceptance.',
+    report={'schema_version':2,'verified_utc':datetime.now(timezone.utc).isoformat(),'scope':'Delivered arrays, calibrated camera, collision contacts, recessed architecture and per-mesh material binding contracts. Not artistic/AAA acceptance.',
             'tolerances':{'front_z_min':FRONT_Z,'rear_standoff':REAR_STANDOFF,'landing_original_pixels':LIP_TOLERANCE*TILE_PIXELS,'raster_original_pixels':TILE_PIXELS/RASTER,'support_front_fascia_tiles':SUPPORT_FASCIA,'projected_stage_trim_tiles':PROJECTED_TRIM},
             'sources':{'checker_sha256':digest(Path(__file__)),'room_c_sha256':digest(room_path),'depth_c_sha256':digest(depth_path)},'assets':[]}
     missing=[]
     try:
         rows=read_maps(room_path);source=depth_path.read_text(encoding='utf-8');camera=read_camera(source)
         report['camera']=vars(camera)
-        if args.self_test:report['adversarial_fixtures']=self_test()
+        report['material_bindings']=material_bindings(source)
+        if args.self_test:report['adversarial_fixtures']=self_test(source)
         for role,path,suffix in [('terrain',args.terrain,'TERRAIN')]+([] if args.terrain_only else [('supports',args.supports,'SUPPORTS')]):
             if not path.exists():missing.append(str(path));continue
             report['sources'][str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)]=digest(path)
             assets=read_assets(path)
+            manifest_path=ROOT/'assets/blender'/('terrain-manifest.json' if role=='terrain' else 'supports-manifest.json')
+            manifest=json.loads(manifest_path.read_text(encoding='utf-8'))
+            report['sources'][str(manifest_path.relative_to(ROOT))]=digest(manifest_path)
             for room,name in enumerate(('VAULT','DROWNED')):
                 symbol=f'FOUNDRY_{name}_{suffix}'
                 if symbol not in assets:raise ValueError(f'Missing required delivered asset: {symbol}')
                 result=audit(assets[symbol],rows[room],role,camera)
+                labels=manifest['assets'][name.lower()+'-'+role]['material_names' if role=='terrain' else 'materials']
+                classification_errors=named_classification_errors(assets[symbol],labels,role)
+                result['classification_labels']=labels
+                result['errors'].extend(classification_errors)
+                if classification_errors:result['status']='fail'
                 result['room']=room;result['binding']=binding_status(source,symbol)
                 if args.require_integrated and result['binding'].startswith('unverified'):
                     result['errors'].append(result['binding']);result['status']='fail'
                 report['assets'].append(result)
                 print(f"{result['status'].upper()} {symbol}: "+'; '.join(result['errors'] or ['contacts, bounds, normals, attributes and scoped masks']))
         if missing:report['missing_deliveries']=missing
-        report['status']='incomplete' if missing else ('fail' if any(a['status']=='fail' for a in report['assets']) else 'pass')
+        failed=any(a['status']=='fail' for a in report['assets']) or (args.require_integrated and report['material_bindings']['status']=='fail')
+        report['status']='incomplete' if missing else ('fail' if failed else 'pass')
         report['integration_scope']='required' if args.require_integrated else 'reported only; asset audit is not renderer acceptance'
         report['omitted_supports']=args.terrain_only
     except (ValueError,KeyError,AssertionError) as error:

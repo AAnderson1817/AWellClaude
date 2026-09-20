@@ -1,0 +1,1 @@
+{"room":0,"frames":600,"warmup_frames":120,"window":[1920,1080],"mean_frame_ms":3.0954,"median_frame_ms":3.0607,"p95_frame_ms":3.3144,"p99_frame_ms":3.5279,"measurement":"wall time around real native Frame with vsync disabled; local host only"}
