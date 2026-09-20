@@ -3,12 +3,15 @@
 #include "aw.h"
 #include "depth.h"
 #include "city.h"
+#include "inhabitants.h"
+#include "hunter_pose.h"
 #include "raymath.h"
 #include "rlgl.h"
 #include "generated/environment_mattes.h"
 #include "generated/foundry_assets.h"
 #include "generated/terrain_assets.h"
 #include "generated/life_assets.h"
+#include "generated/hunter_assets.h"
 #include "generated/city_assets.h"
 #include "generated/mural_assets.h"
 #include "generated/foliage_assets.h"
@@ -36,6 +39,7 @@ static Model muralRockModels[8],muralPigmentModels[8];
 static Model bushModels[8],frondModels[8];
 static Model supportModels[ROOM_COUNT][12];
 static Model potModels[8],lampModels[8],seedModels[8],beastBodyModels[8],beastHeadModels[8],birdModels[8];
+static Model hunterHatModels[8],hunterPackModels[8];
 static int metalLoc, roughLoc, emissionLoc, cameraLoc, timeLoc, substrateLoc, waterLevelLoc, plantBendLoc;
 // Surface identity is explicit: living forms do not inherit masonry noise.
 static float substrate;
@@ -282,6 +286,7 @@ static void Init(void){
     LoadAsset(&FOUNDRY_VAULT_TERRAIN,terrainModels[0]);LoadAsset(&FOUNDRY_DROWNED_TERRAIN,terrainModels[1]);
     LoadAsset(&FOUNDRY_POT,potModels);LoadAsset(&FOUNDRY_HUNTER_LANTERN,lampModels);
     LoadAsset(&FOUNDRY_PLAYER_SEED,seedModels);LoadAsset(&FOUNDRY_BEAST_BODY,beastBodyModels);
+    LoadAsset(&FOUNDRY_HUNTER_HAT,hunterHatModels);LoadAsset(&FOUNDRY_HUNTER_PACK,hunterPackModels);
     LoadAsset(&FOUNDRY_BEAST_HEAD,beastHeadModels);LoadAsset(&FOUNDRY_BIRD_BODY,birdModels);
     LoadAsset(&FOUNDRY_CITY_FACE,faceModels);LoadAsset(&FOUNDRY_CITY_EYE,eyeModels);
     LoadAsset(&FOUNDRY_MURAL_ROCK,muralRockModels);LoadAsset(&FOUNDRY_MURAL_PIGMENT,muralPigmentModels);
@@ -548,12 +553,62 @@ static void PlayerMesh(void){
     Ellipse(x-.19f,base+.065f+stride,.06f,.17f,.08f,.22f,Shade(body,.8f),0);
     Ellipse(x+.19f,base+.065f-stride,.06f,.17f,.08f,.22f,Shade(body,.8f),0);
 }
+static Vector3 HunterPoint(Vector3 origin,Quaternion pose,float x,float y,float z){
+    return Vector3Add(origin,Vector3RotateByQuaternion((Vector3){x,y,z},pose));
+}
+static Vector3 HunterJointWorld(HunterJoint p){return (Vector3){p.x/TS,22.f+p.y/TS,p.z/TS};}
+static void HunterLimb(Vector3 a,Vector3 b,float radius,Color color){
+    Vector3 delta=Vector3Subtract(b,a);float length=Vector3Length(delta);
+    if(length<.001f)return;
+    Vector3 direction=Vector3Scale(delta,1/length),axis=Vector3CrossProduct((Vector3){0,1,0},direction);
+    if(Vector3Length(axis)<.001f)axis=(Vector3){1,0,0};
+    Draw(&orb,Vector3Lerp(a,b,.5f),(Vector3){radius,length*.52f,radius},axis,
+        acosf(Clamp(direction.y,-1,1))*RAD2DEG,color,0,.85f,0);
+}
+static void HunterMesh(void){
+    HunterView h;if(!InhabitantsHunterView(&h))return;
+    float previousSubstrate=substrate,previousBend=plantBend;substrate=0;plantBend=0;
+    float cx=h.x+h.w*.5f,base=Y(h.y+h.h),height=h.h/TS;
+    int moving=HunterPoseMoving(&h),seated=HunterPoseSeated(&h);
+    float yaw=HunterPoseYaw(&h),roll=HunterPoseRoll(&h);
+    Quaternion pose=QuaternionFromEuler(0,yaw,roll);Vector3 axis;float angle;
+    QuaternionToAxisAngle(pose,&axis,&angle);angle*=RAD2DEG;
+    // Body, hat and pack share a ground pivot and rigid transform. Sitting tucks
+    // the feet and leans the seed; its dimensions never change or hover.
+    Vector3 origin={cx/TS,base,-.10f};
+    AssetPose(&FOUNDRY_PLAYER_SEED,seedModels,origin,1,axis,angle,0);
+    AssetPose(&FOUNDRY_HUNTER_PACK,hunterPackModels,origin,1,axis,angle,0);
+    AssetPose(&FOUNDRY_HUNTER_HAT,hunterHatModels,origin,1,axis,angle,0);
+    float gazeX=Clamp((h.lookX-cx)/(TS*3.f),-1,1)*.065f;
+    float gazeY=Clamp((Y(h.lookY)-(base+height*.73f))*.08f,-.035f,.035f);
+    for(int side=-1;side<=1;side+=2){
+        Vector3 eye=HunterPoint(origin,pose,side*.21f+gazeX,height*.73f+gazeY,.305f);
+        Draw(&orb,eye,(Vector3){.061f,.09f,.026f},axis,angle,(Color){13,25,28,255},0,.74f,0);
+        Vector3 glint=HunterPoint(origin,pose,side*.21f+gazeX+.013f,height*.73f+gazeY+.028f,.328f);
+        Draw(&orb,glint,(Vector3){.019f,.021f,.010f},axis,angle,palEye,0,.58f,0);
+        float stride=moving?sinf(h.walkPhase*2.f)*.075f:0;
+        Ellipse(cx/TS+side*.18f+(seated?h.facing*.08f:0),base+.055f+fmaxf(0,side*stride),.055f,.16f,.065f,.19f,palSkinDeep,0);
+        HunterArm arm=HunterPoseArm(&h,side,27.f*DEG2RAD);
+        if(!arm.reachable)continue;
+        Vector3 shoulder=HunterJointWorld(arm.shoulder),elbow=HunterJointWorld(arm.elbow),hand=HunterJointWorld(arm.hand);
+        HunterLimb(shoulder,elbow,.060f,palSkinDeep);HunterLimb(elbow,hand,.052f,palSkin);
+        Ellipse(elbow.x,elbow.y,elbow.z,.061f,.061f,.061f,palSkinDeep,0);
+        Ellipse(hand.x,hand.y,hand.z,.074f,.064f,.07f,palSkin,0);
+    }
+    if(h.mouthOpen>.005f){
+        Vector3 mouth=HunterPoint(origin,pose,gazeX*.35f,height*.56f,.309f);
+        Draw(&orb,mouth,(Vector3){.051f,.010f+.045f*Clamp(h.mouthOpen,0,1),.019f},axis,angle,palPupil,0,.9f,0);
+    }
+    substrate=previousSubstrate;plantBend=previousBend;
+}
 static void ItemsMesh(void){
+    HunterView hunter;int hasHunter=InhabitantsHunterView(&hunter);
     for(int i=0;i<itemCount;i++){
         Item *it=&items[i];if(i!=heldItem&&it->room!=roomIdx)continue;
         float x=(it->x+(it->kind==IT_LAMP?2.f:2.5f))/TS,y=Y(it->y+(it->kind==IT_LAMP?2.5f:2.f));
         if(it->kind==IT_LAMP)Lamp(x,y,0.35f,1.f,0,it->flick);
-        else{Draw(&orb,(Vector3){x,y,.22f},(Vector3){.30f,.22f,.25f},(Vector3){0,0,1},27, palStone,0,.93f,0);}
+        else{float turn=27+(hasHunter&&i==hunter.carriedItem?hunter.stoneTurn*RAD2DEG:0);
+            Draw(&orb,(Vector3){x,y,.22f},(Vector3){.30f,.22f,.25f},(Vector3){0,0,1},turn,palStone,0,.93f,0);}
     }
 }
 static void BulbMeshes(void){
@@ -611,8 +666,10 @@ static void PropMeshes(int back){
             if(LampPos(&lx,&ly)&&fabsf(lx-(p->tx*TS+6))<40&&fabsf(ly-(p->ty*TS+5))<24&&((frameNo/3)&3)==0)
                 Ellipse(x+.78f,y-.68f,.3f,.025f,.035f,.015f,palLampGlass,.7f);
             break;}
-        case PR_CAIRN:
+        case PR_CAIRN:{
+            HunterView hunter;if(InhabitantsHunterView(&hunter))break;
             for(int k=0;k<4;k++)Ellipse(x+.5f+(R(k,17)-.5f)*.12f,y-.91f+k*.12f,.2f,.34f-k*.065f,.085f,.25f-k*.04f,Shade(palStone,1+k*.06f),0);break;
+        }
         case PR_BONES:{
             float tilt=p->timer>0?sinf(p->timer*.5f)*16:0;
             Draw(&orb,(Vector3){x+.38f,y-.61f,.28f},(Vector3){.19f,.21f,.17f},(Vector3){0,0,1},tilt,palBone,0,.8f,0);
@@ -770,14 +827,14 @@ void DepthDraw(void){
     geometryPass=1;SetShaderValue(surface,geometryPassLoc,&geometryPass,SHADER_UNIFORM_FLOAT);
     BeginTextureMode(geometryTarget);ClearBackground(BLANK);rlDisableColorBlend();
     BeginMode3D(camera);
-        CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();ItemsMesh();PlayerMesh();
+        CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();HunterMesh();ItemsMesh();PlayerMesh();
     EndMode3D();rlEnableColorBlend();EndTextureMode();
     geometryPass=0;
 #endif
     SetShaderValue(surface,geometryPassLoc,&geometryPass,SHADER_UNIFORM_FLOAT);
     BeginTextureMode(target);ClearBackground((Color){10,24,30,255});
     BeginMode3D(camera);
-        Background();CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();ItemsMesh();PlayerMesh();Atmosphere();Water();ResponseParticles();
+        Background();CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();HunterMesh();ItemsMesh();PlayerMesh();Atmosphere();Water();ResponseParticles();
     EndMode3D();
     EndTextureMode();
     Texture2D present=target.texture;
@@ -827,6 +884,8 @@ void DepthUnload(void){
     const FoundryAssetData *lifeAssets[]={&FOUNDRY_POT,&FOUNDRY_HUNTER_LANTERN,&FOUNDRY_PLAYER_SEED,&FOUNDRY_BEAST_BODY,&FOUNDRY_BEAST_HEAD,&FOUNDRY_BIRD_BODY};
     Model *lifeModels[]={potModels,lampModels,seedModels,beastBodyModels,beastHeadModels,birdModels};
     for(int a=0;a<6;a++)for(int i=0;i<lifeAssets[a]->mesh_count;i++)UnloadModel(lifeModels[a][i]);
+    for(int i=0;i<FOUNDRY_HUNTER_HAT.mesh_count;i++)UnloadModel(hunterHatModels[i]);
+    for(int i=0;i<FOUNDRY_HUNTER_PACK.mesh_count;i++)UnloadModel(hunterPackModels[i]);
     UnloadShader(surface);UnloadShader(finish);UnloadRenderTexture(target);ready=0;
     UnloadShader(waterShader);UnloadRenderTexture(waterTarget);UnloadTexture(waterMask);
     UnloadShader(occlusionShader);UnloadRenderTexture(geometryTarget);UnloadRenderTexture(occludedTarget);

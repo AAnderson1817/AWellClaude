@@ -1,4 +1,4 @@
-# The Vault and the City Under It — 3D presentation and city responses
+# The Vault and the City Under It — 3D presentation and inhabitants
 
 This is the existing [AAnderson1817/AWellClaude](https://github.com/AAnderson1817/AWellClaude)
 C/raylib game with a developing 3D presentation. Branch `codex/celestial-foundry` starts
@@ -11,11 +11,17 @@ atmospheric backgrounds and foreground framing around the same collision plane.
 Metallurgy, astronomy and faith inform the existing vault/city setting. The original
 flat renderer remains available for comparison and now presents the same city responses.
 
-The current increment implements the authored mural, reactive windows, drowned face
+The city responses implement the authored mural, reactive windows, drowned face
 and eight-fish shoal. Light conceals the mural and douses windows; a sinking stone
 receives an answer from the face; fish approach a floating lamp and scatter from the
 body. These extend the existing Hold interaction without changing access or geometry.
 See [response implementation and limits](docs/city-response-implementation.md).
+
+The current increment brings the hunter into the camp. The hunter tends real cairn
+stones, accepts nearby offerings and yields them immediately to the existing Hold
+interaction. A persistent fire changes the hunter's posture and wordless speech.
+Blender attire and fixed-length arms follow the same state in both presentations.
+See [hunter implementation and limits](docs/hunter-implementation.md).
 
 The architecture revision adds editable Blender shelf assemblies, recessed façades,
 turned columns and rooted foliage, with local contact shading derived from actual
@@ -24,15 +30,16 @@ frames, Blender source previews and GLB links alongside the 60 reference images.
 The current craft revision adds unequal stone courses, broader rock fracture planes,
 a sculpted face, credited scanned stone and local illumination from existing lamps.
 Embedded maps accompany editable [Blender material sources](docs/materials.md).
-The [whole-brief review](docs/artistic-review-v14.md) still requires substantial
+The [whole-brief review](docs/artistic-review-v15.md) still requires substantial
 foreground and hero-asset refinement before the requested AAA target is met.
 
 **Status:** a playable presentation development branch. AAA visual quality and human
 immersion have not been certified. The scope is the existing Vault Mouth and Drowned
-Quarter; it is not a finished 25-room game. The current craft increment passes 6,640 rendered baseline comparisons and bounded
-browser checks in both rooms; exact scope and older results are recorded in
-[verification](docs/verification.md). The hunter module and Blender attire are
-separately delivered but await integration. The native, remaining
+Quarter; it is not a finished 25-room game. The current increment passes 21,160
+headless and 6,640 rendered baseline comparisons, 35 route checks, 36 escape checks,
+and six hunter scenarios through the actual game loop in both modes. Bounded browser
+checks cover both rooms; exact scope is recorded in [verification](docs/verification.md).
+The native, remaining
 response-table content, full browser playthrough, perceptual audio review and Linux
 validation remain open.
 

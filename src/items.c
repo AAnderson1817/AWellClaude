@@ -6,6 +6,7 @@
 // harder, and in water you go to the bottom and walk it. Set it down there and you
 // float back up without it. It is still there. You can see it. That is the point.
 #include "aw.h"
+#include "inhabitants.h"
 #include <math.h>
 #include <string.h>
 
@@ -157,7 +158,7 @@ void ItemsStep(void) {
     for (int i = 0; i < itemCount; i++) {
         Item *it = &items[i];
         if (i == heldItem || it->room != roomIdx) continue;
-        Fall(it);
+        if (!InhabitantsPinsItem(i)) Fall(it);
         float cx = it->x + W(it) * 0.5f, cy = it->y + H(it) * 0.5f, pcx = player.x + player.w * 0.5f;
         float d = fabsf(cx - pcx);
         if (d < 11.0f && cy > player.y - 6.0f && cy < player.y + player.h + 6.0f && d < bestD) { best = i; bestD = d; }
@@ -193,7 +194,7 @@ static void DrawOne(const Item *it) {
         DrawRectangle(x + 3, y + 2, 1, 1, palStoneDeep);
     }
 }
-void ItemsDrawBehind(void) { for (int i = 0; i < itemCount; i++) if (i != heldItem && items[i].room == roomIdx) DrawOne(&items[i]); }
+void ItemsDrawBehind(void) { for (int i = 0; i < itemCount; i++) if (i != heldItem && items[i].room == roomIdx && !HunterDrawStone(i)) DrawOne(&items[i]); }
 void ItemsDrawHeld(void)   { if (heldItem >= 0) DrawOne(&items[heldItem]); }
 
 // The lamp's glass again, after the light pass: the one thing that is always bright.

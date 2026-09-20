@@ -1,0 +1,66 @@
+{
+  "verifiedUtc": "2026-09-20T22:27:59.348441+00:00",
+  "revision": "inhabitant-v15",
+  "browser": "Codex in-app Chromium",
+  "viewport": [
+    1280,
+    720
+  ],
+  "sourceHashes": {
+    "src/audio.c": "a3c39b2de8ca632b9d005c97234884920dead970b9f5d7685d938d273f5794ef",
+    "src/city.c": "c1b90498863fc98ef24c8aee7b316103e3805cc70df2c7600d27365ec8763d2e",
+    "src/depth.c": "7929d5509316fad8940cc230e73063003e004816cd575419167ffa2f0e4f3a84",
+    "src/fx.c": "254e8a046d26837472adbe0f7c6d9c9607dae4fcbafefc13fd784f04ccd42b9b",
+    "src/inhabitants.c": "82a2dc146e21b58eae0ab392ab41527cc4ae2de3dd42ae488577b9feed35fb2c",
+    "src/items.c": "2c728bcb2813afaf00dada7e093eb1820fc0efa37a476ed6a604513b7725bc84",
+    "src/life.c": "676d7436cd18010df9e54052570bbe3a16fee30c6f9a9492fe0935eec40e62eb",
+    "src/main.c": "bae73a846d5811e73b83940660d01e4424e203759971600a2a165d5371bc2dc8",
+    "src/player.c": "76f6bc886fbd65d38c74df560dcc4247b4970a2b4c63b5643cd161051ec8083a",
+    "src/props.c": "05b52b458033f7ede2b4aa7a2934cf606bc11d9744a216ef7dc5d99bc2f9c9b1",
+    "src/render.c": "5851a5d5dab0e7d2cebfa54e34a21d7e6e5ab05ae0fa55345a97dd9ae974a3c5",
+    "src/room.c": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "src/audio.h": "714d9b3822a191a62c0b73cca533e2cbd16de531f9d4115ecdae6c563a1c246b",
+    "src/aw.h": "3da4a19686aa683f8faa6453605ac819f8102113cbcb5b265ca793bbd3c6ff51",
+    "src/city.h": "8f5cb9a96c9aefb841854208cb577c5ffebab6132f51d95d62e8add4f620e572",
+    "src/depth.h": "9bc37fdb82d153b5629bbe85074bcec8a5a248c109c7a0aad341ee663abd13bc",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/environment_mattes.h": "3caca88cd0454f480b01aaec88b4e0c64dd5100e802d71f08666efa87126c2fb",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "src/generated/foundry_assets.h": "e49796de85fcb74cb0e57a6d4bc09711bccb7c13384e7be08c970132cb3b5507",
+    "src/generated/hunter_assets.h": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9",
+    "src/generated/life_assets.h": "b9afac63e54d5e26ee43af55e5f0945db57bf38e2fcc27dd8f18743e3df3fca2",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "src/generated/mural_assets.h": "2f3d710c658bee7fc9a70cf0f3936d654cbafd7a48ab0db656b292b5cb09ec78",
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/hunter_pose.h": "dabe0c71ec9cf08a5516cf1df860757aca5ed684b79b3377ad2b3c84c51b6ee8",
+    "src/inhabitants.h": "47704b8e7e647b58ed2627d5855811b200f02daa70b9584143c05deb4c2489b4"
+  },
+  "builds": {
+    "build/play.html": {
+      "sha256": "f782695fbc400e55ccb69a348cb119f550fd39b6bdab8ffebd62a97042712215",
+      "bytes": 21249065
+    },
+    "build/game.js": {
+      "sha256": "07e1d30c187eacfacbead07c1e2c79ff2d457c86e8be8da691d2df94310dc2da",
+      "bytes": 21247916
+    },
+    "build/review-water.html": {
+      "sha256": "295482190151b880a849f70ce948968f619f45526d60efd273f5789374d3c043",
+      "bytes": 21249104
+    },
+    "build/review-hunter.html": {
+      "sha256": "9b9cd40ea53f38d73f23907ba316244332c4e77a512b59df959ba399bcadea79",
+      "bytes": 21249090
+    }
+  },
+  "observations": [
+    "Rebuilt review-hunter.html displayed the integrated hunter, hat, pack and real cairn in the Vault.",
+    "X was pressed at the cairn; stone arrangement visibly changed. Overlapping player/hunter/pile silhouettes prevent reliable visual item counts; full ownership checks are separately recorded in final-headless/hunter-full-game.json.",
+    "Vault and Drowned review pages rendered in depth mode, switched with F2 to flat, and returned to depth.",
+    "Captured warning/error logs were empty for both review pages.",
+    "All 13 runtime/model images in the regenerated revision 15 art gallery loaded with nonzero natural widths.",
+    "Gallery restored to the Drowned Quarter filter; playable tab restored to play.html and visually verified."
+  ],
+  "scope": "Bounded live browser smoke observation. No full traversal, listening, immersion, input-latency or cross-hardware performance acceptance."
+}

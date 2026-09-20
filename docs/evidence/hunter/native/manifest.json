@@ -1,0 +1,157 @@
+{
+  "capturedUtc": "2026-09-20T22:08:32.712852+00:00",
+  "exeSHA256": "9b85169d10ecd1c3510e66168e6be3505c3443948c972add75601aea225649b7",
+  "sourceHashes": {
+    "src/audio.c": "a3c39b2de8ca632b9d005c97234884920dead970b9f5d7685d938d273f5794ef",
+    "src/city.c": "c1b90498863fc98ef24c8aee7b316103e3805cc70df2c7600d27365ec8763d2e",
+    "src/depth.c": "0de785f47dd16c617fd1622e9c5b4388e84e74f704b8530e3756e38d4bd23f5b",
+    "src/fx.c": "254e8a046d26837472adbe0f7c6d9c9607dae4fcbafefc13fd784f04ccd42b9b",
+    "src/inhabitants.c": "40be13380171e22c0899786b05e62fc428a3c96ba313f592aefbbcb673a7382a",
+    "src/items.c": "2c728bcb2813afaf00dada7e093eb1820fc0efa37a476ed6a604513b7725bc84",
+    "src/life.c": "676d7436cd18010df9e54052570bbe3a16fee30c6f9a9492fe0935eec40e62eb",
+    "src/main.c": "06f304541b922e5f88553ae318850304d787b6ebc358767e52b50e13ccbe41aa",
+    "src/player.c": "76f6bc886fbd65d38c74df560dcc4247b4970a2b4c63b5643cd161051ec8083a",
+    "src/props.c": "05b52b458033f7ede2b4aa7a2934cf606bc11d9744a216ef7dc5d99bc2f9c9b1",
+    "src/render.c": "a504cdfeac6ceb6bb98da53243b62ab151169aa55f5163e787a291a4ba2ca55e",
+    "src/room.c": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "src/audio.h": "714d9b3822a191a62c0b73cca533e2cbd16de531f9d4115ecdae6c563a1c246b",
+    "src/aw.h": "3da4a19686aa683f8faa6453605ac819f8102113cbcb5b265ca793bbd3c6ff51",
+    "src/city.h": "8f5cb9a96c9aefb841854208cb577c5ffebab6132f51d95d62e8add4f620e572",
+    "src/depth.h": "9bc37fdb82d153b5629bbe85074bcec8a5a248c109c7a0aad341ee663abd13bc",
+    "src/inhabitants.h": "98c941a105ddecc9fa722abd8eba19e287894b0a245f1a115196c082ddd6152e",
+    "src/generated/hunter_assets.h": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9"
+  },
+  "cases": [
+    {
+      "case": "vault",
+      "arguments": [
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "120",
+        "--out",
+        "C:\\Users\\Derpd\\OneDrive\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native\\vault"
+      ],
+      "images": {
+        "f0120.png": "37df2b2bbcdaed67791d760e40911c9d3a85a526aa8b884d9aa850fe9d834bcf"
+      }
+    },
+    {
+      "case": "drowned",
+      "arguments": [
+        "--room",
+        "1",
+        "--at",
+        "22,3",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "120",
+        "--out",
+        "C:\\Users\\Derpd\\OneDrive\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native\\drowned"
+      ],
+      "images": {
+        "f0120.png": "fc662a6bf36f6f70163c8fea63d2e77db9d6719f22eb9a46d689a7ae05e68d6e"
+      }
+    },
+    {
+      "case": "return",
+      "arguments": [
+        "--at",
+        "15,19",
+        "--play",
+        "-:2,X:1,-:8,L:8,X:1,L:24,-:400",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "2,10,50,76,104",
+        "--out",
+        "C:\\Users\\Derpd\\OneDrive\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native\\return"
+      ],
+      "images": {
+        "f0002.png": "4f4af8c3c1aa82e56ffe56a07e8f2698d640057a48553b632d0e7e3154722b59",
+        "f0010.png": "d01333eba49face3e7b4c01688263d53d9c20f870ecc8b4f6708714e8b659d7a",
+        "f0050.png": "d5e736af03f36539c70774aeebcfffc735a9c1e78d1babb1920e3f6e49ce705b",
+        "f0076.png": "7ee63358b8d4ed76a61dd612b21b4770a3e3911d8d452514e68f6fbcdd63f25a",
+        "f0104.png": "e6308822c9c14c1d15a35267ff08f160eedd5ca13a3747905982d857d8e4a55a"
+      }
+    },
+    {
+      "case": "fire",
+      "arguments": [
+        "--lamp",
+        "0,16,19",
+        "--at",
+        "10,19",
+        "--play",
+        "-:500",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "8,126,160,260",
+        "--out",
+        "C:\\Users\\Derpd\\OneDrive\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native\\fire"
+      ],
+      "images": {
+        "f0008.png": "f8cd7d24c402af76864c87b0372fd94ab9677a545460d91b33c6f6f957ab00a0",
+        "f0126.png": "4a997e27a17cc7aab3e545d18b7d5509e820620fa785dd2e01a921d4c797f3fd",
+        "f0160.png": "1cc57fb0831fb583d329214a4565f24f5991e75eb50d1e39607db269fb96f600",
+        "f0260.png": "008f5344ec3a2e92b2387f9315ad6eb92c66b197184203ae1fc43b94c7447b84"
+      }
+    },
+    {
+      "case": "tend",
+      "arguments": [
+        "--play",
+        "-:2600",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "2228,2276,2324",
+        "--out",
+        "C:\\Users\\Derpd\\OneDrive\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native\\tend"
+      ],
+      "images": {
+        "f2228.png": "c32445e532c9562efa527a525384bed0cd1005c6c0138086ab11946edb44b6de",
+        "f2276.png": "89bf0de5f8dec7c22983e38ed5442d190230121b9b4f610e6b92c3c5f2ee02e7",
+        "f2324.png": "a1cbf3d1bae9a373a7bcc7b2515a9f5c3e3a53a99887f67d8f136ddbdc17bb15"
+      }
+    },
+    {
+      "case": "flat-return",
+      "arguments": [
+        "--flat",
+        "--at",
+        "15,19",
+        "--play",
+        "-:2,X:1,-:8,L:8,X:1,L:24,-:400",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "2,10,50,76,104",
+        "--out",
+        "C:\\Users\\Derpd\\OneDrive\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native\\flat-return"
+      ],
+      "images": {
+        "f0002.png": "381914de36052584b07832b9b31556e7bf165efc036fd53112d286b7f18397ce",
+        "f0010.png": "09596afeca13b885e507f1ebf91390a7ad058ceaeace22cf5e0624629ab76a32",
+        "f0050.png": "6778ae4214a01f75ace13abd63011d3d1f5d90e2cc59cdbd14d1753d85a97e1d",
+        "f0076.png": "a8d90db494edc9efb6b7552a2a9883a64349d213994d873bc815bcf07368a721",
+        "f0104.png": "7ad38b643244d3211bc9abb19c71d67c05d3693cf198c602ccf1737fb27c7f07"
+      }
+    }
+  ],
+  "scope": "Actual native game with CLI inputs, normal 60fps ceiling and original simulation. Images are sampled gesture states; no listening or human discovery acceptance."
+}

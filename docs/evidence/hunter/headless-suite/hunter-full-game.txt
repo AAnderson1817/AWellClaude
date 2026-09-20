@@ -1,0 +1,7 @@
+PASS take-cairn: 86 frames per mode, every item and owner conserved
+PASS return-nearby: 447 frames per mode, every item and owner conserved
+PASS carry-away: 357 frames per mode, every item and owner conserved
+PASS reset-away: 257 frames per mode, every item and owner conserved
+PASS idle-tending: 2603 frames per mode, every item and owner conserved
+PASS fire-conversation: 503 frames per mode, every item and owner conserved
+PASS authored baseline difference retained; C:\Users\Derpd\OneDrive\Documents\ChatGPT\AnimalWell\docs\evidence\hunter\headless-suite\hunter-full-game.json

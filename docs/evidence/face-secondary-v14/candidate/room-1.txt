@@ -1,0 +1,1 @@
+{"room":1,"fixed_frames":120,"window":[1920,1080],"target_fps":60,"measurement":"still image only; no performance measurement"}

@@ -1,0 +1,19 @@
+{
+  "verifiedUtc": "2026-09-20T22:20:51.9646858Z",
+  "baselineGitRef": "99de7856bedfa059439da1b89435f54c98bddaf7",
+  "sanitizer": "undefined; no recovery",
+  "renderedComparison": false,
+  "routeChecks": 35,
+  "escapeSurfaces": 36,
+  "snapshotFrames": 3600,
+  "cityResponseTests": "four windows, mural/fire coupling, face sinking-stone acknowledgment, eight-fish shoal, detached snapshots",
+  "citySoundExtensions": [
+    "city-murmur",
+    "city-hum"
+  ],
+  "hunterModuleTests": "real-item conservation, pickup interruption, six-stone exhaustion, reset, pitch-aware voice poses",
+  "hunterFullGameTests": "six CLI cases; complete item/owner traces in both modes; intentional old-world pickup difference retained",
+  "hunterAudioTests": "pitched PCM timeline, muted/device lifecycle, original audio isolation; listening remains open",
+  "pythonToolTests": 5,
+  "status": "passed"
+}

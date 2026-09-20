@@ -1,0 +1,172 @@
+{
+  "capturedUtc": "2026-09-20T22:22:15.699458+00:00",
+  "exeSHA256": "458ccaeb657f8c744238b3286ed283fba6560084a7aa98deac573241d9d958af",
+  "sourceHashes": {
+    "src/audio.c": "a3c39b2de8ca632b9d005c97234884920dead970b9f5d7685d938d273f5794ef",
+    "src/city.c": "c1b90498863fc98ef24c8aee7b316103e3805cc70df2c7600d27365ec8763d2e",
+    "src/depth.c": "7929d5509316fad8940cc230e73063003e004816cd575419167ffa2f0e4f3a84",
+    "src/fx.c": "254e8a046d26837472adbe0f7c6d9c9607dae4fcbafefc13fd784f04ccd42b9b",
+    "src/inhabitants.c": "82a2dc146e21b58eae0ab392ab41527cc4ae2de3dd42ae488577b9feed35fb2c",
+    "src/items.c": "2c728bcb2813afaf00dada7e093eb1820fc0efa37a476ed6a604513b7725bc84",
+    "src/life.c": "676d7436cd18010df9e54052570bbe3a16fee30c6f9a9492fe0935eec40e62eb",
+    "src/main.c": "bae73a846d5811e73b83940660d01e4424e203759971600a2a165d5371bc2dc8",
+    "src/player.c": "76f6bc886fbd65d38c74df560dcc4247b4970a2b4c63b5643cd161051ec8083a",
+    "src/props.c": "05b52b458033f7ede2b4aa7a2934cf606bc11d9744a216ef7dc5d99bc2f9c9b1",
+    "src/render.c": "5851a5d5dab0e7d2cebfa54e34a21d7e6e5ab05ae0fa55345a97dd9ae974a3c5",
+    "src/room.c": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "src/audio.h": "714d9b3822a191a62c0b73cca533e2cbd16de531f9d4115ecdae6c563a1c246b",
+    "src/aw.h": "3da4a19686aa683f8faa6453605ac819f8102113cbcb5b265ca793bbd3c6ff51",
+    "src/city.h": "8f5cb9a96c9aefb841854208cb577c5ffebab6132f51d95d62e8add4f620e572",
+    "src/depth.h": "9bc37fdb82d153b5629bbe85074bcec8a5a248c109c7a0aad341ee663abd13bc",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/environment_mattes.h": "3caca88cd0454f480b01aaec88b4e0c64dd5100e802d71f08666efa87126c2fb",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "src/generated/foundry_assets.h": "e49796de85fcb74cb0e57a6d4bc09711bccb7c13384e7be08c970132cb3b5507",
+    "src/generated/hunter_assets.h": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9",
+    "src/generated/life_assets.h": "b9afac63e54d5e26ee43af55e5f0945db57bf38e2fcc27dd8f18743e3df3fca2",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "src/generated/mural_assets.h": "2f3d710c658bee7fc9a70cf0f3936d654cbafd7a48ab0db656b292b5cb09ec78",
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/hunter_pose.h": "dabe0c71ec9cf08a5516cf1df860757aca5ed684b79b3377ad2b3c84c51b6ee8",
+    "src/inhabitants.h": "47704b8e7e647b58ed2627d5855811b200f02daa70b9584143c05deb4c2489b4"
+  },
+  "fixtureSHA256": "128b37cd11e59fb6aa6db7e1ded83806dc564ca981e198bd45ab92ba3e39a9b2",
+  "inputReportSHA256": "d4aa000aef6b597b6803c08a8acd426de01561af9f27f7a26d48438322090489",
+  "cases": [
+    {
+      "case": "vault",
+      "arguments": [
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "120",
+        "--out",
+        "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native-v15\\vault"
+      ],
+      "images": {
+        "f0120.png": "576b52a7b3bf83bfde29ac8d70759b8653ab9765168f017013a4e19109d48476"
+      }
+    },
+    {
+      "case": "drowned",
+      "arguments": [
+        "--room",
+        "1",
+        "--at",
+        "22,3",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "120",
+        "--out",
+        "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native-v15\\drowned"
+      ],
+      "images": {
+        "f0120.png": "fc662a6bf36f6f70163c8fea63d2e77db9d6719f22eb9a46d689a7ae05e68d6e"
+      }
+    },
+    {
+      "case": "return",
+      "arguments": [
+        "--at",
+        "15,19",
+        "--play",
+        "-:2,X:1,-:8,L:8,X:1,L:24,-:400",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "2,10,50,78,106",
+        "--out",
+        "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native-v15\\return"
+      ],
+      "images": {
+        "f0002.png": "85d6c05c6113582eab1ab3ff3716f482a07c4bac92c578f43cbdcc842e95578a",
+        "f0010.png": "afa8bd0f223f4f2918a4086e8a261ddda6ff4ca366033a8a58fcb5b3e653ee90",
+        "f0050.png": "b0c82ed8a5d47ef60d0c6f93e2c8713cbeff1a8eb6205fb2aaed1b86372ab1b2",
+        "f0078.png": "b2be49ef10e6658e2cf5803a6dcc303b9a69e578f69973be2cf367887ac9f1c5",
+        "f0106.png": "59654533a35f023e35cec228b9d6d43857b15936ab278335ab30d6aca7628c4b"
+      }
+    },
+    {
+      "case": "fire",
+      "arguments": [
+        "--lamp",
+        "0,16,19",
+        "--at",
+        "10,19",
+        "--play",
+        "-:500",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "8,126,160,260",
+        "--out",
+        "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native-v15\\fire"
+      ],
+      "images": {
+        "f0008.png": "6b7c356cc1dd1c59d611010a4dc42772ee4428f5545ac47542a64e5b09e305d2",
+        "f0126.png": "389ba86fde5f4f6d39f760fbf34d26cabd5b0ee9aed25b196976b3aed2a233a9",
+        "f0160.png": "b456103310fde70995b9f6fa2f430512b44572deba945808ab29580e073d278e",
+        "f0260.png": "f9e8f50ccde7fb2520eb5281b921f3128c0ec317d06569d9be1103750b13cda9"
+      }
+    },
+    {
+      "case": "tend",
+      "arguments": [
+        "--play",
+        "-:2600",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "2238,2262,2286,2310,2334",
+        "--out",
+        "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native-v15\\tend"
+      ],
+      "images": {
+        "f2238.png": "aad730b96dc0f82e8cc162440c7a199418cb4370d880b03479ab80b06bb2516d",
+        "f2262.png": "779298ea00a8abe9d5c40bad39b7b378116d0a54472d4b84402aa6d38efa8074",
+        "f2286.png": "b535abd32e4a47907032d66ade6ecc67f9dc49215b7c887a9cbf2a951445c1e3",
+        "f2310.png": "eecae8dbf97f657b1e62e7ebeaf9722acdf1bd76d1303e16ab86eabe5f5c5e5c",
+        "f2334.png": "769df6fbc4751c12fe844f87177895b80c05ecab66374296787c4476247cab03"
+      }
+    },
+    {
+      "case": "flat-return",
+      "arguments": [
+        "--flat",
+        "--at",
+        "15,19",
+        "--play",
+        "-:2,X:1,-:8,L:8,X:1,L:24,-:400",
+        "--scale",
+        "6",
+        "--still",
+        "--mute",
+        "--shots",
+        "2,10,50,78,106",
+        "--out",
+        "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\docs\\evidence\\hunter\\native-v15\\flat-return"
+      ],
+      "images": {
+        "f0002.png": "3e1fa2e016f11b92a63b624ac1e9f50e88043a63340aba3b2a18c0ab39013b2e",
+        "f0010.png": "1b5e5032599054bece2aca5e47d7d98ef1f0a1633104aacd2bff87709c1fb8e1",
+        "f0050.png": "6778ae4214a01f75ace13abd63011d3d1f5d90e2cc59cdbd14d1753d85a97e1d",
+        "f0078.png": "373c7c3eb220c41eee6e7074d5491e108d33aa19c1c4e7c5da9c39bdbc1f98ed",
+        "f0106.png": "6ef60a88ae9b6cc7c838dbb5fcf061dfa9afc93a89cb0971b04c1c797f7f5800"
+      }
+    }
+  ],
+  "voiceMontageSHA256": "23229a8d6193db735a7769beb44364b60248595e3af6177a05aac3a38c225427",
+  "scope": "Actual native CLI input loop; selected states from complete-item trace. Normal 60fps ceiling. These stills and isolated WAV do not establish live perceptual or human discovery acceptance."
+}

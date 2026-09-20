@@ -1,5 +1,8 @@
 // render.c -- the palette, the 320x180 target, and the CRT pass over the top.
 #include "aw.h"
+#include "inhabitants.h"
+#include "hunter_pose.h"
+#include <math.h>
 
 RenderTexture2D screenRT;
 static Shader post;
@@ -125,6 +128,81 @@ static const char *FS =
 "  finalColor = vec4(c, 1.0);\n"
 "}\n";
 #endif
+
+static float HunterBound(float value,float low,float high){return fminf(high,fmaxf(low,value));}
+static Color HunterInk(float u,float v,float gazeX,float gazeY,float mouth){
+    Color color={0,0,0,0};
+    const Color canvas={103,87,57,255},felt={150,126,83,255},leather={60,43,28,255};
+    // Same seed dimensions as the player. The asymmetric rear pack and actual
+    // brim silhouette distinguish this person without a new body archetype.
+    if(u>=-4.8f&&u<-2.0f&&v>=2.7f&&v<8.8f)color=canvas;
+    if(u>=-4.8f&&u<-2.0f&&v>=7.8f&&v<8.8f)color=leather;
+    if((u>=-3&&u<3&&v>=1&&v<10)||(u>=-2&&u<2&&v>=0&&v<11)){
+        color=palSkin;
+        if(v<1.1f||(fabsf(u)>2.15f&&v<3))color=palSkinDeep;
+        if(fabsf(fabsf(u)-2.25f)<.28f&&v>3.1f&&v<9.3f)color=leather;
+        for(int side=-1;side<=1;side+=2){
+            if(fabsf(u-(side*1.65f+gazeX))<.52f&&fabsf(v-(8.05f+gazeY))<.95f){
+                color=palPupil;if(v>8.30f+gazeY)color=palEye;
+            }
+        }
+        if(mouth>.22f&&fabsf(u-gazeX*.3f)<.55f&&fabsf(v-6.05f)<.42f)color=palPupil;
+    }
+    if(u>=-5.5f&&u<5.5f&&v>=10.45f&&v<11.35f)color=felt;
+    if(u>=-3.0f&&u<2.5f&&v>=11.2f&&v<13.8f){
+        color=felt;if(v<11.8f)color=leather;
+        if(v>13.3f&&(u< -2.5f||u>2.0f))color=(Color){0,0,0,0};
+    }
+    return color;
+}
+void HunterDraw(void){
+    HunterView h;if(!InhabitantsHunterView(&h))return;
+    float cx=h.x+h.w*.5f,floor=h.y+h.h;
+    int moving=HunterPoseMoving(&h),seated=HunterPoseSeated(&h);
+    float roll=HunterPoseRoll(&h);
+    float co=cosf(roll),si=sinf(roll),handsX[2],handsY[2];int handsValid[2]={0};
+    for(int side=-1;side<=1;side+=2){
+        HunterArm arm=HunterPoseArm(&h,side,0);int k=(side+1)/2;
+        if(arm.reachable){
+            int ex=(int)roundf(arm.elbow.x),ey=(int)roundf(-arm.elbow.y)+ROOM_Y;
+            DrawLine((int)roundf(arm.shoulder.x),(int)roundf(-arm.shoulder.y)+ROOM_Y,ex,ey,palSkinDeep);
+            DrawLine(ex,ey,(int)roundf(arm.hand.x),(int)roundf(-arm.hand.y)+ROOM_Y,palSkin);
+            handsX[k]=arm.hand.x;handsY[k]=-arm.hand.y;handsValid[k]=1;
+        }
+        float stride=moving?sinf(h.walkPhase*2.f)*.60f:0;
+        DrawRectangle((int)floorf(cx+side*1.44f+(seated?h.facing*.64f:0)-1),
+            (int)floorf(floor-1-fmaxf(0,side*stride))+ROOM_Y,2,1,palSkinDeep);
+    }
+    float gazeX=HunterBound((h.lookX-cx)/(TS*3.f),-1,1)*.52f;
+    float gazeY=HunterBound((floor-h.lookY-h.h*.73f)*.08f,-.28f,.28f);
+    // Inverse rasterization rotates the rigid sprite, with no gaps from forward
+    // pixel splats and no body scaling. The common pivot remains on the floor.
+    for(int y=(int)floorf(floor)-16;y<=(int)ceilf(floor);y++)for(int x=(int)floorf(cx)-8;x<=(int)ceilf(cx)+8;x++){
+        float dx=x+.5f-cx,dy=floor-(y+.5f);
+        Color ink=HunterInk(dx*co+dy*si,-dx*si+dy*co,gazeX,gazeY,h.mouthOpen);
+        if(ink.a)DrawPixel(x,y+ROOM_Y,ink);
+    }
+    for(int k=0;k<2;k++)if(handsValid[k])DrawPixel((int)roundf(handsX[k]),(int)roundf(handsY[k])+ROOM_Y,palSkin);
+}
+int HunterDrawStone(int item){
+    HunterView h;
+    if(item<0||item>=itemCount||item==heldItem||items[item].room!=roomIdx||items[item].kind!=IT_STONE||
+       !InhabitantsHunterView(&h)||h.state!=HUNTER_TEND||h.carriedItem!=item)return 0;
+    // Rotate the original five-by-four stone palette about its real position.
+    // Returning one replaces its normal draw; no extra stone proxy is created.
+    float cx=floorf(items[item].x)+2.5f,cy=floorf(items[item].y)+2.f;
+    float co=cosf(h.stoneTurn),si=sinf(h.stoneTurn);
+    for(int y=(int)cy-4;y<=(int)cy+4;y++)for(int x=(int)cx-4;x<=(int)cx+4;x++){
+        float dx=x+.5f-cx,dy=y+.5f-cy;
+        int u=(int)floorf(dx*co-dy*si+2.5f),v=(int)floorf(dx*si+dy*co+2.f);
+        if(u<0||u>=5||v<0||v>=4||(v==0&&(u==0||u==4)))continue;
+        Color ink=palStone;
+        if(v==0&&(u==1||u==2))ink=palStoneLit;
+        if(v==3||(u==3&&v==2))ink=palStoneDeep;
+        DrawPixel(x,y+ROOM_Y,ink);
+    }
+    return 1;
+}
 
 void RenderInit(void) {
     screenRT = LoadRenderTexture(GW, GH);

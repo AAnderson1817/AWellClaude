@@ -6,6 +6,7 @@
 // the answer is the whole point (L6). The set pieces are text sprites: rows of palette
 // letters in this file, like the maps. Nothing streams.
 #include "aw.h"
+#include "inhabitants.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -422,6 +423,8 @@ void PropsDrawBack(void) {
                 DrawRectangle(px + 6, py + 5, 1, 1, palLampGlass);    // a glint in the glass, your light in it
         } break;
         case PR_CAIRN:
+            // Real cairn items are drawn by ItemsDrawBehind after initialization.
+            if (InhabitantsHunterView(&(HunterView){0})) break;
             DrawRectangle(px + 1, py + 6, 6, 2, palStone);
             DrawRectangle(px + 2, py + 4, 5, 2, palStone);
             DrawRectangle(px + 2, py + 2, 4, 2, palStone);

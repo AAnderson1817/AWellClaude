@@ -1,0 +1,1 @@
+PASS: frame input and hash regressions

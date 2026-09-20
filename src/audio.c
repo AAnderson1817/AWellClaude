@@ -415,3 +415,136 @@ int AudioExportMontage(const char *path) {
     Wave w = { (unsigned)n, SR, 16, 1, out };
     return ExportWave(w, path);
 }
+
+// BEGIN HUNTER RESPONSE AUDIO
+// Standalone bank: original synthesis, PCM pool, Sfx counters and RNG are untouched.
+#include "audio.h"
+#define HUNTER_PCM_MAX (HUNTER_VOICE_SR*2)
+typedef struct { i16 pcm[HUNTER_PCM_MAX];int samples;Sound sound; } HunterSound;
+static HunterSound hunterSounds[HVOICE_COUNT];
+static unsigned hunterSoundCounts[HVOICE_COUNT];
+static int hunterAudioInitialized, hunterAudioDevice, hunterPlaying;
+static const float hunterBase=.60f;
+static float HunterNoise(unsigned *seed) {
+    *seed^=*seed<<13;*seed^=*seed>>17;*seed^=*seed<<5;
+    return (float)(*seed&0xffffffu)/8388607.5f-1.0f;
+}
+static float HunterFinite(float v,float fallback,float low,float high) {
+    return !isfinite(v)?fallback:(v<low?low:(v>high?high:v));
+}
+void AudioHunterInit(void) {
+    if(hunterAudioInitialized)return;
+    hunterAudioInitialized=1;hunterAudioDevice=ready;hunterPlaying=0;
+    memset(hunterSoundCounts,0,sizeof hunterSoundCounts);
+    // Changing vowels within the same reedy mid register; these are sounds,
+    // never recorded words or a dialogue/event sequencer.
+    static const float fundamental[HVOICE_COUNT][3]={
+        {0,0,0},{214,0,0},{196,222,188},{244,0,0},{203,190,177},{208,0,0},{176,0,0}};
+    static const float vowelA[HVOICE_COUNT][3]={
+        {0,0,0},{620,0,0},{710,470,630},{880,0,0},{530,680,450},{480,0,0},{290,0,0}};
+    static const float vowelB[HVOICE_COUNT][3]={
+        {0,0,0},{1320,0,0},{1260,1050,1460},{1560,0,0},{1100,1260,970},{1120,0,0},{820,0,0}};
+    static float source[HUNTER_PCM_MAX];
+    for(int kind=1;kind<HVOICE_COUNT;kind++) {
+        HunterSound *sound=&hunterSounds[kind];
+        const HunterPhrase *phrase=AudioHunterPhrase(kind);
+        sound->samples=AudioHunterSampleCount(kind);
+        if(sound->samples>HUNTER_PCM_MAX){TraceLog(LOG_ERROR,"hunter sound exceeds bounded bank");sound->samples=0;continue;}
+        memset(source,0,sizeof source);
+        unsigned noise=0x31415927u^(unsigned)kind*0x9e3779b9u;
+        float phase=0,breathLow=0;
+        for(int i=0;i<sound->samples;i++) {
+            float t=(float)i/HUNTER_VOICE_SR;
+            float air=HunterNoise(&noise);
+            breathLow+=.18f*(air-breathLow);
+            HunterMouth m=AudioHunterMouthSample(kind,i);
+            if(m.syllable>=0) {
+                int k=m.syllable;
+                float u=(float)(i-AudioHunterSyllableStart(kind,k))/AudioHunterSamplesMs(phrase->voicedMs[k]);
+                float contour=kind==HVOICE_GREETING?(.94f+.10f*u):(1.04f-.10f*u);
+                float frequency=fundamental[kind][k]*contour*(1+.012f*sinf(2*PI_F*5.8f*t));
+                phase+=2*PI_F*frequency/HUNTER_VOICE_SR;
+                float voiced=0;
+                for(int harmonic=1;harmonic<=8;harmonic++) {
+                    float hz=harmonic*frequency;
+                    float a=(hz-vowelA[kind][k]*(.94f+.10f*u))/200;
+                    float b=(hz-vowelB[kind][k]*(1.05f-.08f*u))/270;
+                    float gain=.22f/harmonic+.28f*expf(-a*a)+.13f*expf(-b*b);
+                    if(kind==HVOICE_HUM)gain=harmonic==1?.72f:(harmonic==2?.12f:0);
+                    voiced+=sinf(phase*harmonic)*gain;
+                }
+                source[i]=(.58f*voiced+.018f*(air-breathLow))*m.open;
+            } else {
+                int voicedEnd=AudioHunterVoicedEnd(kind),breathEnd=voicedEnd+AudioHunterSamplesMs(phrase->breathMs);
+                float breath=0;
+                if(i<AudioHunterSamplesMs(phrase->leadMs))breath=.35f*sinf(PI_F*i/AudioHunterSamplesMs(phrase->leadMs));
+                else if(i>=voicedEnd&&i<breathEnd)breath=sinf(PI_F*(i-voicedEnd)/(breathEnd-voicedEnd));
+                source[i]=breathLow*breath*(kind==HVOICE_FIRE?.035f:.022f);
+            }
+        }
+        // Short diffuse room answer, wholly inside the declared tail; two soft
+        // taps cannot extend the speaking mouth or the next-phrase deadline.
+        int d0=AudioHunterSamplesMs(37),d1=AudioHunterSamplesMs(79);
+        for(int i=0;i<sound->samples;i++) {
+            float value=source[i]+(i>=d0?source[i-d0]*.10f:0)+(i>=d1?source[i-d1]*.055f:0);
+            float end=(float)(sound->samples-1-i)/AudioHunterSamplesMs(25);
+            if(end<1)value*=end;
+            sound->pcm[i]=(i16)(tanhf(value)*32767);
+        }
+        if(hunterAudioDevice)sound->sound=MakeSound(sound->pcm,sound->samples);
+    }
+}
+void AudioHunterStop(void) {
+    if(hunterAudioDevice&&hunterPlaying>0)StopSound(hunterSounds[hunterPlaying].sound);
+    hunterPlaying=0;
+}
+int AudioHunterPlay(const HunterVoiceEvent *event) {
+    if(!event||event->kind<=HVOICE_NONE||event->kind>=HVOICE_COUNT)return 0;
+    if(!hunterAudioInitialized)AudioHunterInit();
+    int kind=event->kind;
+    if(!hunterSounds[kind].samples)return 0;
+    AudioHunterStop();hunterPlaying=kind;hunterSoundCounts[kind]++;
+    if(hunterAudioDevice) {
+        Sound sound=hunterSounds[kind].sound;
+        SetSoundVolume(sound,hunterBase*HunterFinite(event->volume,.20f,0,.35f));
+        SetSoundPitch(sound,AudioHunterPitch(event->pitch));
+        SetSoundPan(sound,HunterFinite(event->pan,.5f,0,1));
+        PlaySound(sound);
+    }
+    return AudioHunterDurationTicks(kind,event->pitch);
+}
+void AudioHunterClose(void) {
+    AudioHunterStop();
+    if(hunterAudioDevice)for(int k=1;k<HVOICE_COUNT;k++)if(hunterSounds[k].samples)UnloadSound(hunterSounds[k].sound);
+    hunterAudioInitialized=hunterAudioDevice=0;
+}
+int AudioHunterCounts(unsigned *out,int max) {
+    if(!out||max<=0)return 0;
+    int count=max<HVOICE_COUNT?max:HVOICE_COUNT;
+    memcpy(out,hunterSoundCounts,sizeof(unsigned)*count);return count;
+}
+void AudioHunterPrintStats(void) {
+    printf("HUNTER AUDIO greeting=%u offer=%u taken=%u fire=%u bedroll=%u hum=%u\n",
+        hunterSoundCounts[HVOICE_GREETING],hunterSoundCounts[HVOICE_OFFER],hunterSoundCounts[HVOICE_TAKEN],
+        hunterSoundCounts[HVOICE_FIRE],hunterSoundCounts[HVOICE_BEDROLL],hunterSoundCounts[HVOICE_HUM]);
+}
+int AudioHunterExportMontage(const char *path) {
+    if(!path)return 0;
+    if(!hunterAudioInitialized)AudioHunterInit();
+    static i16 output[HUNTER_VOICE_SR*12];int count=0;
+    for(int kind=1;kind<HVOICE_COUNT;kind++) {
+        float pitch=kind==HVOICE_FIRE?.72f:(kind==HVOICE_TAKEN?1.18f:(kind==HVOICE_HUM?.83f:1));
+        float volume=kind==HVOICE_HUM?.12f:.20f;
+        HunterSound *sound=&hunterSounds[kind];
+        int length=(int)ceil(sound->samples/(double)pitch);
+        if(count+length+HUNTER_VOICE_SR/2>(int)(sizeof output/sizeof output[0]))return 0;
+        for(int i=0;i<length;i++) {
+            double at=i*(double)pitch;int sample=(int)at;float frac=(float)(at-sample);
+            float a=sample<sound->samples?sound->pcm[sample]:0,b=sample+1<sound->samples?sound->pcm[sample+1]:0;
+            output[count++]=(i16)((a+(b-a)*frac)*hunterBase*volume);
+        }
+        for(int i=0;i<HUNTER_VOICE_SR/2;i++)output[count++]=0;
+    }
+    Wave wave={(unsigned)count,HUNTER_VOICE_SR,16,1,output};return ExportWave(wave,path);
+}
+// END HUNTER RESPONSE AUDIO

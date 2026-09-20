@@ -1,36 +1,70 @@
 # Verification
 
-The current craft revision 14 passes the [actual-array architecture audit](evidence/craft-v14/final-architecture.json),
-including 19 adversarial mutations, and [deterministic embedded-material checks](evidence/craft-v14/runtime-material-package.json).
-All **6,640 rendered original-state comparisons across 15 scenarios** pass in both
-presentation modes in the [source-hashed preservation report](evidence/craft-v14/render-preservation.json).
-The hunter module and attire are separately delivered drafts, not active in this checkpoint.
+The current inhabitant revision 15 integrates the hunter into the delivered game.
+The [final headless suite](evidence/hunter/final-headless/summary.json) passes input,
+snapshot and response checks with UndefinedBehaviorSanitizer, **21,160 original-state
+comparisons across 15 scenarios**, **35 route checks** and **36 escape checks**.
+The separate [native-rendered preservation report](evidence/hunter/render-preservation.json)
+passes **6,640 original-state comparisons**, also in both presentation modes.
 
-The [matched native captures](evidence/craft-v14/native/manifest.json) use the same
-geometry/materials with and without local source illumination. Window emission is
-present in both. At 1920×1080, after 120 warmup frames, 600 measured frame-loop calls
-averaged 3.1173 ms (Vault) / 2.2606 ms (Drowned) with local lights, versus
-3.1334 / 2.2724 ms without. The small difference is run variation, not a performance
-gain. A 4 ms rest between frames is outside the timer. These are local wall times,
-not GPU-only timings or a sustained-throughput/hardware guarantee. See [lighting](local-lighting.md).
+The [full game-loop hunter report](evidence/hunter/final-headless/hunter-full-game.json)
+uses the executable's actual input loop for taking, returning, carrying away,
+resetting, tending and fire conversation. It compares every item, ownership and
+hunter state across **8,506 frames** in flat/depth runs. The intended historical
+change is retained explicitly: Hold now picks up a real stone where the original
+cairn was decorative. The original player implementation and inherited item
+operations remain checked; this is not a claim that added content has no effect.
 
-The [WebGL smoke record](evidence/craft-v14/web-smoke.json) pins source/build hashes:
-both rooms rendered at 720p, F2 switched flat/depth, brief movement worked, and no
-warning/error entries were captured. The self-contained HTML is 21,035,761 bytes.
-All 12 gallery runtime/model images loaded. This does not establish full browser
-playthrough or perceptual sound quality.
+The [module checks](evidence/hunter/final-headless/hunter-module.txt) audit 28,748
+conservation steps, 14,116 voice poses, 3,276 actual arm poses and 6,000 exact
+inherited-state idle hashes. Fixed arm segments are 4.2 logical pixels each; the
+largest audited target reach is 8.297761 of 8.4 pixels. The
+[audio checks](evidence/hunter/final-headless/hunter-audio.txt) examine 26,293
+pitch-scaled phrase samples, PCM bounds, lifecycle and original audio isolation.
+They do not establish listening comfort or actual device latency.
 
-Editable Blender terrain, face and scanned-material sources have separate clean
-reopen/reimport records. [Material provenance and delivery](materials.md) distinguish
-the credited CC0 scan from authored geometry and other surfaces. The
-[whole-brief artistic review](artistic-review-v14.md) remains **rework**: foreground
-rock, face carving, missing inhabitants/discovery and human acceptance remain open.
+[Final native captures](evidence/hunter/native-v15/manifest.json) pin every source
+C/header hash, executable, input report, capture tool and image. They show actual
+pickup/return, tending, fire and flat/depth poses, with an exported voice montage.
+The [corrected rendering review](hunter-rendering-review.md) closes the sampled
+arm-stretch finding while retaining cairn shape, occlusion and transition concerns.
+Initial captures and the [initial independent review](hunter-independent-review-v15.md)
+remain dated evidence of the rejected version, not acceptance of the final build.
+
+The [WebGL smoke record](evidence/hunter/web-smoke.json) pins source/build hashes.
+Both rooms rendered at 1280 by 720, F2 switched flat/depth and back, and no warning
+or error entries were captured. X interaction was exercised at the camp; overlapping
+bodies limit visual item counting, which the native game-loop traces cover separately.
+The self-contained HTML is 21,249,065 bytes. All 13 gallery runtime/model images loaded.
+This is not a full browser playthrough or perceptual sound review.
+
+The [whole-brief review](artistic-review-v15.md) remains **rework**. Foreground rock,
+face carving, cairn and character motion, remaining inhabitants/discovery and human
+acceptance still need work. Technical correctness does not establish AAA craft or
+immersion.
+
+## Earlier environment evidence retained
+
+The environment asset arrays are unchanged from craft revision 14. Its
+[actual-array architecture audit](evidence/craft-v14/final-architecture.json), including
+19 adversarial mutations, and [embedded-material checks](evidence/craft-v14/runtime-material-package.json)
+retain that scope. Editable Blender terrain, face and scanned-material sources have
+clean reopen/reimport records. [Material provenance and delivery](materials.md)
+distinguish the credited CC0 scan from authored geometry and other surfaces.
+
+The v14 [matched native captures](evidence/craft-v14/native/manifest.json) compare
+local illumination with a control. At 1920 by 1080, after 120 warmup frames, 600
+measured frame-loop calls averaged 3.1173 ms (Vault) / 2.2606 ms (Drowned) with local
+lights, versus 3.1334 / 2.2724 ms without. The small difference is run variation,
+not a performance gain. A 4 ms rest between frames is outside the timer. These
+are local wall times, not GPU-only timings, v15 performance measurements or a
+hardware guarantee. See [lighting](local-lighting.md). The v14
+[browser smoke](evidence/craft-v14/web-smoke.json) and
+[artistic review](artistic-review-v14.md) remain historical records.
 
 Revision 13's [material package](evidence/materials/runtime-package.json),
 [native texture comparison](evidence/materials/native/manifest.json) and
-[browser smoke record](evidence/materials/web-smoke.json) remain historical evidence.
-The headless route/escape results below also retain their recorded revision scope;
-they were not rerun for a purely visual increment.
+[browser smoke record](evidence/materials/web-smoke.json) also remain historical.
 
 The previous architecture revision has a separate [final geometry audit](evidence/architecture/final-v12.json)
 and [independent whole-brief review](artistic-review-v12.md). The geometry audit
@@ -91,7 +125,8 @@ The game itself does not require Python. The checker stops on a failed build, cr
 test, changed trace, unreachable route or unsuccessful escape sweep. `AWELL_GAME` is
 temporarily pointed at the headless binary and restored afterward. The original Bash
 `tools/check.sh` keeps its input/hash and Python regressions and now also runs the
-snapshot and city response tests with UndefinedBehaviorSanitizer.
+snapshot, city response, hunter state and hunter audio tests with
+UndefinedBehaviorSanitizer. The Bash/Linux target has not been run on this host.
 
 To store a deliberate review record in the repository:
 
@@ -110,24 +145,28 @@ These are evidence from a particular working tree; rerun them after relevant cha
 | `input_hash.c`, UBSan with recovery disabled | Real frame loop input edges, sub-tick frames, released taps, catch-up ticks and unsigned hashing | Pass |
 | `presentation_snapshots.c`, same sanitizer | Birds, beast, plants, props and event particles: bounded copies, null inputs, repeated reads, copy isolation, live-state preservation | 3,600 frames pass |
 | `city_responses.c`, same sanitizer | Four windows and timed return, mural/fire response, real sinking-stone acknowledgment, fish gathering/scatter/connected water bounds and city snapshot ownership | Pass, including 6,000 additional shoal bounds steps |
+| `hunter_responses.c`, same sanitizer | Actual items, interruption, tending/placement, six-stone exhaustion, room/reset lifecycle, supported walking, voice timing and fixed arm reach | 28,748 conservation steps; 14,116 voice and 3,276 arm poses pass |
+| `hunter_audio.c`, same sanitizer | Actual pitched PCM timeline, envelope, device/mute lifecycle and inherited audio isolation | 26,293 timeline samples pass |
+| `test_hunter_integration.py` | Six scenarios through the actual CLI game loop; every item, owner and hunter field compared across both modes | 8,506 compared frames pass; authored historical pickup difference retained |
 | `test_tools.py` | Reachability failures, crashes, empty traces and explicit executable selection | 5 tests pass |
-| `check-preservation.py` | Independently compiled original source vs both presentation flags; all inherited body/item/water/reset/sound/life trace fields compared exactly; city sound counts reported separately | 15 scenarios, 21,160 compared frames, exact match; city counts agree between modes |
-| Static source contract | Movement/items unchanged; original audio equivalent after removing only the marked city synthesis append; original life/props/effects preserved after the named accessors/moved enums; authored tile/prop rows unchanged | Pass |
+| `check-preservation.py` | Independently compiled original source vs both presentation flags; all inherited body/item/water/reset/sound/life trace fields compared exactly; city and hunter sound counts reported separately | 15 scenarios, 21,160 compared frames, exact match; added sound counts agree between modes |
+| Static source contract | Player source unchanged; items preserve original lines around the explicit ownership and draw hooks; original audio preserved before marked city/hunter append blocks; original life/props/effects retained around named hooks; authored tile/prop rows unchanged | Pass |
 | `route.py` | Search-based climbing, water/islands, shaft in both directions, failed exit, full reset and aborted reset | 35 checks pass |
 | `escape.py` | A wander bot returns to the original start from each standable run in both rooms | 36 of 36 surfaces pass |
 
-The current city response run completed on 2026-09-20 and is recorded in
-[summary.json](evidence/city-responses/checks/summary.json),
-[preservation-report.json](evidence/city-responses/checks/preservation-report.json),
-[city response tests](evidence/city-responses/checks/city_responses.txt),
-[route.txt](evidence/city-responses/checks/route.txt) and
-[escape.txt](evidence/city-responses/checks/escape.txt).
+The current hunter integration run completed on 2026-09-20 and is recorded in
+[summary.json](evidence/hunter/final-headless/summary.json),
+[preservation-report.json](evidence/hunter/final-headless/preservation-report.json),
+[city response tests](evidence/hunter/final-headless/city_responses.txt),
+[route.txt](evidence/hunter/final-headless/route.txt) and
+[escape.txt](evidence/hunter/final-headless/escape.txt).
 The counts are actual completed checks, not acceptance targets.
 
 The older `evidence/current` directory is the historical depth-v10 milestone record.
 The city increment adds behavior absent at that milestone. The inherited
 `dbgLastSfx` trace remains an original-gameplay-event field; a separate `CITY SFX`
-line reports murmurs and hums. No original trace field is filtered to obtain parity.
+line reports murmurs and hums; `HUNTER AUDIO` reports hunter phrases separately.
+No original trace field is filtered to obtain parity.
 The new audio synthesis is appended without consuming the inherited random stream.
 The complete soundtrack is therefore intentionally extended, not byte-identical.
 
@@ -152,9 +191,9 @@ The renderer is permitted to change pixels; the compared simulation states and e
 must remain identical. The `LightStep` call must remain common to both modes: an
 inherited lighting response consumes the props random stream.
 
-The latest complete native pass, on the city response increment, matched **6,640
-frames across 15 cases** and also reran the full headless suite. Its record is
-[render-preservation-report.json](evidence/city-responses/checks/render-preservation-report.json).
+The latest complete native pass, on the hunter integration increment, matched **6,640
+frames across 15 cases** after the final headless suite. Its record is
+[render-preservation.json](evidence/hunter/render-preservation.json).
 The earlier [depth-v10 report](evidence/current/render-preservation-report.json) and
 depth-v5 report at
 [render-depth-v5.json](evidence/render-depth-v5.json). Reports describe their tested
@@ -178,7 +217,7 @@ standard raylib web modules and preserves `tools/build.sh`'s `ASYNCIFY`, `SINGLE
 memory-growth, modularized `RL`, browser-only environment and exported heap-view flags.
 It writes a separate `lib/libraylib_web.a`, preserving the native libraries.
 
-The current city response build produced `build/game.js` at **8,602,213 bytes** and
+The historical city response build produced `build/game.js` at **8,602,213 bytes** and
 self-contained `build/play.html` at **8,603,362 bytes** with Emscripten 6.0.8 and
 raylib 5.5. These are inspected artifact sizes for this increment, not performance
 measurements or guarantees for later revisions.
@@ -262,8 +301,9 @@ Reproduce the native response fixture with:
 ```
 
 See [implementation and limits](city-response-implementation.md) for the response
-contracts and corresponding tests. The hunter, native, mouth bubbles and remaining
-response-table content remain unfinished.
+contracts and corresponding tests. The integrated hunter has separate
+[implementation and evidence](hunter-implementation.md). The native, mouth bubbles
+and remaining response-table content remain unfinished.
 
 F2 switches flat/depth during ordinary interactive play; F4 toggles optional ambient
 drift. These are review/presentation controls, not new game verbs. Keyboard instructions

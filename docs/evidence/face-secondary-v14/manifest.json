@@ -1,0 +1,120 @@
+{
+  "scope": "isolated same-state native geometry comparison; not a performance or AAA acceptance test",
+  "reference_image": "docs/evidence/craft-v14/native/with-local-lights/room-1.png",
+  "governing_face_reference": "public/art/references/drowned-quarter/03-drowned-face-v2.png",
+  "source_matches_final_v14_manifest": true,
+  "snapshot_sources": {
+    "candidate/city_assets.h": "4f6ba2b3a710e2ba7e67204298e25523c837e2244f9d56bd87f5884b2afce1dd",
+    "candidate/depth.c": "5b742f1aafbad793ebd65965548bf9a58f2b48c0dea102d427d67134b6c966e6",
+    "capture.c": "72753c2c8486b6c3370b71a874fb4721d21b4723328bbc38d38aa1b8927c41bc",
+    "src/audio.c": "bff1f73a2b7801137287eec1e6e65705ac87d04b31d3f548a7f817d811c00fd9",
+    "src/aw.h": "41a781ca18e7d6c92b68e4df8fa1da9e1551428faf873747eb07adb2de074a11",
+    "src/city.c": "c1b90498863fc98ef24c8aee7b316103e3805cc70df2c7600d27365ec8763d2e",
+    "src/city.h": "8f5cb9a96c9aefb841854208cb577c5ffebab6132f51d95d62e8add4f620e572",
+    "src/depth.c": "9cc51b4b428121b67ed936217c6911f9e15e0d778e486952ee7d257fc92126af",
+    "src/depth.h": "9bc37fdb82d153b5629bbe85074bcec8a5a248c109c7a0aad341ee663abd13bc",
+    "src/fx.c": "254e8a046d26837472adbe0f7c6d9c9607dae4fcbafefc13fd784f04ccd42b9b",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/environment_mattes.h": "3caca88cd0454f480b01aaec88b4e0c64dd5100e802d71f08666efa87126c2fb",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "src/generated/foundry_assets.h": "e49796de85fcb74cb0e57a6d4bc09711bccb7c13384e7be08c970132cb3b5507",
+    "src/generated/hunter_assets.h": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9",
+    "src/generated/life_assets.h": "b9afac63e54d5e26ee43af55e5f0945db57bf38e2fcc27dd8f18743e3df3fca2",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "src/generated/mural_assets.h": "2f3d710c658bee7fc9a70cf0f3936d654cbafd7a48ab0db656b292b5cb09ec78",
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/inhabitants.c": "3c5242061ceb80180440238168b640b17d4ba00f34362d24686421e249d22a49",
+    "src/inhabitants.h": "c6da3d37fdca7b8627d201a558def009cd98e8f93b48ee69f7ef3a86f97f8062",
+    "src/items.c": "b863b0fe9f3882045dfe7ea3ced619c688b7d0bd29839b91d5d11143b3dca659",
+    "src/life.c": "676d7436cd18010df9e54052570bbe3a16fee30c6f9a9492fe0935eec40e62eb",
+    "src/main.c": "796c9408f46f3045f4f5b3c1acbf4f83a0200f7cbedc27c70c74eab009a3f4eb",
+    "src/player.c": "76f6bc886fbd65d38c74df560dcc4247b4970a2b4c63b5643cd161051ec8083a",
+    "src/props.c": "b271e1f90f21310715be4520e62f256f7109bbbe43b821bb07c1a105d4d27efd",
+    "src/render.c": "39bb809a3ab7b0449c1dd1658fe6a0a69424d4439a1d82211e545a4d5e1bb390",
+    "src/room.c": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35"
+  },
+  "production_source_hashes": {
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "tools/tests/architecture_capture.c": "29978c799934e367b62616d0ae2df3b0897066508b91b7562009cd27ec6fc11b",
+    "src/main.c": "796c9408f46f3045f4f5b3c1acbf4f83a0200f7cbedc27c70c74eab009a3f4eb",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/depth.c": "9cc51b4b428121b67ed936217c6911f9e15e0d778e486952ee7d257fc92126af",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e"
+  },
+  "only_candidate_renderer_change": "city_assets.h include replaced; all other depth.c text equal",
+  "fixture_changes": [
+    "copied main.c include resolves within snapshot",
+    "SetTargetFPS(60) pacing",
+    "600-frame timing loop omitted after the frame120 image"
+  ],
+  "frame_state": {
+    "room": 1,
+    "player_tile": [
+      22,
+      3
+    ],
+    "fixed_step": true,
+    "depth_enabled": true,
+    "depth_still": true,
+    "lamp": [
+      0,
+      1,
+      14
+    ],
+    "plan": "-:1500",
+    "frames": 120,
+    "window": [
+      1920,
+      1080
+    ]
+  },
+  "process_affinity": 65535,
+  "image_comparison": {
+    "control_matches_final_v14_pixels": true,
+    "capture_is_identical_despite_capped_pacing": true,
+    "changed_pixels": 53061,
+    "changed_region_xyxy": [
+      991,
+      773,
+      1340,
+      1014
+    ],
+    "changed_pixels_outside_crop": 0,
+    "exact_pixel_crop_xyxy": [
+      980,
+      750,
+      1360,
+      1025
+    ],
+    "crop_resampled": false,
+    "notes": "Difference counts establish localization only; they do not establish visual quality."
+  },
+  "artifact_hashes": {
+    "docs/evidence/face-secondary-v14/control/room-1.png": "fc662a6bf36f6f70163c8fea63d2e77db9d6719f22eb9a46d689a7ae05e68d6e",
+    "docs/evidence/face-secondary-v14/candidate/room-1.png": "cbca70c56b0ac842c3b459c2233e2c626439c03b9906b1b9808e6d1c50ccb2c2",
+    "docs/evidence/face-secondary-v14/control/face-native-crop.png": "37112dfd1430e033045500aaf04aa3f70a3378c24029ae87c431646a6ddcde3f",
+    "docs/evidence/face-secondary-v14/candidate/face-native-crop.png": "3f00a57f3867e0499f75d509511df5e65533a3ac8a10ec250892d00560885129",
+    ".local/city-face-study-v14/native-comparison/face-control.exe": "5bb76636a936dbf93caccd96995282e560c92c9e624c130d6350669a1abea699",
+    ".local/city-face-study-v14/native-comparison/face-candidate.exe": "1183d22744044d4ac26c39cd8aad61f169f84b5951ef23e9bbfaeaeecc2750f4",
+    ".local/city-face-study-v14/native-comparison/capture.c": "72753c2c8486b6c3370b71a874fb4721d21b4723328bbc38d38aa1b8927c41bc",
+    ".local/city-face-study-v14/native-comparison/candidate/depth.c": "5b742f1aafbad793ebd65965548bf9a58f2b48c0dea102d427d67134b6c966e6",
+    ".local/city-face-study-v14/native-comparison/candidate/city_assets.h": "4f6ba2b3a710e2ba7e67204298e25523c837e2244f9d56bd87f5884b2afce1dd"
+  },
+  "production_still_unchanged": {
+    "src/generated/support_assets.h": true,
+    "src/generated/material_textures.h": true,
+    "tools/tests/architecture_capture.c": true,
+    "src/main.c": false,
+    "src/generated/city_assets.h": true,
+    "src/generated/terrain_assets.h": true,
+    "src/depth.c": true,
+    "src/generated/foliage_assets.h": true
+  },
+  "concurrent_worktree_changes": [
+    "src/main.c"
+  ],
+  "dependency_isolation": "Both executables compile only the captured src snapshot. Later worktree edits do not enter this comparison."
+}

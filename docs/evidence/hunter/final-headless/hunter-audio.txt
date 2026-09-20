@@ -1,0 +1,7 @@
+PCM kind=1 samples=7276 peak=0.51931763 rms=0.09893823 dc=-0.00006572 hash=b5a5da13a42aa06a
+PCM kind=2 samples=19512 peak=0.56265259 rms=0.11527474 dc=-0.00000462 hash=74e247b0e0ac86d6
+PCM kind=3 samples=6173 peak=0.50607300 rms=0.08721597 dc=-0.00000495 hash=a99a0fc59d1b994a
+PCM kind=4 samples=29877 peak=0.58245850 rms=0.11893159 dc=-0.00006810 hash=7bcbeb95c4f48cca
+PCM kind=5 samples=8047 peak=0.51892090 rms=0.10173612 dc=-0.00004830 hash=72d5ceafcfdc73d8
+PCM kind=6 samples=13008 peak=0.40777588 rms=0.14548824 dc=0.00003678 hash=8eff598fbc781562
+PASS 26293 pitch-scaled mouth/phrase samples; actual PCM bounds/DC/edges; muted and device lifecycle; original PCM/RNG/Sfx isolation

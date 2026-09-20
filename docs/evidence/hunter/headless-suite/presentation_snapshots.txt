@@ -1,0 +1,1 @@
+PASS: 3600 frames of bounded, detached, read-only presentation snapshots

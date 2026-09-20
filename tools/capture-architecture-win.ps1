@@ -28,6 +28,8 @@ foreach($mode in $modes) {
     }
 }
 $hashes=@{}
-foreach($path in @('src/main.c','src/depth.c','tools/tests/architecture_capture.c','src/generated/terrain_assets.h','src/generated/support_assets.h','src/generated/foliage_assets.h','src/generated/material_textures.h','src/generated/city_assets.h')){$hashes[$path]=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLower()}
+$recordSources=@(Get-ChildItem src -Recurse -File | Where-Object Extension -in @('.c','.h') | ForEach-Object { $_.FullName.Substring($projectRoot.Length+1).Replace('\','/') })
+$recordSources+='tools/tests/architecture_capture.c'
+foreach($path in $recordSources){$hashes[$path]=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLower()}
 $control=if($Materials){'surface textures'}elseif($LocalLights){'local source illumination; emissive panes present in both'}else{'AO'}
 [ordered]@{capturedUtc=(Get-Date).ToUniversalTime().ToString('o');sourceHashes=$hashes;scope="Same source/geometry, $control build control only; actual native images and local frame-loop wall timing. Not GPU-only timing or hardware-wide performance acceptance."} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $folder 'manifest.json') -Encoding utf8

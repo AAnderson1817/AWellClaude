@@ -3,11 +3,16 @@
 #include "../../src/main.c"
 #undef main
 #include "../../src/inhabitants.h"
+#include "../../src/hunter_pose.h"
 #include <assert.h>
 #include <stdint.h>
 
 static Item homes[ITEM_MAX];
 static int voices[HVOICE_HUM+1], checks;
+static HunterVoiceEvent timedVoice;
+static int timedVoiceActive, voicePoseChecks;
+static int armPoseChecks;
+static float greatestArmReach;
 static HunterView View(void) { HunterView h;assert(InhabitantsHunterView(&h));return h; }
 static void At(float x,float y) {PlayerInit(x,y);player.onGround=1;player.facing=1;}
 static void Conserved(void) {
@@ -18,6 +23,17 @@ static void Conserved(void) {
     if(InhabitantsHunterView(&h)) {
         assert(h.cairnCount==n && fabsf(h.x+h.w*.5f-124)<=32);
         if(h.carriedItem>=0){assert(h.carriedItem<itemCount);assert(!seen[h.carriedItem]++);assert(h.carriedItem!=heldItem);}
+        if(h.carriedItem>=0&&(h.state==HUNTER_TEND||h.state==HUNTER_PLACE)) {
+            for(int side=-1;side<=1;side+=2)for(int mode=0;mode<2;mode++) {
+                HunterArm arm=HunterPoseArm(&h,side,mode?27*.01745329252f:0);
+                assert(arm.reachable&&arm.reach<=8.4f);
+                float dx=arm.elbow.x-arm.shoulder.x,dy=arm.elbow.y-arm.shoulder.y,dz=arm.elbow.z-arm.shoulder.z;
+                assert(fabsf(sqrtf(dx*dx+dy*dy+dz*dz)-4.2f)<.0001f);
+                dx=arm.hand.x-arm.elbow.x;dy=arm.hand.y-arm.elbow.y;dz=arm.hand.z-arm.elbow.z;
+                assert(fabsf(sqrtf(dx*dx+dy*dy+dz*dz)-4.2f)<.0001f);
+                greatestArmReach=fmaxf(greatestArmReach,arm.reach);armPoseChecks++;
+            }
+        }
     }
     for(int i=0;i<itemCount;i++) {
         assert(items[i].kind==homes[i].kind && items[i].hroom==homes[i].hroom);
@@ -31,14 +47,39 @@ static void Poll(void) {
     if(InhabitantsPollVoice(&v)) {
         assert(v.kind>HVOICE_NONE&&v.kind<=HVOICE_HUM);assert(v.syllables>=1&&v.syllables<=3);
         assert(v.volume>0&&v.volume<=.2f&&v.pan>=0&&v.pan<=1);
+        HunterView h=View();
+        assert(h.voiceFrames==AudioHunterDurationTicks(v.kind,v.pitch));
+        assert(h.voiceTotalFrames==h.voiceFrames&&h.voiceElapsedFrames==0);
+        assert(h.voiceKind==v.kind&&v.syllables==AudioHunterPhrase(v.kind)->syllables);
+        if(v.kind==HVOICE_BEDROLL)assert(h.state==HUNTER_BEDROLL);
+        if(v.kind==HVOICE_HUM)assert(h.state==HUNTER_SIT||h.state==HUNTER_WARM);
+        timedVoice=v;timedVoiceActive=1;
         voices[v.kind]++;assert(!InhabitantsPollVoice(&v));
     }
+    HunterView h;
+    if(InhabitantsHunterView(&h)&&timedVoiceActive&&h.voiceKind==timedVoice.kind&&h.voiceTotalFrames) {
+        assert(h.voiceTotalFrames==AudioHunterDurationTicks(timedVoice.kind,timedVoice.pitch));
+        assert(h.voiceElapsedFrames+h.voiceFrames==h.voiceTotalFrames);
+        HunterMouth expected=AudioHunterMouthAt(timedVoice.kind,timedVoice.pitch,h.voiceElapsedFrames);
+        assert(fabsf(h.mouthOpen-expected.open)<1e-6f&&h.voiceSyllable==expected.syllable);
+        assert(h.mouth==(expected.open>.22f));
+        if(h.voiceFrames==0)assert(h.mouthOpen==0&&h.voiceSyllable==-1);
+        voicePoseChecks++;
+    }
 }
-static void Tick(void) {frameNo++;ItemsStep();PropsStep();InhabitantsStep();in.actPressed=0;Poll();Conserved();}
+static void Tick(void) {
+    HunterView before,after;int visible=InhabitantsHunterView(&before);
+    int oldTaken=voices[HVOICE_TAKEN],oldOffer=voices[HVOICE_OFFER];
+    frameNo++;ItemsStep();PropsStep();InhabitantsStep();in.actPressed=0;Poll();Conserved();
+    if(visible&&InhabitantsHunterView(&after)) {
+        if(after.taken>before.taken)assert(voices[HVOICE_TAKEN]==oldTaken+1&&after.voiceKind==HVOICE_TAKEN&&after.voiceElapsedFrames==0);
+        if(after.placed>before.placed)assert(voices[HVOICE_OFFER]==oldOffer+1&&after.voiceKind==HVOICE_OFFER&&after.voiceElapsedFrames==0);
+    }
+}
 static void Steps(int n) {while(n-->0)Tick();}
 static void Enter(void) {
     ItemsReset();ItemsAdd(IT_LAMP,0,1,14);RoomLoad();PropsReset();RoomEnter(0);At(30,100);
-    memset(&in,0,sizeof in);memset(voices,0,sizeof voices);
+    memset(&in,0,sizeof in);memset(voices,0,sizeof voices);timedVoiceActive=0;
     assert(itemCount==3);Item old[3];memcpy(old,items,sizeof old);
     assert(InhabitantsInit());assert(itemCount==7);assert(!memcmp(old,items,sizeof old));
     memcpy(homes,items,sizeof homes);Conserved();
@@ -96,7 +137,7 @@ static void Interruption(void) {
     At(60,149);Steps(1);assert(items[1].y>y);Steps(300);assert(View().placed==1&&InhabitantsPinsItem(1));
     // The same competing pickup while tending drops the lifted top stone visibly.
     Enter();t=0;while(View().state!=HUNTER_TEND&&t++<2401)Tick();assert(View().state==HUNTER_TEND);
-    int top=View().carriedItem;Steps(24);x=items[top].x;y=items[top].y;At(121,149);Act();
+    int top=View().carriedItem;Steps(48);x=items[top].x;y=items[top].y;At(121,149);Act();
     assert(heldItem>=3&&heldItem<7&&heldItem!=top);
     assert(View().carriedItem==-1&&!InhabitantsPinsItem(top)&&items[top].x==x&&items[top].y==y);
     At(60,149);Steps(1);assert(items[top].y>y);
@@ -104,12 +145,15 @@ static void Interruption(void) {
     puts("PASS competing pickup: taking another member releases the hunter's carried/tended stone to real falling, with no stranded ownership");
 }
 static void IdleAndSocial(void) {
-    Enter();int t=0;while(View().state!=HUNTER_TEND&&t++<2401)Tick();
-    assert(t>=1200&&t<=2400);int stone=View().carriedItem;assert(stone>=3&&stone<7);
-    float startY=items[stone].y;Steps(48);assert(items[stone].y<startY-3.5f);
+    Enter();int t=0;while(View().state!=HUNTER_TEND_APPROACH&&t++<2401)Tick();
+    assert(t>=1200&&t<=2400&&View().carriedItem==-1&&View().cairnCount==4);
+    int travel=0;while(View().state!=HUNTER_TEND&&travel++<40)Tick();
+    int stone=View().carriedItem;assert(stone>=3&&stone<7);
+    float startY=items[stone].y;Steps(10);assert(fabsf(items[stone].y-(startY-.3f))<.001f);
+    Steps(38);assert(fabsf(items[stone].x+2.5f-118.8f)<.001f&&fabsf(items[stone].y+2-154.5f)<.001f);
     assert(View().stoneTurn>.7f&&View().cairnCount==3);Steps(48);
     assert(View().tended==1&&View().cairnCount==4&&InhabitantsPinsItem(stone));
-    printf("TEND first=%d frames, actual item=%d; lift/turn/return=96 frames\n",t,stone);
+    printf("TEND approach=%d frames, walk=%d frames, actual item=%d; unseat/inspect/retrace=96 frames\n",t,travel,stone);
     // Taking the top stone during the tending motion yields immediately too.
     t=0;while(View().state!=HUNTER_TEND&&t++<2401)Tick();assert(View().state==HUNTER_TEND);
     stone=View().carriedItem;At(121,149);Act();
@@ -121,6 +165,63 @@ static void IdleAndSocial(void) {
     At(80,149);Steps(90);At(108,149);Steps(90);assert(voices[HVOICE_BEDROLL]==2);
     puts("PASS authored idle/social responses: 20-40s actual-stone tending, pickup during tending, greeting edges, bedroll waiting");
 }
+static void TendingReach(void) {
+    // Wait beside the approach route: no stone is claimed through the player.
+    Enter();int t=0;while(View().state!=HUNTER_TEND_APPROACH&&t++<2401)Tick();
+    assert(View().state==HUNTER_TEND_APPROACH);At(120,149);
+    float oldX=View().x;Item pile[ITEM_MAX];memcpy(pile,items,sizeof pile);Player p=player;
+    Steps(90);assert(View().state==HUNTER_TEND_APPROACH&&View().carriedItem==-1&&View().cairnCount==4);
+    assert(View().x==oldX&&player.x==p.x&&player.y==p.y);
+    for(int k=3;k<7;k++)assert(items[k].x==pile[k].x&&items[k].y==pile[k].y);
+    // A real pickup while approach is blocked still wins on this very tick.
+    Act();assert(heldItem>=3&&View().carriedItem==-1&&View().taken==1);
+
+    // In a fresh wait, clearing the body obstruction resumes real walking.
+    Enter();t=0;while(View().state!=HUNTER_TEND_APPROACH&&t++<2401)Tick();
+    At(120,149);Steps(30);At(60,149);t=0;
+    while(View().state!=HUNTER_TEND&&t++<40) {
+        float x=View().x;Tick();assert(fabsf(View().x-x)<=.2401f);
+    }
+    assert(View().state==HUNTER_TEND&&fabsf(View().x+3-118.5f)<.2f);
+
+    // Build the full six-stone pile through the same original Hold/offer loop.
+    Enter();OfferLegacy();WaitPlaced(1);
+    items[2].room=0;items[2].x=107;items[2].y=156;items[2].vy=0;
+    At(105,149);Act();assert(heldItem==2);At(98,149);Steps(9);Act();At(60,149);
+    t=0;while(View().placed<2&&t++<700)Tick();assert(View().cairnCount==6);
+    t=0;while(View().state!=HUNTER_TEND&&t++<2500)Tick();assert(View().state==HUNTER_TEND);
+    int top=View().carriedItem;assert(top==2&&View().cairnCount==5&&View().facing==1);
+    float path[97][3];int oldTended=View().tended;
+    for(int k=0;k<=96;k++) {
+        if(k)Tick();
+        path[k][0]=items[top].x;path[k][1]=items[top].y;path[k][2]=View().stoneTurn;
+        if(k<96)assert(View().carriedItem==top&&View().facing==1);
+        if(k>=28&&k<=68)assert(items[top].x+5<=121.5f+.001f); // clears remaining pile before vertical inspection
+        if(k)assert(hypotf(path[k][0]-path[k-1][0],path[k][1]-path[k-1][1])<1.0f);
+        if(k==48) {
+            // Room exit freezes a genuinely held tending stone; it neither
+            // falls invisibly nor restarts/duplicates when the hunter returns.
+            RoomEnter(1);At(170,50);Steps(12);
+            assert(items[top].room==0&&items[top].x==path[k][0]&&items[top].y==path[k][1]);
+            RoomEnter(0);At(60,149);
+            assert(View().state==HUNTER_TEND&&View().carriedItem==top&&View().cairnCount==5);
+        }
+    }
+    for(int k=0;k<=96;k++)for(int j=0;j<3;j++)assert(fabsf(path[k][j]-path[96-k][j])<.001f);
+    assert(View().cairnCount==6&&View().carriedItem==-1&&View().tended==oldTended+1&&InhabitantsPinsItem(top));
+    // The warm seat approaches from the opposite side, then turns toward the
+    // stone before claiming it; neither arm is solved using a backwards lean.
+    Enter();items[0].x=130;items[0].y=155;items[0].vy=0;Steps(180);
+    assert(View().fireLit&&fabsf(View().x+3-126)<.3f);
+    t=0;while(View().state!=HUNTER_TEND_APPROACH&&t++<2401)Tick();
+    assert(View().state==HUNTER_TEND_APPROACH);t=0;
+    while(View().state!=HUNTER_TEND&&t++<50) {
+        float x=View().x;Tick();assert(View().x<=x&&x-View().x<=.2401f);
+    }
+    assert(View().state==HUNTER_TEND&&View().facing==1&&fabsf(View().x+3-118.5f)<.2f);
+    Steps(96);assert(View().tended==1&&View().cairnCount==4);
+    puts("PASS tending approach: blocked player yields before claim, original pickup still wins, cold/warm walking never teleports; six-stone96tick inspection clears pile and exactly retraces, including room pause/resume, with fixed-length reachable arms");
+}
 static void FireAndLamp(void) {
     Enter();items[0].x=130;items[0].y=155;items[0].vy=0;
     Steps(121);assert(PropFireLit(0));Steps(150);
@@ -131,6 +232,26 @@ static void FireAndLamp(void) {
     At(items[0].x,149);Act();assert(heldItem==0);Steps(100);
     assert(heldItem==0&&View().carriedItem!=0&&View().cairnCount==4);
     puts("PASS persistent fire: real two-second lamp ignition, closer warm seat, one long phrase, quicker hum; lamp never appropriated");
+}
+static void SpeechContext(void) {
+    // Actual original Hold interrupts a greeting on exactly the pickup tick.
+    Enter();At(85,149);Tick();assert(voices[HVOICE_GREETING]==1&&View().voiceFrames>0);
+    At(121,149);Act();assert(heldItem>=3&&voices[HVOICE_TAKEN]==1&&View().voiceElapsedFrames==0);
+    // The same sharp answer bypasses the quiet gap following a greeting.
+    Enter();At(85,149);Tick();int duration=View().voiceFrames;Steps(duration+2);
+    assert(View().voiceFrames==0);At(121,149);Act();assert(voices[HVOICE_TAKEN]==1&&View().voiceElapsedFrames==0);
+    // A brief bedroll entry while greeting is active expires when we leave.
+    Enter();At(85,149);Tick();At(108,149);Tick();assert(View().state==HUNTER_BEDROLL);
+    At(80,149);Steps(100);assert(voices[HVOICE_BEDROLL]==0);
+    // A nearby greeting cannot survive leaving while a long fire phrase speaks.
+    Enter();items[0].x=130;items[0].y=155;items[0].vy=0;Steps(121);
+    assert(voices[HVOICE_FIRE]==1&&View().voiceFrames>0);
+    At(85,149);Tick();At(40,149);Steps(180);assert(voices[HVOICE_GREETING]==0);
+    // Stone conversation also interrupts the low fire phrase, without losing an
+    // item or delaying its sharp acknowledgement until recovery/return is over.
+    Enter();items[0].x=130;items[0].y=155;items[0].vy=0;Steps(121);
+    At(121,149);Act();assert(heldItem>=3&&voices[HVOICE_TAKEN]==1&&View().voiceKind==HVOICE_TAKEN);
+    puts("PASS speech context: same-tick taken preempts greeting/fire/gap; departed bedroll/greeting requests expire; every actual placement answers on its action tick");
 }
 static void PersistenceAndReset(void) {
     Enter();At(121,149);Act();int stone=heldItem;assert(stone>=3&&stone<7);
@@ -208,6 +329,9 @@ static void TraceOriginal(int enabled) {
 int main(int argc,char **argv) {
     AudioInit(1);
     if(argc==2){TraceOriginal(!strcmp(argv[1],"--enabled"));return 0;}
-    Creation();OfferTakeReturn();Interruption();IdleAndSocial();FireAndLamp();PersistenceAndReset();Exhaustion();PurityAndBounds();
+    Creation();OfferTakeReturn();Interruption();IdleAndSocial();TendingReach();FireAndLamp();SpeechContext();PersistenceAndReset();Exhaustion();PurityAndBounds();
+    assert(voicePoseChecks>1000);
+    printf("PASS %d actual hunter detached voice-pose checks against pitched PCM timeline, including reset/room lifecycle\n",voicePoseChecks);
+    printf("PASS %d actual carried-stone arm poses, maxreach=%.6f/8.4px; both segments4.2px in flat/3D\n",armPoseChecks,greatestArmReach);
     printf("PASS conservation checked after %d steps; no renderer or audible-voice acceptance claimed\n",checks);return 0;
 }

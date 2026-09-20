@@ -1,0 +1,126 @@
+{
+  "scope": "Read-only v15 artistic review provenance; byte comparisons do not establish artistic acceptance",
+  "v14_commit": "8b52542",
+  "branch": "codex/celestial-foundry",
+  "assets": [
+    {
+      "file": "src/generated/terrain_assets.h",
+      "v14_sha256": "d4d7cfb70d287282a059ac5172f13c7367c312c42b865973e340438bce034728",
+      "current_sha256": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+      "byte_identical": false,
+      "canonical_lf_identical": true,
+      "line_endings": {
+        "v14_crlf_count": 0,
+        "current_crlf_count": 122683
+      },
+      "canonical_lf_sha256": "d4d7cfb70d287282a059ac5172f13c7367c312c42b865973e340438bce034728",
+      "v14_capture_sha256": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+      "matches_v14_capture": true
+    },
+    {
+      "file": "src/generated/city_assets.h",
+      "v14_sha256": "29a3b489122d8fe8b4dd7783e8e885b466705d8eaf362d5b78fb2882fb54dae2",
+      "current_sha256": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+      "byte_identical": false,
+      "canonical_lf_identical": true,
+      "line_endings": {
+        "v14_crlf_count": 0,
+        "current_crlf_count": 20360
+      },
+      "canonical_lf_sha256": "29a3b489122d8fe8b4dd7783e8e885b466705d8eaf362d5b78fb2882fb54dae2",
+      "v14_capture_sha256": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+      "matches_v14_capture": true
+    },
+    {
+      "file": "src/generated/material_textures.h",
+      "v14_sha256": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+      "current_sha256": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+      "byte_identical": true,
+      "canonical_lf_identical": true,
+      "line_endings": {
+        "v14_crlf_count": 0,
+        "current_crlf_count": 0
+      },
+      "canonical_lf_sha256": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+      "v14_capture_sha256": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+      "matches_v14_capture": true
+    },
+    {
+      "file": "src/generated/support_assets.h",
+      "v14_sha256": "b9793a03158202b6ed958a3c34302cca2744281d04007fa2d05d5b0f595bc2e8",
+      "current_sha256": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+      "byte_identical": false,
+      "canonical_lf_identical": true,
+      "line_endings": {
+        "v14_crlf_count": 0,
+        "current_crlf_count": 63598
+      },
+      "canonical_lf_sha256": "b9793a03158202b6ed958a3c34302cca2744281d04007fa2d05d5b0f595bc2e8",
+      "v14_capture_sha256": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+      "matches_v14_capture": true
+    },
+    {
+      "file": "assets/blender/terrain.blend",
+      "v14_sha256": "483f228be4a0904a6d5444aa9ddc76fb96126a795605a07d60aed6a57b02103a",
+      "current_sha256": "483f228be4a0904a6d5444aa9ddc76fb96126a795605a07d60aed6a57b02103a",
+      "byte_identical": true
+    },
+    {
+      "file": "assets/blender/city-face.blend",
+      "v14_sha256": "056f1a9dbb325bdcc5a8e91cd671c472f8381fcbf05ac785ddff60d118f565c4",
+      "current_sha256": "056f1a9dbb325bdcc5a8e91cd671c472f8381fcbf05ac785ddff60d118f565c4",
+      "byte_identical": true
+    },
+    {
+      "file": "assets/blender/material-library.blend",
+      "v14_sha256": "f212cf541e7504bd5d05cb1992cffb532799bdc278733a85ee333d08db6b3c6c",
+      "current_sha256": "f212cf541e7504bd5d05cb1992cffb532799bdc278733a85ee333d08db6b3c6c",
+      "byte_identical": true
+    }
+  ],
+  "references": [
+    {
+      "environment": "Vault Mouth",
+      "png_count": 30,
+      "manifest_count": 30,
+      "all_verified_hashes_match": true
+    },
+    {
+      "environment": "Drowned Quarter",
+      "png_count": 30,
+      "manifest_count": 30,
+      "all_verified_hashes_match": true
+    }
+  ],
+  "native_source_hashes_match": {
+    "src/audio.c": true,
+    "src/city.c": true,
+    "src/depth.c": true,
+    "src/fx.c": true,
+    "src/inhabitants.c": true,
+    "src/items.c": true,
+    "src/life.c": true,
+    "src/main.c": true,
+    "src/player.c": true,
+    "src/props.c": true,
+    "src/render.c": true,
+    "src/room.c": true,
+    "src/audio.h": true,
+    "src/aw.h": true,
+    "src/city.h": true,
+    "src/depth.h": true,
+    "src/generated/city_assets.h": true,
+    "src/generated/environment_mattes.h": true,
+    "src/generated/foliage_assets.h": true,
+    "src/generated/foundry_assets.h": true,
+    "src/generated/hunter_assets.h": true,
+    "src/generated/life_assets.h": true,
+    "src/generated/material_textures.h": true,
+    "src/generated/mural_assets.h": true,
+    "src/generated/support_assets.h": true,
+    "src/generated/terrain_assets.h": true,
+    "src/hunter_pose.h": true,
+    "src/inhabitants.h": true
+  },
+  "drowned_final_image_byte_identical_to_v14": true
+}

@@ -1,0 +1,63 @@
+{
+  "status": "pass",
+  "scope": "Technical synthesis, pitch-aware timing and inherited-state isolation; listening and full mix unverified",
+  "sanitizer": "undefined, no recovery",
+  "prior_audio_ref": "8b52542",
+  "prior_audio_exact_after_marked_append_removal": true,
+  "output": [
+    "PCM kind=1 samples=7276 peak=0.51931763 rms=0.09893823 dc=-0.00006572 hash=b5a5da13a42aa06a",
+    "PCM kind=2 samples=19512 peak=0.56265259 rms=0.11527474 dc=-0.00000462 hash=74e247b0e0ac86d6",
+    "PCM kind=3 samples=6173 peak=0.50607300 rms=0.08721597 dc=-0.00000495 hash=a99a0fc59d1b994a",
+    "PCM kind=4 samples=29877 peak=0.58245850 rms=0.11893159 dc=-0.00006810 hash=7bcbeb95c4f48cca",
+    "PCM kind=5 samples=8047 peak=0.51892090 rms=0.10173612 dc=-0.00004830 hash=72d5ceafcfdc73d8",
+    "PCM kind=6 samples=13008 peak=0.40777588 rms=0.14548824 dc=0.00003678 hash=8eff598fbc781562",
+    "PASS 26293 pitch-scaled mouth/phrase samples; actual PCM bounds/DC/edges; muted and device lifecycle; original PCM/RNG/Sfx isolation"
+  ],
+  "sources": {
+    "src/audio.c": "a3c39b2de8ca632b9d005c97234884920dead970b9f5d7685d938d273f5794ef",
+    "src/audio.h": "714d9b3822a191a62c0b73cca533e2cbd16de531f9d4115ecdae6c563a1c246b",
+    "src/inhabitants.c": "82a2dc146e21b58eae0ab392ab41527cc4ae2de3dd42ae488577b9feed35fb2c",
+    "src/inhabitants.h": "47704b8e7e647b58ed2627d5855811b200f02daa70b9584143c05deb4c2489b4",
+    "tools/tests/hunter_audio.c": "7da5e8aaca33b9c765a85f333df93348ac031904c7eca521cbddea31cfef125d",
+    "tools/tests/test_hunter_audio.py": "cc1d415ec07741ae3dde5feabe43343d33e3b017ea2ba0b491857194c994999b",
+    "tools/tests/raylib_stubs.c": "edd432d2dfd4fab872873f29eca3d8b063f7974df83d55edb422db9d31a8c3c0"
+  },
+  "listening_candidates": [
+    {
+      "kind": 1,
+      "path": ".local/hunter-audio/hunter-1.wav",
+      "sha256": "323dcd6bfadd4b7e4c9133c7e8f806de15a6531a3489c5c312b5b83bbce3e106"
+    },
+    {
+      "kind": 2,
+      "path": ".local/hunter-audio/hunter-2.wav",
+      "sha256": "122df62bd7d23c4ba73680e7739fb3ff4f78a2c02f5b5ec7dfe15997d734e2aa"
+    },
+    {
+      "kind": 3,
+      "path": ".local/hunter-audio/hunter-3.wav",
+      "sha256": "b4e8b43ed7dd657961f157afcb1dd7ab522baebb0a5dccbe1501ed837708b16e"
+    },
+    {
+      "kind": 4,
+      "path": ".local/hunter-audio/hunter-4.wav",
+      "sha256": "ffeef09621fd971a69afd0d8125ffa2c6495667ed17d6d84b765b61a03658cea"
+    },
+    {
+      "kind": 5,
+      "path": ".local/hunter-audio/hunter-5.wav",
+      "sha256": "e6b354819e2a021e16590ef31b7e1e0499fc3184cd00b8ca2f10d65d8159575f"
+    },
+    {
+      "kind": 6,
+      "path": ".local/hunter-audio/hunter-6.wav",
+      "sha256": "d51ade172b4cd93b83df424c56cd810a570359e5694968ede5b3f30420f1283d"
+    }
+  ],
+  "pending": [
+    "native device synchronization and latency",
+    "actual listening and full-mix comfort",
+    "integrated hunter rendering and state evidence",
+    "human discovery acceptance"
+  ]
+}

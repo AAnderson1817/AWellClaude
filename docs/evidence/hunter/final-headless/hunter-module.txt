@@ -1,0 +1,16 @@
+PASS initialization: 4 real cairn stones, original IDs/homes intact, 7/8 budget, idempotence and atomic capacity failure
+PASS offer/take/return: original Hold transfers the same real stone, 4-tile reclaim works, distant stone remains recoverable
+PASS interruptions: pickup instantly wins over carrying/approach; cooldown honored, no held-item seizure
+PASS competing pickup: taking another member releases the hunter's carried/tended stone to real falling, with no stranded ownership
+TEND approach=2228 frames, walk=10 frames, actual item=3; unseat/inspect/retrace=96 frames
+PASS authored idle/social responses: 20-40s actual-stone tending, pickup during tending, greeting edges, bedroll waiting
+PASS tending approach: blocked player yields before claim, original pickup still wins, cold/warm walking never teleports; six-stone96tick inspection clears pile and exactly retraces, including room pause/resume, with fixed-length reachable arms
+PASS persistent fire: real two-second lamp ignition, closer warm seat, one long phrase, quicker hum; lamp never appropriated
+PASS speech context: same-tick taken preempts greeting/fire/gap; departed bedroll/greeting requests expire; every actual placement answers on its action tick
+PASS persistence/reset: real stone travels and sinks in room 1, room re-entry never respawns it, full reset restores homes and four seed IDs
+PASS full cairn/exhaustion: both legacy stones offered, all six picked up exactly once, no invisible reserves, reset restores only the four seed members
+PASS detached views, bounded copies, inherited item/player/map/audio isolation, supported floor and player-space yielding
+PASS 14116 actual hunter detached voice-pose checks against pitched PCM timeline, including reset/room lifecycle
+PASS 3276 actual carried-stone arm poses, maxreach=8.297761/8.4px; both segments4.2px in flat/3D
+PASS conservation checked after 28748 steps; no renderer or audible-voice acceptance claimed
+PASS 6,000 exact original-state frame hashes: original three items, player, prop state/timers, map and original Sfx counters

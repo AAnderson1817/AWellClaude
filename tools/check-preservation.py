@@ -70,8 +70,16 @@ def build_baseline(output, render=False):
 def contract_checks():
     # These are the signed-off gameplay modules. A future intentional mechanics
     # change should update the contract explicitly instead of silently blessing it.
-    for path in ("src/player.c", "src/items.c"):
+    for path in ("src/player.c",):
         assert (ROOT / path).read_bytes().replace(b"\r\n", b"\n") == original(path).replace(b"\r\n", b"\n"), path
+    items = (ROOT / "src/items.c").read_text()
+    assert items.count('#include "inhabitants.h"\n') == 1
+    assert items.count('        if (!InhabitantsPinsItem(i)) Fall(it);') == 1
+    items = items.replace('#include "inhabitants.h"\n', '').replace(
+        '        if (!InhabitantsPinsItem(i)) Fall(it);', '        Fall(it);')
+    assert items.count('items[i].room == roomIdx && !HunterDrawStone(i)') == 1
+    items = items.replace('items[i].room == roomIdx && !HunterDrawStone(i)', 'items[i].room == roomIdx')
+    assert items == original("src/items.c").decode().replace("\r\n", "\n"), "Original Hold and free-item physics changed"
     audio = (ROOT / "src/audio.c").read_text()
     city_audio = re.search(r"    // BEGIN CITY RESPONSE SOUNDS\n(.*?)    // END CITY RESPONSE SOUNDS\n", audio, re.S)
     assert city_audio and not re.search(r"\b(?:Noise|Rnd|AudioRnd)\s*\(", city_audio.group(1)), "City synthesis must not consume the inherited random stream"
@@ -79,6 +87,10 @@ def contract_checks():
     # runtime audio code and random-stream calls remain byte-for-byte identical.
     audio, removed = re.subn(r"    // BEGIN CITY RESPONSE SOUNDS\n.*?    // END CITY RESPONSE SOUNDS\n", "", audio, count=1, flags=re.S)
     assert removed == 1, "Expected one appended city audio block"
+    hunter_audio = re.search(r"\n// BEGIN HUNTER RESPONSE AUDIO\n(.*?)// END HUNTER RESPONSE AUDIO\n\Z", audio, re.S)
+    assert hunter_audio and not re.search(r"\b(?:Noise|Rnd|AudioRnd|Sfx|Commit)\s*\(", hunter_audio.group(1)), "Hunter bank must not consume inherited synthesis or runtime state"
+    audio, removed = re.subn(r"\n// BEGIN HUNTER RESPONSE AUDIO\n.*?// END HUNTER RESPONSE AUDIO\n\Z", "", audio, count=1, flags=re.S)
+    assert removed == 1, "Expected one appended hunter audio block"
     assert audio == original("src/audio.c").decode().replace("\r\n", "\n"), "Original audio behavior changed"
     # Permit exactly the detached presentation accessor in fx.c, preserving every
     # original effect update/draw line and the random-stream behavior verbatim.
@@ -93,6 +105,13 @@ def contract_checks():
     ):
         before = original(path).decode()
         after = (ROOT / path).read_text()
+        if path == "src/props.c":
+            assert after.count('#include "inhabitants.h"\n') == 1
+            after = after.replace('#include "inhabitants.h"\n', '')
+            cairn_guard = ('            // Real cairn items are drawn by ItemsDrawBehind after initialization.\n'
+                           '            if (InhabitantsHunterView(&(HunterView){0})) break;\n')
+            assert after.count(cairn_guard) == 1
+            after = after.replace(cairn_guard, '')
         for name in getters:
             after, removed = re.subn(rf"\nint {name}\([^\n]*\) \{{.*?\n\}}\n", "\n", after, count=1, flags=re.S)
             assert removed == 1, f"Expected one {name} accessor"
@@ -122,7 +141,9 @@ def trace(executable, args, render, mode):
     assert any(line.startswith("f=") for line in lines), f"No simulation trace from {executable}"
     city = re.findall(r"^CITY SFX city-murmur=(\d+) city-hum=(\d+)$", output, re.M)
     assert len(city) <= 1, "Duplicate city sound report"
-    return lines, ({"city-murmur": int(city[0][0]), "city-hum": int(city[0][1])} if city else None)
+    hunter = re.findall(r"^HUNTER AUDIO greeting=(\d+) offer=(\d+) taken=(\d+) fire=(\d+) bedroll=(\d+) hum=(\d+)$", output, re.M)
+    assert len(hunter) <= 1, "Duplicate hunter sound report"
+    return lines, ({"city-murmur": int(city[0][0]), "city-hum": int(city[0][1])} if city else None), (dict(zip(("greeting", "offer", "taken", "fire", "bedroll", "hum"), map(int, hunter[0]))) if hunter else None)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -143,12 +164,14 @@ def main():
         # of expensive idle frames. Headless checks retain the full calm-time sample.
         if args.render:
             options = [re.sub(r"-:(3600|600)", "-:180", part) for part in options]
-        expected, baseline_city = trace(args.baseline.resolve(), options, args.render, None)
+        expected, baseline_city, baseline_hunter = trace(args.baseline.resolve(), options, args.render, None)
         assert baseline_city is None, "Historical baseline unexpectedly contains city responses"
-        city_counts = {}
+        assert baseline_hunter is None, "Historical baseline unexpectedly contains hunter responses"
+        city_counts, hunter_counts = {}, {}
         for mode in ("--flat", "--depth"):
-            actual, city_counts[mode[2:]] = trace(args.candidate.resolve(), options, args.render, mode)
+            actual, city_counts[mode[2:]], hunter_counts[mode[2:]] = trace(args.candidate.resolve(), options, args.render, mode)
             assert city_counts[mode[2:]] is not None, "Candidate did not report its separate city sounds"
+            assert hunter_counts[mode[2:]] is not None, "Candidate did not report its separate hunter sounds"
             assert len(actual) == len(expected), f"{name}/{mode}: trace length changed"
             for index, (before, after) in enumerate(zip(expected, actual)):
                 if before != after:
@@ -156,14 +179,15 @@ def main():
         digest = hashlib.sha256("\n".join(expected).encode()).hexdigest()
         frames = sum(line.startswith("f=") for line in expected)
         assert city_counts["flat"] == city_counts["depth"], "City sound events depend on presentation mode"
-        results.append({"case": name, "frames": frames, "sha256": digest, "modes": ["flat", "depth"], "city_sound_counts": city_counts})
+        assert hunter_counts["flat"] == hunter_counts["depth"], "Hunter sound events depend on presentation mode"
+        results.append({"case": name, "frames": frames, "sha256": digest, "modes": ["flat", "depth"], "city_sound_counts": city_counts, "hunter_sound_counts": hunter_counts})
         print(f"PASS {name}: {frames} original frames match both presentation modes")
     report = {"baseline_git_ref": BASELINE_REF, "rendered": args.render,
               "candidate_executable_sha256": hashlib.sha256(args.candidate.read_bytes()).hexdigest(),
               "source_sha256": {str(path.relative_to(ROOT)).replace("\\", "/"): hashlib.sha256(path.read_bytes()).hexdigest()
                                 for path in sorted((ROOT / "src").rglob("*.c")) + sorted((ROOT / "src").rglob("*.h"))},
-              "unchanged_contract": ["movement", "items", "fx behavior", "life behavior", "props behavior", "original audio", "room geometry", "prop placements"],
-              "intentional_extension": "City responses add separately reported murmurs and hums; original dbgLastSfx retains its inherited gameplay-event meaning. No original trace fields are filtered.",
+              "unchanged_contract": ["movement", "original Hold selection and free-item physics", "fx behavior", "life behavior", "props behavior", "original audio", "room geometry", "prop placements"],
+              "intentional_extension": "Four real cairn stones and hunter-owned item pinning extend the world. Original Hold selection and gravity remain unchanged outside owned stones. Authored cairn/offer interactions require a separate complete-item differential; these historical scenarios still compare every original trace field. City and hunter voices are separately counted and never replace original dbgLastSfx.",
               "cases": results, "compared_frames": 2 * sum(r["frames"] for r in results)}
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, indent=2) + "\n")

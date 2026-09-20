@@ -4,6 +4,8 @@
 #include "aw.h"
 #include "depth.h"
 #include "city.h"
+#include "inhabitants.h"
+#include "audio.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,9 +25,11 @@ const char *dbgOutDir = "shots";
 
 static int  shotFrames[16], shotCount, shotsDone;
 static int  dbgTrace = 0;
+static int  dbgHunterTrace = 0, hunterVoiceLast;
 static int  noDraw = 0;   // the wanderer runs a million frames; it does not need pictures
 static int  mute = 0;
 static const char *wavPath = 0;
+static const char *hunterWavPath = 0;
 static long maxFrames = 0;
 static float acc = 0.0f;
 
@@ -151,9 +155,11 @@ static int resetHeld, resetSpent, resetWaking;
 long dbgResets = 0;
 
 static void BeginAgain(void) {
+    AudioHunterStop();
     ItemsHome();
     PropsReset();
     RoomEnter(0);
+    InhabitantsReset();
     PlayerInit(RoomStartTx() * TS + 1.0f, (RoomStartTy() + 1) * TS - 11.0f);
     dbgResets++;
 }
@@ -193,7 +199,9 @@ void ResetDrawLids(void) {
 static void Sim(void) {
     InputPoll();
     ResetStep();
+    int previousRoom = roomIdx;
     PlayerStep();
+    if (previousRoom == 0 && roomIdx != 0) AudioHunterStop();
     ItemsStep();
     in.jumpPressed = 0;
     in.actPressed = 0;
@@ -203,6 +211,13 @@ static void Sim(void) {
     LifeStep();
     PropsStep();
     CityStep();
+    InhabitantsStep();
+    HunterVoiceEvent hunterVoice;
+    hunterVoiceLast = HVOICE_NONE;
+    if (InhabitantsPollVoice(&hunterVoice)) {
+        hunterVoiceLast = hunterVoice.kind;
+        AudioHunterPlay(&hunterVoice);
+    }
     if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
         && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
@@ -244,6 +259,7 @@ static void Frame(void) {
                 PropsDrawFront();
                 BulbsDraw();
                 LifeDraw();
+                HunterDraw();
                 ItemsDrawBehind();
                 PlayerDraw();
                 ItemsDrawHeld();
@@ -267,6 +283,24 @@ static void Frame(void) {
                items[0].room, items[0].x, items[0].y,
                itemCount > 1 ? items[1].room : -1, itemCount > 1 ? items[1].x : 0.0f, itemCount > 1 ? items[1].y : 0.0f,
                resetFade);
+
+    // Explicit developer fixture output: every real item and cairn member,
+    // including the intentional four-stone extension. Never drawn in the game.
+    if (dbgHunterTrace) {
+        HunterView h = {0}; int visible = InhabitantsHunterView(&h);
+        int members[ITEM_MAX], count = InhabitantsCairnItems(members, ITEM_MAX);
+        printf("HUNTER f=%ld room=%d visible=%d state=%d x=%.3f y=%.3f carried=%d count=%d placed=%d tended=%d taken=%d fire=%d voice=%d mouth=%d holds=%d members=",
+               frameNo, roomIdx, visible, h.state, h.x, h.y, visible ? h.carriedItem : -1,
+               count, h.placed, h.tended, h.taken, h.fireLit, hunterVoiceLast, h.mouth, heldItem);
+        for (int k=0;k<count;k++) printf("%s%d", k ? "," : "", members[k]);
+        printf("\n");
+        for (int i=0;i<itemCount;i++) {
+            const Item *it = &items[i];
+            printf("ITEM f=%ld id=%d kind=%d room=%d x=%.3f y=%.3f vy=%.3f ground=%d cool=%d pin=%d home=%d/%.3f,%.3f\n",
+                   frameNo, i, it->kind, it->room, it->x, it->y, it->vy, it->onGround, it->cool,
+                   InhabitantsPinsItem(i), it->hroom, it->hx, it->hy);
+        }
+    }
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -302,6 +336,8 @@ int main(int argc, char **argv) {
             ParsePlan(argv[++i]); dbgFixedStep = 1;
         } else if (!strcmp(argv[i], "--trace")) {
             dbgTrace = 1;
+        } else if (!strcmp(argv[i], "--trace-hunter")) {
+            dbgHunterTrace = 1;
         } else if (!strcmp(argv[i], "--nodraw")) {
             noDraw = 1;
         } else if (!strcmp(argv[i], "--labels")) {
@@ -310,6 +346,8 @@ int main(int argc, char **argv) {
             mute = 1;
         } else if (!strcmp(argv[i], "--wav") && i + 1 < argc) {
             wavPath = argv[++i]; mute = 1;
+        } else if (!strcmp(argv[i], "--hunter-wav") && i + 1 < argc) {
+            hunterWavPath = argv[++i]; mute = 1;
         } else if (!strcmp(argv[i], "--frames") && i + 1 < argc) {
             maxFrames = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--scale") && i + 1 < argc) {
@@ -339,10 +377,16 @@ int main(int argc, char **argv) {
     ItemsReset();
     ItemsAdd(IT_LAMP, lampRoom, lampTx, lampTy);   // items[0]: by default beside you where you begin
     RoomLoad();
+    if (!InhabitantsInit()) {
+        TraceLog(LOG_ERROR, "hunter camp initialization failed: check camp anchors and item capacity");
+        CloseWindow(); return 1;
+    }
     // Headless runs do not open a device: the container has none, and probing for one
     // is slow. Every sound still gets synthesized and counted, so the trace can say
     // what would have played.
     AudioInit(mute || noDraw);
+    AudioHunterInit();
+    if (hunterWavPath) { int ok = AudioHunterExportMontage(hunterWavPath); printf("%s -> %s\n", ok ? "wrote" : "FAILED", hunterWavPath); AudioHunterClose(); DepthUnload(); CloseWindow(); return ok ? 0 : 1; }
     if (wavPath) { int ok = AudioExportMontage(wavPath); printf("%s -> %s\n", ok ? "wrote" : "FAILED", wavPath); CloseWindow(); return ok ? 0 : 1; }
     if (startRoom > 0 && startRoom < ROOM_COUNT) RoomEnter(startRoom);
     if (dbgLabels) DebugLabelsPrint();
@@ -359,7 +403,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose() && !shotsDone && !PlanExhausted()
            && !(maxFrames && frameNo >= maxFrames)) Frame();
 #endif
-    if (dbgTrace) { LifePrintStats(); CityPrintStats(); }
+    if (dbgTrace) { LifePrintStats(); CityPrintStats(); AudioHunterPrintStats(); }
     if (wanderSeed) {
         // Every surface a body could rest on, per room, and whether this bot ever did.
         for (int r = 0; r < ROOM_COUNT; r++) {
@@ -381,6 +425,7 @@ int main(int argc, char **argv) {
         printf("HOME %s (%ld)\n", homeFrame ? "reached" : "never", homeFrame);
     }
     DepthUnload();
+    AudioHunterClose();
     CloseWindow();
     return 0;
 }

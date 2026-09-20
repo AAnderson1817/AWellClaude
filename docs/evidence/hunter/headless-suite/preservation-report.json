@@ -1,0 +1,603 @@
+{
+  "baseline_git_ref": "99de785",
+  "rendered": false,
+  "candidate_executable_sha256": "2926042026b2193953fa887d63f76c813b47620f8711de342b3b806162e621a9",
+  "source_sha256": {
+    "src/audio.c": "a3c39b2de8ca632b9d005c97234884920dead970b9f5d7685d938d273f5794ef",
+    "src/city.c": "c1b90498863fc98ef24c8aee7b316103e3805cc70df2c7600d27365ec8763d2e",
+    "src/depth.c": "0de785f47dd16c617fd1622e9c5b4388e84e74f704b8530e3756e38d4bd23f5b",
+    "src/fx.c": "254e8a046d26837472adbe0f7c6d9c9607dae4fcbafefc13fd784f04ccd42b9b",
+    "src/inhabitants.c": "40be13380171e22c0899786b05e62fc428a3c96ba313f592aefbbcb673a7382a",
+    "src/items.c": "2c728bcb2813afaf00dada7e093eb1820fc0efa37a476ed6a604513b7725bc84",
+    "src/life.c": "676d7436cd18010df9e54052570bbe3a16fee30c6f9a9492fe0935eec40e62eb",
+    "src/main.c": "06f304541b922e5f88553ae318850304d787b6ebc358767e52b50e13ccbe41aa",
+    "src/player.c": "76f6bc886fbd65d38c74df560dcc4247b4970a2b4c63b5643cd161051ec8083a",
+    "src/props.c": "05b52b458033f7ede2b4aa7a2934cf606bc11d9744a216ef7dc5d99bc2f9c9b1",
+    "src/render.c": "a504cdfeac6ceb6bb98da53243b62ab151169aa55f5163e787a291a4ba2ca55e",
+    "src/room.c": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "src/audio.h": "714d9b3822a191a62c0b73cca533e2cbd16de531f9d4115ecdae6c563a1c246b",
+    "src/aw.h": "3da4a19686aa683f8faa6453605ac819f8102113cbcb5b265ca793bbd3c6ff51",
+    "src/city.h": "8f5cb9a96c9aefb841854208cb577c5ffebab6132f51d95d62e8add4f620e572",
+    "src/depth.h": "9bc37fdb82d153b5629bbe85074bcec8a5a248c109c7a0aad341ee663abd13bc",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/environment_mattes.h": "3caca88cd0454f480b01aaec88b4e0c64dd5100e802d71f08666efa87126c2fb",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "src/generated/foundry_assets.h": "e49796de85fcb74cb0e57a6d4bc09711bccb7c13384e7be08c970132cb3b5507",
+    "src/generated/hunter_assets.h": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9",
+    "src/generated/life_assets.h": "b9afac63e54d5e26ee43af55e5f0945db57bf38e2fcc27dd8f18743e3df3fca2",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "src/generated/mural_assets.h": "2f3d710c658bee7fc9a70cf0f3936d654cbafd7a48ab0db656b292b5cb09ec78",
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/inhabitants.h": "98c941a105ddecc9fa722abd8eba19e287894b0a245f1a115196c082ddd6152e"
+  },
+  "unchanged_contract": [
+    "movement",
+    "original Hold selection and free-item physics",
+    "fx behavior",
+    "life behavior",
+    "props behavior",
+    "original audio",
+    "room geometry",
+    "prop placements"
+  ],
+  "intentional_extension": "Four real cairn stones and hunter-owned item pinning extend the world. Original Hold selection and gravity remain unchanged outside owned stones. Authored cairn/offer interactions require a separate complete-item differential; these historical scenarios still compare every original trace field. City and hunter voices are separately counted and never replace original dbgLastSfx.",
+  "cases": [
+    {
+      "case": "quiet-vault",
+      "frames": 3603,
+      "sha256": "f2bd5ac8f4a59128e3f00a85cf938f9c2dee0370a71cf6bae6446d6b0bc989d0",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 1
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 1
+        }
+      }
+    },
+    {
+      "case": "quiet-water",
+      "frames": 3603,
+      "sha256": "38a16e7864b71f8336376b38cf7389723a0bc6e8713c4e5eebaae558d0c58025",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "run-jump-release",
+      "frames": 174,
+      "sha256": "a2efce245d46d94b02fa8a09b6c01e702588919b23a03a1af15602b250f84372",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "hold-lamp",
+      "frames": 233,
+      "sha256": "9b19e0054a70a1c0e43c068e731fec6325d8ce70587e73f5fa57e1913e58bd90",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "bulb-normal",
+      "frames": 183,
+      "sha256": "d6ff685e2a1cb7e194b65df87bdb7c89a57b3d8a944508a0d08eab9368968049",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 5,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 5,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "bulb-timed",
+      "frames": 199,
+      "sha256": "ff3001a1dfa12faec4abf27d297d4ea876047acd7c2023ccf1ee6a601658dae6",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 5,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 5,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "shaft-down",
+      "frames": 323,
+      "sha256": "b6ab708820ddae4aebfbf63e7e502dd9ecb33c3715cb3e9b5c9dead26349e124",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "shaft-up",
+      "frames": 103,
+      "sha256": "8cb2a2d90692cb58e57330a8aacb14944ae5969b1ed4fbbd2bb94a0723eb35b0",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "failed-seam-exit",
+      "frames": 95,
+      "sha256": "758c2698cc87d6de4b59290e7b5088ee1ebfe60a9c926958807c2973637cf848",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "water-to-island",
+      "frames": 255,
+      "sha256": "40a6d73261c22c40f0ad4502428bb174559a9079ac10c413e7c41d89a69838da",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 1,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 1,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "stone-dive-and-reset",
+      "frames": 366,
+      "sha256": "0846c00f4d4c09be4e9693f0e25fa0fee988e1ebe336eb5ef31137d34d059dc0",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "abort-reset",
+      "frames": 108,
+      "sha256": "a26d1ebf4e651c43d6e0f0268d8aea2f68f7a4d8be20f7e650d4062e5067866c",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 1,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 1,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "camp-lamp-fire",
+      "frames": 603,
+      "sha256": "ec8c4cfceb19ffb199975416ad478d3d6c919f5de580724b752992645173d768",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 1,
+          "offer": 0,
+          "taken": 0,
+          "fire": 1,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 1,
+          "offer": 0,
+          "taken": 0,
+          "fire": 1,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "door-glint",
+      "frames": 303,
+      "sha256": "eecb57b08673104ec9b57e5b2aa38da2875833494cdf159c0cbbc9d1ba94eb24",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 0,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 0,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    },
+    {
+      "case": "animal-and-pot",
+      "frames": 429,
+      "sha256": "5e7977f087eeecde6e57f814f292a07605760aa00917c78ee9f0cf18291d1514",
+      "modes": [
+        "flat",
+        "depth"
+      ],
+      "city_sound_counts": {
+        "flat": {
+          "city-murmur": 1,
+          "city-hum": 0
+        },
+        "depth": {
+          "city-murmur": 1,
+          "city-hum": 0
+        }
+      },
+      "hunter_sound_counts": {
+        "flat": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        },
+        "depth": {
+          "greeting": 0,
+          "offer": 0,
+          "taken": 0,
+          "fire": 0,
+          "bedroll": 0,
+          "hum": 0
+        }
+      }
+    }
+  ],
+  "compared_frames": 21160
+}

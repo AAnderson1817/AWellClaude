@@ -1,0 +1,13 @@
+PASS initialization: 4 real cairn stones, original IDs/homes intact, 7/8 budget, idempotence and atomic capacity failure
+PASS offer/take/return: original Hold transfers the same real stone, 4-tile reclaim works, distant stone remains recoverable
+PASS interruptions: pickup instantly wins over carrying/approach; cooldown honored, no held-item seizure
+PASS competing pickup: taking another member releases the hunter's carried/tended stone to real falling, with no stranded ownership
+TEND first=2228 frames, actual item=3; lift/turn/return=96 frames
+PASS authored idle/social responses: 20-40s actual-stone tending, pickup during tending, greeting edges, bedroll waiting
+PASS persistent fire: real two-second lamp ignition, closer warm seat, one long phrase, quicker hum; lamp never appropriated
+PASS persistence/reset: real stone travels and sinks in room 1, room re-entry never respawns it, full reset restores homes and four seed IDs
+PASS full cairn/exhaustion: both legacy stones offered, all six picked up exactly once, no invisible reserves, reset restores only the four seed members
+PASS detached views, bounded copies, inherited item/player/map/audio isolation, supported floor and player-space yielding
+PASS 9288 actual hunter detached voice-pose checks against pitched PCM timeline, including reset/room lifecycle
+PASS conservation checked after 18841 steps; no renderer or audible-voice acceptance claimed
+PASS 6,000 exact original-state frame hashes: original three items, player, prop state/timers, map and original Sfx counters

@@ -182,6 +182,8 @@ void PlayerDrawEyes(void);   // drawn after the light pass: you can always find 
 void LifeInit(void);        // per room, after the tiles and surfaces are known
 void LifeStep(void);
 void LifeDraw(void);        // before the light pass
+void HunterDraw(void);      // same detached inhabitant state as the 3D view
+int HunterDrawStone(int item); // rotate the actual tended stone, otherwise use normal item drawing
 void LifeDrawEyes(void);    // after it
 void LifeLights(void);      // called by LightStep
 void LifePrintStats(void);

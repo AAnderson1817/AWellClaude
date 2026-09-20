@@ -15,7 +15,7 @@
 static int initialized, seedIds[CAIRN_INITIAL], cairn[ITEM_MAX], cairnCount;
 static int carried=-1, target=-1, watched=-1, state, phase, facing;
 static int stable[ITEM_MAX], stolen[ITEM_MAX], wasNear, wasBed, wasFire;
-static int tendWait, humWait, watchWait, voiceFrames, voiceKind, voiceGap;
+static int tendWait, humWait, watchWait, voiceFrames, voiceKind, voiceGap, voiceTotalFrames;
 static int placed, tended, taken, voicePending;
 static unsigned voiceRequests, voiceSequence;
 static float campX, floorY, fireX, coldHome, warmHome, cx, walkPhase;
@@ -28,8 +28,9 @@ static int Wait(int low,int high) { return low+(int)(Rnd()%(unsigned)(high-low+1
 static int Stone(int i) { return i>=0 && i<itemCount && items[i].kind==IT_STONE; }
 static int Slot(int i) { for(int k=0;k<cairnCount;k++)if(cairn[k]==i)return k; return -1; }
 static float Home(void) { return wasFire?warmHome:coldHome; }
-static int Busy(void) { return state==HUNTER_APPROACH||state==HUNTER_CARRY||state==HUNTER_PLACE||state==HUNTER_TEND; }
+static int Busy(void) { return state==HUNTER_APPROACH||state==HUNTER_CARRY||state==HUNTER_PLACE||state==HUNTER_TEND||state==HUNTER_TEND_APPROACH; }
 static void Request(int kind) { voiceRequests|=1u<<kind; }
+static float Smooth(float t) { t=fminf(1,fmaxf(0,t));return t*t*(3-2*t); }
 
 static void CairnPose(void) {
     for(int k=0;k<cairnCount;k++) {
@@ -62,7 +63,7 @@ void InhabitantsReset(void) {
     memset(stable,0,sizeof stable); memset(stolen,0,sizeof stolen);
     state=HUNTER_SIT; phase=0; facing=1; cx=coldHome; walkPhase=0;
     wasNear=wasBed=wasFire=0; watchWait=0; tendWait=Wait(1200,2400); humWait=Wait(1500,2700);
-    voiceFrames=voiceKind=voiceGap=voicePending=0; voiceRequests=voiceSequence=0;
+    voiceFrames=voiceKind=voiceGap=voicePending=voiceTotalFrames=0; voiceRequests=voiceSequence=0;
     placed=tended=taken=0; stoneTurn=0;
     handX=cx+4;handY=floorY-5;lookX=campX;lookY=floorY-5;
     memset(&voice,0,sizeof voice); CairnPose();
@@ -170,22 +171,45 @@ static void Place(void) {
 static void VoiceStep(void) {
     if(voiceFrames>0)voiceFrames--;
     if(voiceGap>0)voiceGap--;
-    if(voiceFrames||voiceGap||!voiceRequests)return;
-    static const int priority[]={HVOICE_TAKEN,HVOICE_FIRE,HVOICE_OFFER,HVOICE_BEDROLL,HVOICE_GREETING,HVOICE_HUM};
-    for(unsigned k=0;k<sizeof priority/sizeof priority[0];k++) {
-        int kind=priority[k];if(!(voiceRequests&(1u<<kind)))continue;
-        voiceRequests&=~(1u<<kind);voiceKind=kind;
-        int syllables=kind==HVOICE_OFFER||kind==HVOICE_FIRE?3:1;
-        float pitch=kind==HVOICE_FIRE?.72f:(kind==HVOICE_TAKEN?1.18f:(kind==HVOICE_HUM?.83f:1.0f));
-        voice=(HunterVoiceEvent){kind,syllables,pitch+(Wait(-12,12)*.001f),kind==HVOICE_HUM?.12f:.20f,cx/GW,++voiceSequence};
-        voiceFrames=syllables*18;voiceGap=voiceFrames+24;voicePending=1;break;
+    // Incidental requests are valid only in their current physical context.
+    // Crossing the bedroll during a transfer must not narrate it afterward.
+    if(!wasNear||watchWait==0||Busy()||state==HUNTER_TAKEN||state==HUNTER_BEDROLL)
+        voiceRequests&=~(1u<<HVOICE_GREETING);
+    if(!wasBed||state!=HUNTER_BEDROLL)voiceRequests&=~(1u<<HVOICE_BEDROLL);
+    if(state!=HUNTER_SIT&&state!=HUNTER_WARM)voiceRequests&=~(1u<<HVOICE_HUM);
+    if(!wasFire)voiceRequests&=~(1u<<HVOICE_FIRE);
+
+    int kind=HVOICE_NONE;
+    // Actual stone actions answer on this tick, even during another utterance
+    // or its quiet gap. AudioHunterPlay stops the previous single speaker.
+    if(voiceRequests&(1u<<HVOICE_TAKEN))kind=HVOICE_TAKEN;
+    else if(voiceRequests&(1u<<HVOICE_OFFER))kind=HVOICE_OFFER;
+    else if((voiceRequests&(1u<<HVOICE_FIRE))&&!Busy()&&state!=HUNTER_TAKEN&&
+            (!voiceFrames||(voiceKind!=HVOICE_TAKEN&&voiceKind!=HVOICE_OFFER)))kind=HVOICE_FIRE;
+    if(kind!=HVOICE_NONE) {
+        // Only the still-lit fire can retain context across a stone action.
+        // Older greeting/bedroll/hum requests never follow as a speech backlog.
+        voiceRequests&=kind==HVOICE_FIRE?0u:(1u<<HVOICE_FIRE);
+    } else {
+        if(voiceFrames||voiceGap||!voiceRequests)return;
+        static const int social[]={HVOICE_BEDROLL,HVOICE_GREETING,HVOICE_HUM};
+        for(unsigned k=0;k<sizeof social/sizeof social[0];k++)
+            if(voiceRequests&(1u<<social[k])){kind=social[k];break;}
+        if(kind==HVOICE_NONE)return;
+        voiceRequests&=~(1u<<kind);
     }
+    voiceKind=kind;
+    int syllables=AudioHunterPhrase(kind)->syllables;
+    float pitch=kind==HVOICE_FIRE?.72f:(kind==HVOICE_TAKEN?1.18f:(kind==HVOICE_HUM?.83f:1.0f));
+    voice=(HunterVoiceEvent){kind,syllables,pitch+(Wait(-12,12)*.001f),kind==HVOICE_HUM?.12f:.20f,cx/GW,++voiceSequence};
+    voiceFrames=voiceTotalFrames=AudioHunterDurationTicks(kind,voice.pitch);
+    voiceGap=voiceFrames+24;voicePending=1;
 }
 
 void InhabitantsStep(void) {
     if(!initialized)return;
     Reconcile();
-    if(roomIdx!=0) {voicePending=0;voiceRequests=0;voiceFrames=voiceGap=0;wasNear=wasBed=0;return;}
+    if(roomIdx!=0) {voicePending=0;voiceRequests=0;voiceFrames=voiceGap=voiceTotalFrames=0;wasNear=wasBed=0;return;}
     CairnPose();phase++;stoneTurn=0;
     for(int i=0;i<itemCount;i++)stable[i]=Offer(i)?(stable[i]<12?stable[i]+1:12):0;
     PropView props[96];int n=PropsViews(props,96),bed=0;
@@ -222,10 +246,20 @@ void InhabitantsStep(void) {
         } else Walk(lookX+(lookX>cx?-5.5f:5.5f));
         break;
     case HUNTER_CARRY:
-        if(Walk(campX-6)) {state=HUNTER_PLACE;phase=0;stoneFromX=items[carried].x;stoneFromY=items[carried].y;}
+        if(Walk(campX-5.5f)) {facing=1;state=HUNTER_PLACE;phase=0;stoneFromX=items[carried].x;stoneFromY=items[carried].y;}
         break;
     case HUNTER_PLACE:
         if(phase>=36){Place();placed++;Request(HVOICE_OFFER);}
+        break;
+    case HUNTER_TEND_APPROACH:
+        // Leave the top in the real, freely pickupable cairn until the body is
+        // in reach. Walking may yield to the player for as long as necessary.
+        if(!cairnCount||!Path(campX-5.5f)){state=HUNTER_RETURN;break;}
+        lookX=campX;lookY=items[cairn[cairnCount-1]].y+STONE_H*.5f;
+        if(Walk(campX-5.5f)) {
+            carried=Remove(cairnCount-1);stoneFromX=items[carried].x;stoneFromY=items[carried].y;
+            facing=1;state=HUNTER_TEND;phase=0;
+        }
         break;
     case HUNTER_TEND:
         if(phase>=96){Place();tended++;}
@@ -237,8 +271,7 @@ void InhabitantsStep(void) {
         if(fabsf(cx-Home())>.3f){state=HUNTER_RETURN;break;}
         state=wasFire?HUNTER_WARM:(watchWait?HUNTER_WATCH:HUNTER_SIT);
         if(tendWait==0&&cairnCount) {
-            carried=Remove(cairnCount-1);stoneFromX=items[carried].x;stoneFromY=items[carried].y;
-            state=HUNTER_TEND;phase=0;tendWait=Wait(1200,2400);
+            state=HUNTER_TEND_APPROACH;phase=0;tendWait=Wait(1200,2400);
         }
         if(humWait==0){Request(HVOICE_HUM);humWait=wasFire?Wait(720,1320):Wait(1500,2700);}
         break;
@@ -247,9 +280,19 @@ void InhabitantsStep(void) {
     if(carried>=0) {
         Item *it=&items[carried];it->vy=0;it->onGround=0;
         if(state==HUNTER_TEND) {
-            float t=phase/96.f,lift=sinf(t*3.14159265f);
-            it->x=stoneFromX+sinf(t*6.2831853f)*.8f;it->y=stoneFromY-lift*4;
-            stoneTurn=lift*.8f;
+            // Unseat, clear the remaining pile horizontally, then inspect at
+            // belly height. Retrace exactly; fixed 4.2+4.2px arms can reach even
+            // the sixth stone without stretching or moving the body off-ground.
+            float q=fminf((float)phase,96.f-phase),top=stoneFromY+STONE_H*.5f;
+            float x=stoneFromX+STONE_W*.5f,y=top;
+            if(q<=10)y=top-.3f*Smooth(q/10);
+            else if(q<=28){x+=(campX-5.2f-x)*Smooth((q-10)/18);y=top-.3f;}
+            else {
+                x=campX-5.2f;float t=Smooth((q-28)/14);
+                y=top-.3f+(floorY-5.5f-(top-.3f))*t;
+                stoneTurn=.8f*sinf(fminf(1,(q-28)/14)*1.570796327f);
+            }
+            it->x=x-STONE_W*.5f;it->y=y-STONE_H*.5f;
         } else if(state==HUNTER_PLACE) {
             float t=phase/36.f;t=t*t*(3-2*t);
             it->x=stoneFromX+(campX-STONE_W*.5f-stoneFromX)*t;
@@ -268,8 +311,11 @@ int InhabitantsCairnItems(int *out,int max) {
 }
 int InhabitantsHunterView(HunterView *out) {
     if(!out||!initialized||roomIdx!=0)return 0;
+    int elapsed=voiceTotalFrames-voiceFrames;
+    HunterMouth mouth=AudioHunterMouthAt(voiceKind,voice.pitch,elapsed);
     *out=(HunterView){cx-BODY_W*.5f,floorY-BODY_H,BODY_W,BODY_H,handX,handY,lookX,lookY,walkPhase,stoneTurn,
-        state,facing,carried,cairnCount,wasFire,voiceFrames>0&&(voiceFrames%18)<10,voiceKind,voiceFrames,tendWait,placed,tended,taken};
+        state,facing,carried,cairnCount,wasFire,mouth.open>.22f,voiceKind,voiceFrames,tendWait,placed,tended,taken,
+        mouth.open,elapsed,voiceTotalFrames,mouth.syllable};
     return 1;
 }
 int InhabitantsPollVoice(HunterVoiceEvent *out) {

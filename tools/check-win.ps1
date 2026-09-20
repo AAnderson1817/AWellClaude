@@ -42,15 +42,18 @@ function Invoke-Checked {
 }
 
 & "$PSScriptRoot/build-win.ps1" -Headless
-$sources = @('src/player.c','src/room.c','src/fx.c','src/render.c','src/audio.c','src/life.c','src/items.c','src/props.c','src/city.c')
+$sources = @('src/player.c','src/room.c','src/fx.c','src/render.c','src/audio.c','src/life.c','src/items.c','src/props.c','src/city.c','src/inhabitants.c')
 foreach ($testName in @('input_hash','presentation_snapshots','city_responses')) {
     & $zig cc -std=c99 -O1 -g -DAWELL_HEADLESS -fsanitize=undefined -fno-sanitize-recover=all -I $include "tools/tests/$testName.c" tools/tests/raylib_stubs.c $sources -o "build/$testName.exe"
     if ($LASTEXITCODE -ne 0) { throw "Compilation failed: $testName" }
     Invoke-Checked -Executable "./build/$testName.exe" -CommandArgs @() -LogName "$testName.txt"
 }
 Invoke-Checked -Executable $Python -CommandArgs @('tools/tests/test_tools.py') -LogName 'python-tools.txt'
+Invoke-Checked -Executable $Python -CommandArgs @('tools/tests/test_hunter.py') -LogName 'hunter-module.txt'
+Invoke-Checked -Executable $Python -CommandArgs @('tools/tests/test_hunter_audio.py') -LogName 'hunter-audio.txt'
 $headlessReport = Join-Path $evidencePath 'preservation-report.json'
 Invoke-Checked -Executable $Python -CommandArgs @('tools/check-preservation.py','--build-baseline','--baseline','build/game-baseline-headless.exe','--candidate','build/game-probe.exe','--report',$headlessReport) -LogName 'preservation.txt'
+Invoke-Checked -Executable $Python -CommandArgs @('tools/tests/test_hunter_integration.py','--report',(Join-Path $evidencePath 'hunter-full-game.json')) -LogName 'hunter-full-game.txt'
 $previousGame = $env:AWELL_GAME
 try {
     $env:AWELL_GAME = Join-Path $projectRoot 'build/game-probe.exe'
@@ -74,6 +77,9 @@ $summary = [ordered]@{
     snapshotFrames = 3600
     cityResponseTests = 'four windows, mural/fire coupling, face sinking-stone acknowledgment, eight-fish shoal, detached snapshots'
     citySoundExtensions = @('city-murmur','city-hum')
+    hunterModuleTests = 'real-item conservation, pickup interruption, six-stone exhaustion, reset, pitch-aware voice poses'
+    hunterFullGameTests = 'six CLI cases; complete item/owner traces in both modes; intentional old-world pickup difference retained'
+    hunterAudioTests = 'pitched PCM timeline, muted/device lifecycle, original audio isolation; listening remains open'
     pythonToolTests = 5
     status = 'passed'
 }

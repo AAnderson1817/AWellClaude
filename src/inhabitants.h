@@ -1,12 +1,11 @@
 #ifndef AW_INHABITANTS_H
 #define AW_INHABITANTS_H
 #include "aw.h"
+#include "audio.h"
 
 enum { HUNTER_SIT, HUNTER_WATCH, HUNTER_APPROACH, HUNTER_CARRY,
        HUNTER_PLACE, HUNTER_TEND, HUNTER_TAKEN, HUNTER_WARM,
-       HUNTER_BEDROLL, HUNTER_RETURN };
-enum { HVOICE_NONE, HVOICE_GREETING, HVOICE_OFFER, HVOICE_TAKEN,
-       HVOICE_FIRE, HVOICE_BEDROLL, HVOICE_HUM };
+       HUNTER_BEDROLL, HUNTER_RETURN, HUNTER_TEND_APPROACH };
 
 // Detached room-pixel views (Y down, no ROOM_Y). x/y is body top-left;
 // hands and gaze are world points. No getter advances time or returns live data.
@@ -14,12 +13,9 @@ typedef struct {
     float x, y, w, h, handX, handY, lookX, lookY, walkPhase, stoneTurn;
     int state, facing, carriedItem, cairnCount, fireLit, mouth;
     int voiceKind, voiceFrames, tendInFrames, placed, tended, taken;
+    float mouthOpen;
+    int voiceElapsedFrames, voiceTotalFrames, voiceSyllable;
 } HunterView;
-typedef struct {
-    int kind, syllables;
-    float pitch, volume, pan;
-    unsigned sequence;
-} HunterVoiceEvent;
 
 // Init ONCE after RoomLoad (room 0): append four real, resettable cairn stones.
 // Returns 0 without adding any if the camp or four free item slots are absent.

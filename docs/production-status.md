@@ -3,7 +3,7 @@
 This branch extends the existing two-room C/raylib game. It is a working 3D
 presentation and city response candidate, with original mechanics retained and
 native and web builds. The overall goal remains active. This status describes the
-craft revision 14 after the architecture and city response milestones.
+inhabitant revision 15 after the architecture, materials and city response milestones.
 
 ## Delivered
 
@@ -26,26 +26,34 @@ craft revision 14 after the architecture and city response milestones.
   pulse with a two-second sinking-stone answer, and eight fish that scatter from the
   body and gather beneath a reachable floating lamp. Both modes consume the same
   response state, with quiet city murmurs and a low note extending original audio.
-- Current actual-array geometry/material audits and 6,640 native-rendered baseline
-  comparisons pass. Matched native lighting controls and a bounded two-room WebGL
-  smoke check record the current build. Earlier sanitizer, 21,160-frame headless,
-  35-route and 36-escape results remain dated evidence, not new v14 executions.
+- An integrated camp hunter tending actual cairn stones, accepting nearby offerings,
+  yielding to player pickup, and responding to fire and visits with wordless phrases.
+  Blender attire, rigid body poses and fixed-length arms share the real state in
+  flat and depth modes. No new player verbs or collision gates are added.
+- Current sanitizer checks, 21,160 headless and 6,640 native-rendered baseline
+  comparisons, 35 route checks and 36 escape checks pass. Six full game-loop hunter
+  scenarios compare all item and owner traces across 8,506 frames in both modes.
+  Final native captures and a bounded two-room WebGL smoke check record the build.
+  Geometry/material audits and controlled light timings retain their v14 scope;
+  those environment assets are unchanged in this increment.
 - Two complete reference collections of 30 images each and a local art review gallery.
 
 ## Acceptance still open
 
-The [current whole-brief review](artistic-review-v14.md) returns **rework**. The
+The [current whole-brief review](artistic-review-v15.md) returns **rework**. The
 playable surfaces, structural supports and inhabited architecture remain below the
 governing references. The new face, fish, windows and mural have observed responses,
 connecting material culture with behavior, but do not settle the broader quality
 target. Source-asset technical verification and the repaired window-pane bounds
 are separate from artistic acceptance.
 
-The slice still has no completed ending or full deeper discovery structure. The hunter has a separately tested real-item state machine and verified Blender
-attire, but neither is hooked into this playable checkpoint. The native,
+The slice still has no completed ending or full deeper discovery structure. The
+hunter's stone conservation and responses are tested, but cairn shape, warm-seat
+occlusion and grasp transitions still need craft work. The native,
 face-mouth bubbles, remaining response-table
 dressing and final sound pass remain unfinished. Implemented responses are described
-in [city-response-implementation.md](city-response-implementation.md); automated and
+in [city-response-implementation.md](city-response-implementation.md) and
+[hunter-implementation.md](hunter-implementation.md); automated and
 controlled visual fixtures do not establish spontaneous discovery or immersion.
 No new gates or player verbs conceal the remaining gaps.
 
