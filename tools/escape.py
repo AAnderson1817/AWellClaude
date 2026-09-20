@@ -12,17 +12,17 @@ soft-locked without a way out -- the geometry is checked here; the way out (hold
 checked in route.py."""
 import os, re, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
+from probe import game_path
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME = os.path.join(ROOT, "build", "game")
 SURF = re.compile(r"R(\d) (\S+) (shelf|stone) row\s+(\d+) cols\s+(\d+)-\s*(\d+)")
 FRAMES = 150000         # forty minutes of play per attempt; the sim is cheap, the bot is not clever
 SEEDS = (1, 2, 3)
 
 def game(*args):
-    r = subprocess.run([GAME, *args, "--mute"], capture_output=True, text=True, cwd=ROOT)
+    r = subprocess.run([game_path(), *args, "--mute"], capture_output=True, text=True, cwd=ROOT)
     if r.returncode < 0:  # display contention, as in probe.py: once more
-        r = subprocess.run([GAME, *args, "--mute"], capture_output=True, text=True, cwd=ROOT)
+        r = subprocess.run([game_path(), *args, "--mute"], capture_output=True, text=True, cwd=ROOT)
     if r.returncode:
         raise RuntimeError("game failed (exit %d): %s" % (r.returncode, r.stderr.strip()))
     return r.stdout

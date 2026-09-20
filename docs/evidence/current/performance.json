@@ -1,0 +1,22 @@
+{
+  "note": "600 requested unthrottled fixed-step frames plus 3 inherited plan-tail frames per room, including startup; single local machine, not a hardware-wide performance claim",
+  "internalRenderSize": "1920x1080",
+  "window": "1280x720",
+  "cpu": null,
+  "gpu": [],
+  "measurements": [
+    {
+      "room": 0,
+      "frames": 603,
+      "seconds": 1.6357513,
+      "averageMillisecondsIncludingStartup": 2.7126887230514094
+    },
+    {
+      "room": 1,
+      "frames": 603,
+      "seconds": 1.2133698,
+      "averageMillisecondsIncludingStartup": 2.0122218905472637
+    }
+  ],
+  "hardwareEnumeration": "Unavailable: local WMI access denied; no system permissions were changed."
+}

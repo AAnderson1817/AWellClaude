@@ -1,0 +1,42 @@
+{
+  "recordedUtc": "2026-09-20T19:48:25.3559117Z",
+  "target": "Emscripten 6.0.8 / raylib 5.5 / live WebGL",
+  "browserSurface": "CUA in-app browser",
+  "evidenceKind": "Live screenshot and dev.logs observations in the task history, reported by the root reviewer",
+  "browserScreenshotsSavedToDisk": false,
+  "artifacts": [
+    "build/play.html",
+    "build/review-water.html"
+  ],
+  "observations": [
+    {
+      "room": "Vault Mouth",
+      "result": "passed",
+      "checks": [
+        "3D presentation boots and is visible",
+        "F2 changes to original pixel rendering and back",
+        "Eight Right key presses move the player",
+        "Browser dev.logs error and warning query returned an empty list"
+      ],
+      "observedErrorWarningLog": []
+    },
+    {
+      "room": "Drowned Quarter",
+      "result": "passed",
+      "checks": [
+        "Developer review page starts in room 1",
+        "Waterline, reflection and submerged geometry are visible",
+        "Browser dev.logs error and warning query returned an empty list"
+      ],
+      "observedErrorWarningLog": []
+    }
+  ],
+  "wrapperTests": 5,
+  "coverage": "Targeted actual-browser smoke, not a complete traversal or browser/native deterministic parity test",
+  "openChecks": [
+    "Perceptual audio and listening",
+    "Full browser traversal and gameplay regression",
+    "Long sessions and broader browser/device coverage"
+  ],
+  "status": "passed within stated coverage"
+}

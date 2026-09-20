@@ -1,6 +1,8 @@
 // main.c -- window, fixed timestep, and the handful of switches the headless
-// verification runs need. Nothing allocates; there is nothing to allocate.
+// verification runs need. The 3D presentation owns its startup GPU resources;
+// fixed-step gameplay retains the original static state.
 #include "aw.h"
+#include "depth.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,6 +16,8 @@ Input in;
 long frameNo = 0;
 int  dbgFixedStep = 0;
 int  dbgLabels = 0;
+int  depthEnabled = 1;
+int  depthStill = 0;
 const char *dbgOutDir = "shots";
 
 static int  shotFrames[16], shotCount, shotsDone;
@@ -213,6 +217,10 @@ static void Sim(void) {
 }
 
 static void Frame(void) {
+    if (!dbgFixedStep) {
+        if (IsKeyPressed(KEY_F2)) depthEnabled = !depthEnabled;
+        if (IsKeyPressed(KEY_F4)) depthStill = !depthStill;
+    }
     frameNo++;
     dbgLastSfx = "-";
     if (dbgFixedStep) {
@@ -227,22 +235,25 @@ static void Frame(void) {
     AudioStep();
     if (!noDraw) {
         LightStep();
-        RenderBegin();
-            RoomDraw();
-            PropsDrawFront();
-            BulbsDraw();
-            LifeDraw();
-            ItemsDrawBehind();
-            PlayerDraw();
-            ItemsDrawHeld();
-            FxDraw();
-            LightDraw();
-            LifeDrawEyes();
-            ItemsDrawCore();
-            ResetDrawLids();
-            PlayerDrawEyes();      // over the lids: your own eyes close on their own, last
-            DebugLabelsDraw();
-        RenderPresent();
+        if (depthEnabled) DepthDraw();
+        else {
+            RenderBegin();
+                RoomDraw();
+                PropsDrawFront();
+                BulbsDraw();
+                LifeDraw();
+                ItemsDrawBehind();
+                PlayerDraw();
+                ItemsDrawHeld();
+                FxDraw();
+                LightDraw();
+                LifeDrawEyes();
+                ItemsDrawCore();
+                ResetDrawLids();
+                PlayerDrawEyes();      // over the lids: your own eyes close on their own, last
+                DebugLabelsDraw();
+            RenderPresent();
+        }
     }
 
     if (dbgTrace)
@@ -272,7 +283,13 @@ int main(int argc, char **argv) {
     int winScale = 4, atx = -1, aty = -1, startRoom = 0;
     int lampRoom = 0, lampTx = 1, lampTy = 14;     // at your feet, at the foot of the door
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
+        if (!strcmp(argv[i], "--flat")) {
+            depthEnabled = 0;
+        } else if (!strcmp(argv[i], "--depth")) {
+            depthEnabled = 1;
+        } else if (!strcmp(argv[i], "--still")) {
+            depthStill = 1;
+        } else if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");
             while (tok && shotCount < 16) { shotFrames[shotCount++] = atoi(tok); tok = strtok(NULL, ","); }
             dbgFixedStep = 1;
@@ -310,7 +327,7 @@ int main(int argc, char **argv) {
 
     SetTraceLogLevel(LOG_WARNING);
     if (!dbgFixedStep) SetConfigFlags(FLAG_VSYNC_HINT);
-    InitWindow(GW * winScale, GH * winScale, "well");
+    InitWindow(GW * winScale, GH * winScale, "The Vault and the City Under It");
     SetTargetFPS(dbgFixedStep ? 0 : 60);
     RenderInit();
     ItemsReset();
@@ -357,6 +374,7 @@ int main(int argc, char **argv) {
         // tools/escape.py asks that of every surface in the map.
         printf("HOME %s (%ld)\n", homeFrame ? "reached" : "never", homeFrame);
     }
+    DepthUnload();
     CloseWindow();
     return 0;
 }

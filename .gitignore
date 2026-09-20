@@ -6,4 +6,9 @@ shots/
 tools/.setup_complete
 tools/setup.log
 .toolchain/
+.local/
+.pnpm-store/
+*.blend1
+*.blend2
 __pycache__/
+assets/blender/*.log

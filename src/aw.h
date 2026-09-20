@@ -118,6 +118,17 @@ void PropsReset(void);       // the one persistent change (the fire) back to how
 int  PropFireLit(int room);
 int  PropsAge(void);         // frames since this room was entered
 
+// Read-only presentation snapshots. Coordinates are room pixels, y down (no ROOM_Y).
+// Copying a snapshot never advances a timer, consumes randomness, or exposes live state.
+enum { PR_NONE = 0, PR_DOOR, PR_LINTEL, PR_ROPE, PR_CHAINLAMP, PR_ROOT, PR_BEDROLL, PR_FIRE,
+       PR_PACK, PR_CAIRN, PR_BONES, PR_POT, PR_BANNER, PR_BALUSTRADE, PR_CAPITAL, PR_BASE, PR_GRATE };
+enum { POT_REST = 0, POT_FALLING, POT_GONE };
+typedef struct {
+    int kind, tx, ty, len, state, timer, n, fireLit;
+    f32 x, y, angle, phase;
+} PropView;
+int PropsViews(PropView *out, int max);
+
 // ---------------------------------------------------------------- bulbs
 // A dome you land on and leave faster than you arrived. Not solid: you walk through
 // it, you cannot stand on it, it only answers a fall. Every landing throws you the
@@ -177,6 +188,22 @@ void LifePrintStats(void);
 int  LifeBeastPos(f32 *x, f32 *y);   // the animal's centre, if it lives in this room
 extern u8 bushShake[RH][RW];
 
+enum { B_PERCH, B_FLY };
+enum { M_WALK, M_PAUSE, M_SIT, M_WATCH };
+enum { P_IDLE, P_SPEAK, P_COOL };
+typedef struct { f32 x, y, vx, vy; int state, facing, flap; } BirdView;
+typedef struct {
+    f32 x, y, legT, headLift, tail[5];
+    int dir, state, blink;
+} BeastView;
+typedef struct {
+    f32 x, y, sway, lean, podX[3], podY[3];
+    int state, pod, mouth, perk;
+} PlantView;
+int LifeBirdViews(BirdView *out, int max);
+int LifeBeastView(BeastView *out);
+int LifePlantViews(PlantView *out, int max);
+
 // ---------------------------------------------------------------- things you can hold
 // One hand. The lamp gives light and floats; a stone sinks, and so do you while you
 // hold it. Persistent: each has a room of its own when set down.
@@ -227,6 +254,7 @@ void FxInit(void);
 void FxStep(void);
 void FxDraw(void);
 void FxBurst(int kind, float x, float y, int n, float spread, float up);
+int FxViews(Particle *out, int max);  // active particles copied; excludes the separate ambient motes
 
 // ---------------------------------------------------------------- audio
 // Synthesized at startup, nothing loaded. Sfx() is the one call: an id, a volume,

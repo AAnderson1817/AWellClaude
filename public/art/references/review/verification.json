@@ -1,0 +1,502 @@
+{
+  "scope": "60 generated references; contact sheets are display thumbnails only and are not counted",
+  "rooms": [
+    {
+      "environment": "Vault Mouth",
+      "count": 30,
+      "files": [
+        {
+          "id": 1,
+          "filename": "01-vault-mouth-governing-view.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 2258133,
+          "sha256": "3c8f97cdfc44de36e11bd945a42f68898db85cc864d3f3ef1fd7613313cbb97b"
+        },
+        {
+          "id": 2,
+          "filename": "02-vault-city-distant-matte.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1747407,
+          "sha256": "34e315dde3354e6830768cb91af54226e495647e065422d6e0b5a6c7f0bd88ae"
+        },
+        {
+          "id": 3,
+          "filename": "03-spiral-petal-door.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2199668,
+          "sha256": "23df119d14b382b6156612c706bae1f7923654db2e7530c469d654cc10fb33ae"
+        },
+        {
+          "id": 4,
+          "filename": "04-hunter-camp.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2217845,
+          "sha256": "9517633dd691cc4cadf0a4c44433fa22c157ed72711d4a07f22d6986f63d0e36"
+        },
+        {
+          "id": 5,
+          "filename": "05-vault-to-city.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 2162666,
+          "sha256": "cece11af0b6b79e372c6f1a823877b10a1f157201ba7680edd992459b7aa1916"
+        },
+        {
+          "id": 6,
+          "filename": "06-cold-fire.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2043468,
+          "sha256": "f369aa652666102dc13a703443f79ad1a2b77906948c78ce4f8502c93f8ef2f3"
+        },
+        {
+          "id": 7,
+          "filename": "07-lit-fire.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1726913,
+          "sha256": "fb29cd779c2207d5b10bf19e1ea2b652600940ca4fb44a08afc0c74270d372c2"
+        },
+        {
+          "id": 8,
+          "filename": "08-hunter-cairn.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 1967272,
+          "sha256": "2f05dc24f1c5886b7248cab512e3f7ed497d1c5e1752c482043302c04c4c781e"
+        },
+        {
+          "id": 9,
+          "filename": "09-bedroll.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2500183,
+          "sha256": "b3f2c0b3bd322cebbc0f6c316f0cce95f76de5b52b272b76f7e0089e16526ade"
+        },
+        {
+          "id": 10,
+          "filename": "10-pack-dead-lamp.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2181433,
+          "sha256": "f05e38615a01d780f4c66e880c63c71ed5be748d17e166859e3897b5652768ec"
+        },
+        {
+          "id": 11,
+          "filename": "11-hunters-rope.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2225243,
+          "sha256": "769a451e1086ec1bcf6d516730562e46ea83186967717f5a08c4ef6b46be15c8"
+        },
+        {
+          "id": 12,
+          "filename": "12-ceiling-roots.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1827001,
+          "sha256": "a34a2de0d597a05dbf2e3ca7241370f785b51622546c8d79fbd67e0d317b85a4"
+        },
+        {
+          "id": 13,
+          "filename": "13-phosphor-mural.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 2596041,
+          "sha256": "f77a0358424384da5c91dd9760ac120b7674397bb1933908bdfe613e884502b4"
+        },
+        {
+          "id": 14,
+          "filename": "14-mural-lamplit.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1957426,
+          "sha256": "2222050d00b0c442115bbb9f9c207ec4e8196c9384717acf54bd9b6ecf89a233"
+        },
+        {
+          "id": 15,
+          "filename": "15-shelf-bones.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2019392,
+          "sha256": "ad666cb1436262765201bc0e1193884975b0b2b1b889e81246770a7e991768d2"
+        },
+        {
+          "id": 16,
+          "filename": "16-city-column.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2007386,
+          "sha256": "da0d18c5fd39efbe2453846502f44c92156ace15df58b55d95b922ddafe33141"
+        },
+        {
+          "id": 17,
+          "filename": "17-shaft-grate.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2840498,
+          "sha256": "665ed2a66c925c381b5a25da413027e770cb6f44f1dba9fa82e6549aa1098147"
+        },
+        {
+          "id": 18,
+          "filename": "18-paved-street.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2095860,
+          "sha256": "63860938a51c4c23c6db586f32197ee12b27ae6a1a872ee47b6def8da057e1be"
+        },
+        {
+          "id": 19,
+          "filename": "19-clay-pots.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2240569,
+          "sha256": "887105b720aa63a9bce986ce93d24ebcc14a77bf870bbf518deafc2167171ae0"
+        },
+        {
+          "id": 20,
+          "filename": "20-teal-banner.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2891801,
+          "sha256": "016f32f4c581a241ddfc8ad5375f706d9c92e7eaa124b83bed7788540d724f39"
+        },
+        {
+          "id": 21,
+          "filename": "21-balcony-garden.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2243207,
+          "sha256": "bd8cdb7a94a9485f6636aed7f73eab437529353786ac37c9da771a9d42b4a2c8"
+        },
+        {
+          "id": 22,
+          "filename": "22-grille-window.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2746683,
+          "sha256": "8e16b081becf5e5587707cfaf2c3c08632fae2c2323a53556d6567db6d632d01"
+        },
+        {
+          "id": 23,
+          "filename": "23-floor-lamp.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2306659,
+          "sha256": "135bee57e1c6ccfc673b26094e83cdc01d5b7e05c28e18ce4846064f30db8f73"
+        },
+        {
+          "id": 24,
+          "filename": "24-hanging-lamp.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 1781398,
+          "sha256": "681211b0a5a33d2758937cee62366af8b4047de3fdafaded121140953913734f"
+        },
+        {
+          "id": 25,
+          "filename": "25-vault-bush.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2138275,
+          "sha256": "830c62b1e06223b6f3c17c190e0f12ef29d20688f6cfcc2c2ff3d6c99a7a4a4b"
+        },
+        {
+          "id": 26,
+          "filename": "26-city-grown-bulb.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2136834,
+          "sha256": "32960a68e56fc7d15542ef15b705629fc83cef2d8ff626223fb5da85c5367dbe"
+        },
+        {
+          "id": 27,
+          "filename": "27-raw-rock-seam.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2364834,
+          "sha256": "cdb1b56800b61cfe6a8f0009245dde08fd3f8d1523f6971b780f4447cf14b102"
+        },
+        {
+          "id": 28,
+          "filename": "28-vault-multiplane.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2145858,
+          "sha256": "cf43ce3d33b1d3cf2f1c8efb0758cf8e3e7f4fd3ca59150a35dd7ebd42377d20"
+        },
+        {
+          "id": 29,
+          "filename": "29-vault-rest-light.png",
+          "width": 1774,
+          "height": 887,
+          "bytes": 1704579,
+          "sha256": "83b51a9198ff8cea2d635dd0e29172e77d1d9bb6862de6e2730e1df7ecf3f9bd"
+        },
+        {
+          "id": 30,
+          "filename": "30-door-lamp-glint.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2333574,
+          "sha256": "d11774c3e1a9594ead36668002fccd65e876f3097b44560383e247d88da525bc"
+        }
+      ],
+      "contactSheet": "review/vault-mouth-contact-sheet.jpg"
+    },
+    {
+      "environment": "Drowned Quarter",
+      "count": 30,
+      "files": [
+        {
+          "id": 1,
+          "filename": "01-drowned-quarter-governing-view-v2.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1989513,
+          "sha256": "3d96b5e27da88035c4111ef88fc02887f5eb002b1a96144996c34ed18c69ad57"
+        },
+        {
+          "id": 2,
+          "filename": "02-drowned-city-distant-matte.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1732806,
+          "sha256": "4d0447815cbfccd9b64589542b56828b5ce1622aaebb1a2af9bece6bc2427f09"
+        },
+        {
+          "id": 3,
+          "filename": "03-drowned-face-v2.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2652118,
+          "sha256": "8f995be1b435ca631423b41eda5ec64909e3a7dc25ef735647c3786fd9289e8c"
+        },
+        {
+          "id": 4,
+          "filename": "04-face-stone-response.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2005396,
+          "sha256": "d15fb23520bcea8e5d268a68d4f770b5df2a18810eb76c7430d695ff874a8b75"
+        },
+        {
+          "id": 5,
+          "filename": "05-aquatic-native.png",
+          "width": 2116,
+          "height": 743,
+          "bytes": 1901927,
+          "sha256": "349107d3dcfb87fcce38774b802fdeefba93a033208ddb3d7ea3e00c02c613a7"
+        },
+        {
+          "id": 6,
+          "filename": "06-native-lamp.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1968066,
+          "sha256": "ca034ea185e990c0270f167945cc68f050f70177962a9d7deec1f155aff79001"
+        },
+        {
+          "id": 7,
+          "filename": "07-native-stone.png",
+          "width": 1774,
+          "height": 887,
+          "bytes": 1937453,
+          "sha256": "02451a374a25a6e8332797fdfcdae1d67c473b08ca124b67d4bfed273a5ca06f"
+        },
+        {
+          "id": 8,
+          "filename": "08-native-breath.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1840281,
+          "sha256": "65e56252d43d89bc34392367ed1df4c1c40bb44101aab970d34d9b121d1717c2"
+        },
+        {
+          "id": 9,
+          "filename": "09-fish-shoal.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1840790,
+          "sha256": "de05f7593988f3e8a1a4dc43e17b2dabf8b677a0159bcb13ff8bf16719480489"
+        },
+        {
+          "id": 10,
+          "filename": "10-fish-lamp-response.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2136471,
+          "sha256": "f55ffb46f041e8799ab71613a4f63d534a1ec823f2e7600ced4cec59bed70fca"
+        },
+        {
+          "id": 11,
+          "filename": "11-submerged-fronds.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2146859,
+          "sha256": "654e8cbf757ec7afdb0e6f9ceceb707c1c27f46aa85c25e46aaa74f2ca46efe4"
+        },
+        {
+          "id": 12,
+          "filename": "12-dry-cornice-fronds.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2030502,
+          "sha256": "078bfc2118e7286ff88b39dfe57e911ed850b777401d303d5c2b1f5c40b43699"
+        },
+        {
+          "id": 13,
+          "filename": "13-sunken-column.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2349922,
+          "sha256": "0e297c3ac45963fcae2416348d0b21e6d13abfc03756e23dfbb2a4a2bb7d136f"
+        },
+        {
+          "id": 14,
+          "filename": "14-drowned-doorway.png",
+          "width": 1145,
+          "height": 1374,
+          "bytes": 2110570,
+          "sha256": "3bd8d0c73b470845869f5a2c8f8fff3225803fea51dafb2f1c6303045923f9fd"
+        },
+        {
+          "id": 15,
+          "filename": "15-roof-terrace.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1947303,
+          "sha256": "fb5a10ce677199149fde5fe7947d1b41bad490956248ae59715009dd62954f80"
+        },
+        {
+          "id": 16,
+          "filename": "16-roof-pot.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2100763,
+          "sha256": "4a26f97b63f5569c99153f0d81e93dec51751545d58561eca4b9df797d406aee"
+        },
+        {
+          "id": 17,
+          "filename": "17-sunk-pot.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 1820184,
+          "sha256": "b0d300f44bfce6bcc83903cd85c7f3177b21772e0c4ff61b6f426dd36e52a231"
+        },
+        {
+          "id": 18,
+          "filename": "18-drowned-window.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2720058,
+          "sha256": "7e46274c6010832d4ef0caffecedbfaadf1972ff3f6ff1bff63b2cfc5d6881db"
+        },
+        {
+          "id": 19,
+          "filename": "19-window-doused.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1933905,
+          "sha256": "6d88eb9195d10e3cc2af1dfd80504c0e7d25fac0b5166b3bfa031b83b5fd414e"
+        },
+        {
+          "id": 20,
+          "filename": "20-carved-cornice.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2310478,
+          "sha256": "1b6e83ebe34d75e945e36550056a0c84434afd15ab706faf840d05ef07e68504"
+        },
+        {
+          "id": 21,
+          "filename": "21-throat-grating.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2168570,
+          "sha256": "c95fb9a028923637518fea07f4dced07efc25299ad2aa1c7fc4ebe6c45b3396e"
+        },
+        {
+          "id": 22,
+          "filename": "22-drowned-rope.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2281442,
+          "sha256": "a8aa9bca6f28e2532441fca9d81fa0c6dda3c9b3bc76822e6c5483258c1006b4"
+        },
+        {
+          "id": 23,
+          "filename": "23-drowned-banner-v2.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2188900,
+          "sha256": "32a2f2b70d136ba78e4dac833ffc64894100464b7f61d492b57c98de4daa982f"
+        },
+        {
+          "id": 24,
+          "filename": "24-drain-rhythm.png",
+          "width": 1024,
+          "height": 1536,
+          "bytes": 2062669,
+          "sha256": "8a6224707f89ef9c9307bc1548c7fa78452b909908c1a4211f90a61d410a0f0a"
+        },
+        {
+          "id": 25,
+          "filename": "25-lost-pack.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 1986053,
+          "sha256": "eb88cfcda6c5852f2c96c6c1649d9c6b5704c50046d6ee84f4775cb612aa7e71"
+        },
+        {
+          "id": 26,
+          "filename": "26-mouth-bubbles.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2267354,
+          "sha256": "1f0ba7a78958f4aa01f69624b97c36e2a82016089dbce3fcaeb795205d6c2038"
+        },
+        {
+          "id": 27,
+          "filename": "27-underwater-material.png",
+          "width": 1254,
+          "height": 1254,
+          "bytes": 2553226,
+          "sha256": "9296c31cce42460bafde588d883b81bd073e77459297f6ffafb95c650e0c7222"
+        },
+        {
+          "id": 28,
+          "filename": "28-drowned-multiplane.png",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2290338,
+          "sha256": "6ea676605d6c73893307f596f6420324934cae81ab0c11a6cd4ad05634efec52"
+        },
+        {
+          "id": 29,
+          "filename": "29-underwater-rest.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1504556,
+          "sha256": "2b9edb91123c1bd66f3047ce6ffd0f96613beba08a45ce614e70641df6127208"
+        },
+        {
+          "id": 30,
+          "filename": "30-drowned-dawnless-surface.png",
+          "width": 1942,
+          "height": 809,
+          "bytes": 1934448,
+          "sha256": "b0142fa4fe17e1df2b518b21e86da18f56c88ea438815043508883a5b71669cb"
+        }
+      ],
+      "contactSheet": "review/drowned-quarter-contact-sheet.jpg"
+    }
+  ],
+  "totalImages": 60,
+  "uniqueSHA256": 60,
+  "decodedPNGs": 60
+}

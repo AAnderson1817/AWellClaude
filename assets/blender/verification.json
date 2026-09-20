@@ -1,0 +1,61 @@
+{
+  "source_reopened": true,
+  "blender_version": "5.2.0 LTS",
+  "source_collections": [
+    "ASSET | Orrery",
+    "ARCHIVE | Unintegrated bell study",
+    "PRESENTATION | Excluded from export",
+    "ASSET | Sealed Spiral Door"
+  ],
+  "assets": {
+    "vault-door": {
+      "triangles": 13392,
+      "vertices": 8633,
+      "mesh_objects": 1,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions_xyz": [
+        4.989999771118164,
+        5.981335826218128,
+        0.8632321059703827
+      ],
+      "material_names": [
+        "05 | bronze cavity and engraving.001",
+        "01 | cast bronze.001",
+        "04 | blue-black basalt.001",
+        "02 | rubbed raised brass.001",
+        "03 | recessed verdigris.001",
+        "06 | city green-white enamel.001"
+      ],
+      "sha256": "eb8f64652281c695de3cf743aa62eae599be736d0e2b320e2a561216a4617db7",
+      "bytes": 362900,
+      "dimension_check": "pass",
+      "triangle_count_check": "pass"
+    },
+    "orrery": {
+      "triangles": 15832,
+      "vertices": 15134,
+      "mesh_objects": 1,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions_xyz": [
+        4.623316287994385,
+        5.436136461794376,
+        2.927746534347534
+      ],
+      "material_names": [
+        "04 | blue-black basalt.002",
+        "01 | cast bronze.002",
+        "03 | recessed verdigris.002",
+        "05 | bronze cavity and engraving.002",
+        "02 | rubbed raised brass.002",
+        "06 | city green-white enamel.002",
+        "07 | city green-white glass.001"
+      ],
+      "sha256": "62c88ff14775c5aa63aade739f084ae36a21e364cfe6b8d5f2324741ec347a59",
+      "bytes": 586636,
+      "dimension_check": "pass",
+      "triangle_count_check": "pass"
+    }
+  }
+}

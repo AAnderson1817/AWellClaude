@@ -1,0 +1,25 @@
+{
+  "compiler": "Emscripten 6.0.8",
+  "raylib": "5.5",
+  "builtUtc": "2026-09-20T19:51:37.8595830Z",
+  "revisionNote": "Final color-only polish: warmer hunter flame and lit hunter-lantern glass; no simulation changes",
+  "javascript": {
+    "sha256": "31d5642a8639e3d1caf4d5db90097c22fcfa7d5a1b62c50ef4f6ee21b475835f",
+    "bytes": 5830557,
+    "path": "build/game.js"
+  },
+  "html": {
+    "sha256": "197b3e0c479a9a809c2722bea99440a47b0b3006324d01654d5f80e99ce82b33",
+    "bytes": 5831706,
+    "path": "build/play.html"
+  },
+  "drownedReview": {
+    "sha256": "c3d3de7116a9fca8bdd77c15f7286a56044daab8c52d4cfc20f29002caae4ad2",
+    "bytes": 5831736,
+    "path": "build/review-water.html"
+  },
+  "wrapperTests": 5,
+  "compileStatus": "passed",
+  "browserValidation": "Separate actual-browser review record in docs/evidence/web-smoke.json",
+  "notes": "Final rebuild successful with cached raylib web library. Original raylib compile had six upstream miniaudio/stb warnings; no game compiler or linker errors. SDK-local activation; no permanent PATH changes."
+}

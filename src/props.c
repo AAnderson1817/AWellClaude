@@ -66,9 +66,6 @@ static const char *PROPS[ROOM_COUNT][RH] = {
     },
 };
 
-enum { PR_NONE = 0, PR_DOOR, PR_LINTEL, PR_ROPE, PR_CHAINLAMP, PR_ROOT, PR_BEDROLL, PR_FIRE,
-       PR_PACK, PR_CAIRN, PR_BONES, PR_POT, PR_BANNER, PR_BALUSTRADE, PR_CAPITAL, PR_BASE, PR_GRATE };
-enum { POT_REST = 0, POT_FALLING, POT_GONE };
 
 #define PROP_MAX 96
 typedef struct {
@@ -89,6 +86,18 @@ static float Rnd(void) { rng ^= rng << 13; rng ^= rng >> 17; rng ^= rng << 5; re
 int  PropsAge(void) { return (int)age; }
 int  PropFireLit(int room) { return room >= 0 && room < ROOM_COUNT ? fireLit[room] : 0; }
 void PropsReset(void) { memset(fireLit, 0, sizeof fireLit); }
+
+int PropsViews(PropView *out, int max) {
+    if (!out || max <= 0) return 0;
+    int count = propCount < max ? propCount : max;
+    for (int i = 0; i < count; i++) {
+        const Prop *p = &props[i];
+        out[i] = (PropView){ .kind = p->kind, .tx = p->tx, .ty = p->ty, .len = p->len,
+            .state = p->state, .timer = p->timer, .n = p->n, .fireLit = PropFireLit(roomIdx),
+            .x = p->x, .y = p->y, .angle = p->a, .phase = p->phase };
+    }
+    return count;
+}
 
 // ---------------------------------------------------------------- sprites
 // Rows of palette letters. '.' is nothing.

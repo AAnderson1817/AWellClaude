@@ -1,0 +1,11 @@
+{
+  "verifiedUtc": "2026-09-20T19:43:38.3476813Z",
+  "baselineGitRef": "99de7856bedfa059439da1b89435f54c98bddaf7",
+  "sanitizer": "undefined; no recovery",
+  "renderedComparison": true,
+  "routeChecks": 35,
+  "escapeSurfaces": 36,
+  "snapshotFrames": 3600,
+  "pythonToolTests": 5,
+  "status": "passed"
+}

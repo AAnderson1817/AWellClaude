@@ -1,0 +1,152 @@
+{
+  "baseline_git_ref": "99de785",
+  "rendered": true,
+  "unchanged_contract": [
+    "movement",
+    "items",
+    "fx behavior",
+    "life behavior",
+    "props behavior",
+    "audio",
+    "room geometry",
+    "prop placements"
+  ],
+  "cases": [
+    {
+      "case": "quiet-vault",
+      "frames": 183,
+      "sha256": "9682b7284d18c2fc042955e2bcdfd7c86a98eb291b00cc1eeb8e4d347c62dad9",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "quiet-water",
+      "frames": 183,
+      "sha256": "17da3a0b95eed6b4abb518a77cda3a8819429cbd181f665889745f1f729b170c",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "run-jump-release",
+      "frames": 174,
+      "sha256": "a2efce245d46d94b02fa8a09b6c01e702588919b23a03a1af15602b250f84372",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "hold-lamp",
+      "frames": 233,
+      "sha256": "9b19e0054a70a1c0e43c068e731fec6325d8ce70587e73f5fa57e1913e58bd90",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "bulb-normal",
+      "frames": 183,
+      "sha256": "d6ff685e2a1cb7e194b65df87bdb7c89a57b3d8a944508a0d08eab9368968049",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "bulb-timed",
+      "frames": 199,
+      "sha256": "ff3001a1dfa12faec4abf27d297d4ea876047acd7c2023ccf1ee6a601658dae6",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "shaft-down",
+      "frames": 323,
+      "sha256": "b6ab708820ddae4aebfbf63e7e502dd9ecb33c3715cb3e9b5c9dead26349e124",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "shaft-up",
+      "frames": 103,
+      "sha256": "8cb2a2d90692cb58e57330a8aacb14944ae5969b1ed4fbbd2bb94a0723eb35b0",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "failed-seam-exit",
+      "frames": 95,
+      "sha256": "758c2698cc87d6de4b59290e7b5088ee1ebfe60a9c926958807c2973637cf848",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "water-to-island",
+      "frames": 255,
+      "sha256": "40a6d73261c22c40f0ad4502428bb174559a9079ac10c413e7c41d89a69838da",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "stone-dive-and-reset",
+      "frames": 366,
+      "sha256": "0846c00f4d4c09be4e9693f0e25fa0fee988e1ebe336eb5ef31137d34d059dc0",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "abort-reset",
+      "frames": 108,
+      "sha256": "a26d1ebf4e651c43d6e0f0268d8aea2f68f7a4d8be20f7e650d4062e5067866c",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "camp-lamp-fire",
+      "frames": 183,
+      "sha256": "405a0623aa85d61bea76cccefd8fdef6bd598b52e1cb17370c4ffda16bf6b33c",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "door-glint",
+      "frames": 303,
+      "sha256": "eecb57b08673104ec9b57e5b2aa38da2875833494cdf159c0cbbc9d1ba94eb24",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    },
+    {
+      "case": "animal-and-pot",
+      "frames": 429,
+      "sha256": "5e7977f087eeecde6e57f814f292a07605760aa00917c78ee9f0cf18291d1514",
+      "modes": [
+        "flat",
+        "depth"
+      ]
+    }
+  ],
+  "compared_frames": 6640
+}

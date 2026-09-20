@@ -1,5 +1,6 @@
 import contextlib
 import io
+import os
 from pathlib import Path
 import runpy
 import subprocess
@@ -31,6 +32,10 @@ def fake_run(plan, at=None, frames=None, room=None):
     return [row()]                                                                    # on A1: row 1, col 21
 
 class ToolTests(unittest.TestCase):
+    def test_explicit_probe_executable_is_used(self):
+        with patch.dict(os.environ, {"AWELL_GAME": "/temporary/game-probe"}):
+            self.assertEqual(probe.game_path(), "/temporary/game-probe")
+
     def route_status(self, answer):
         with patch.object(probe, "reach", return_value=answer), patch.object(probe, "run", fake_run):
             with contextlib.redirect_stdout(io.StringIO()):

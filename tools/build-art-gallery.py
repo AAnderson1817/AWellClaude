@@ -1,0 +1,44 @@
+"""Build the local, dependency-free art review document from the actual manifests."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parents[1]
+rooms = []
+hashes = set()
+for slug in ("vault-mouth", "drowned-quarter"):
+    folder = ROOT / "public/art/references" / slug
+    manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8-sig"))
+    cards = []
+    for item in manifest["images"]:
+        path = folder / item["filename"]
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest in hashes:
+            raise ValueError(f"Duplicate image bytes: {path}")
+        hashes.add(digest)
+        cards.append({"title": item["title"], "category": item["category"],
+                      "image": "../" + path.relative_to(ROOT).as_posix(),
+                      "prompt": item["prompt"], "review": item.get("review", ""),
+                      "sha256": digest})
+    rooms.append({"slug": slug, "name": manifest["environment"], "cards": cards})
+
+data = json.dumps(rooms, ensure_ascii=False).replace("</", "<\\/")
+page = r'''<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Vault and the City Under It — Art Direction</title>
+<style>
+:root{color-scheme:dark;--ink:#dce4db;--muted:#9aa9a4;--line:#30423e;--green:#aec7b4;--bg:#101b1b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,sans-serif}header,main,footer{max-width:1440px;margin:auto;padding:40px 4vw}header{padding-top:70px;padding-bottom:22px}.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--green)}h1{font:clamp(36px,5vw,70px)/1.06 Georgia,serif;max-width:840px;margin:18px 0 24px;font-weight:400}h2{font:36px/1.2 Georgia,serif;font-weight:400}p{max-width:800px;color:var(--muted)}nav{display:flex;gap:9px;flex-wrap:wrap;padding:20px 0;border-bottom:1px solid var(--line)}button,a.button{border:1px solid var(--line);border-radius:4px;background:#152624;padding:10px 17px;color:var(--ink);font:inherit;cursor:pointer;text-decoration:none}button[aria-pressed=true],button:hover,a.button:hover{background:#b7cbb9;color:#11251f;border-color:#b7cbb9}button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #e5cba4;outline-offset:4px}.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:20px 0}.notes p{font-size:14px}.notes strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink);margin-bottom:7px}.runtime{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:30px 0 70px}figure{margin:0}img{display:block;width:100%;height:auto}figcaption{color:var(--muted);font-size:13px;padding:12px 0}.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:28px 20px}.card{border:1px solid var(--line);background:#142120}.card>button{display:block;width:100%;padding:0;border:0;border-radius:0;background:none;overflow:hidden}.card img{aspect-ratio:3/2;object-fit:contain;background:#0a1112}.card .body{padding:18px}.card h3{font:21px/1.25 Georgia,serif;margin:4px 0 12px;font-weight:400}.card p{font-size:13px;margin:0}.category{font-size:10px;color:var(--green);letter-spacing:.12em;text-transform:uppercase}details{font-size:12px;margin-top:16px;color:var(--muted)}summary{cursor:pointer;color:var(--ink)}details p{padding-top:12px;white-space:pre-wrap}.status{font-size:13px;color:var(--green)}dialog{padding:0;border:1px solid #4c645e;background:#0b1212;color:var(--ink);max-width:94vw;width:1200px;max-height:94vh}dialog::backdrop{background:#000d}dialog img{max-height:75vh;object-fit:contain}dialog .caption{padding:18px;display:flex;align-items:center;justify-content:space-between;gap:20px}footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line)}@media(max-width:850px){.gallery{grid-template-columns:1fr 1fr}.notes{grid-template-columns:1fr;gap:0}}@media(max-width:560px){.gallery,.runtime{grid-template-columns:1fr}header,main,footer{padding-left:22px;padding-right:22px}h1{font-size:42px}}
+</style>
+<header><div class="eyebrow">AWellClaude · Presentation branch · Art review</div><h1>The Vault and<br>the City Under It</h1><p>Two familiar rooms, given depth through sculpted materials, quiet atmospheric planes and distant painted architecture. Metal preserves the marks of making; astronomical forms recur as instruments and objects of care.</p>
+<div class="notes"><p><strong>One readable stage</strong>The camera locks. Original landings, routes, toys and responses remain the contract. Foreground and distance frame the playable plane.</p><p><strong>Two kinds of light</strong>Amber belongs to the hunters and flame. The city gives off green-white light. Patina, water and ritual wear connect the themes.</p><p><strong>Evidence, then judgment</strong>Concept images guide craft. They are not screenshots or collision plans. Automated preservation is verified separately from artistic and human acceptance.</p></div>
+<nav><a class="button" href="#runtime">Current game captures</a><a class="button" href="#references">Reference collection</a><a class="button" href="verification.md">Verification record</a></nav></header>
+<main><section id="runtime"><span class="eyebrow">Actual native rendering</span><h2>Current presentation</h2><p>These images come from the C/raylib game. This is a development candidate; the reference-to-runtime quality gap and human immersion tests remain open.</p><div class="runtime"><figure><img src="../assets/review/depth-v10/vault/f0005.png" alt="Actual Vault Mouth game frame"><figcaption>Vault Mouth · fixed side perspective · existing authored geometry</figcaption></figure><figure><img src="../assets/review/depth-v10/drowned/f0120.png" alt="Actual Drowned Quarter game frame"><figcaption>Drowned Quarter · actual buoyancy state · surface and reflected depth</figcaption></figure></div></section>
+<section id="references"><span class="eyebrow">Generated art direction · originals preserved</span><h2 id="room-title"></h2><div id="filters"></div><p class="status" id="count"></p><div class="gallery" id="gallery"></div></section></main>
+<dialog id="viewer"><img id="large" alt=""><div class="caption"><span id="caption"></span><button id="close">Close</button></div></dialog><footer>Original generated images and full prompts are kept with each environment’s manifest. Review notes record image-generation deviations. Images describe art direction; they do not add new rooms, mechanics or promises of secrets. No external scripts, fonts or image services are used by this document.</footer>
+<script>const rooms=__DATA__;
+const gallery=document.querySelector('#gallery'),viewer=document.querySelector('#viewer');
+function show(index){const room=rooms[index];document.querySelector('#room-title').textContent=room.name;document.querySelector('#count').textContent=room.cards.length+' distinct reference images · select an image to inspect the original';document.querySelectorAll('[data-room]').forEach((b,i)=>b.setAttribute('aria-pressed',i===index));gallery.replaceChildren();for(const card of room.cards){const article=document.createElement('article');article.className='card';const open=document.createElement('button');open.setAttribute('aria-label','Inspect '+card.title);const img=new Image();img.src=card.image;img.alt=card.title;img.loading='lazy';open.append(img);open.onclick=()=>{document.querySelector('#large').src=card.image;document.querySelector('#large').alt=card.title;document.querySelector('#caption').textContent=card.title;viewer.showModal()};const body=document.createElement('div');body.className='body';const cat=document.createElement('span');cat.className='category';cat.textContent=card.category;const title=document.createElement('h3');title.textContent=card.title;const review=document.createElement('p');review.textContent=card.review;const details=document.createElement('details'),summary=document.createElement('summary'),prompt=document.createElement('p');summary.textContent='Generation prompt & provenance';prompt.textContent=card.prompt+'\n\nSHA-256: '+card.sha256;details.append(summary,prompt);body.append(cat,title,review,details);article.append(open,body);gallery.append(article)}}
+rooms.forEach((room,index)=>{const b=document.createElement('button');b.dataset.room=index;b.textContent=room.name;b.onclick=()=>show(index);document.querySelector('#filters').append(b)});document.querySelector('#close').onclick=()=>viewer.close();viewer.addEventListener('click',e=>{if(e.target===viewer)viewer.close()});show(0);
+</script></html>'''.replace('__DATA__', data)
+(ROOT / "docs/art-direction.html").write_text(page, encoding="utf-8")
+print(f"Gallery: {sum(len(room['cards']) for room in rooms)} distinct references across {len(rooms)} environments")

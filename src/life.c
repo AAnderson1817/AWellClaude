@@ -71,7 +71,6 @@ static void FindPerches(void) {
 
 // ---------------------------------------------------------------- birds
 #define BIRD_MAX 4
-enum { B_PERCH, B_FLY };
 typedef struct {
     f32 x, y, vx, vy;
     int state, timer, perch, target, facing, flap, alive;
@@ -203,7 +202,6 @@ static void BirdsDrawEyes(void) {
 // ---------------------------------------------------------------- the animal
 // Long and low. It has one ledge and it walks it, stops, sits, and when you are near it
 // stands still and watches you. It never comes to you and never runs from you.
-enum { M_WALK, M_PAUSE, M_SIT, M_WATCH };
 typedef struct {
     f32 x, y;               // x = left of the body, y = the ground under its feet
     int dir, state, timer, alive, blink;
@@ -333,7 +331,6 @@ static void BeastDrawEyes(void) {
 // phrase of a few syllables, each from one pod, whose mouth opens for it -- and then
 // they are quiet for a while. It says nothing you can use. It is saying it anyway.
 #define PLANT_MAX 3
-enum { P_IDLE, P_SPEAK, P_COOL };
 typedef struct {
     i32 x, y;               // base: bottom-centre, room px
     int state, timer, syl, pod, mouth, perk, alive;
@@ -398,6 +395,42 @@ static void PodPos(Plant *p, int k, int *ox, int *oy) {
     float h = -PODY[k] / 14.0f;                       // higher pods sway more
     *ox = p->x + PODX[k] + (int)floorf(p->sway * h + 0.5f);
     *oy = p->y + PODY[k] - (p->perk > 6 ? 1 : 0);
+}
+
+int LifeBirdViews(BirdView *out, int max) {
+    if (!out || max <= 0) return 0;
+    int count = 0;
+    for (int i = 0; i < BIRD_MAX && count < max; i++) {
+        const Bird *b = &birds[i];
+        if (!b->alive) continue;
+        out[count++] = (BirdView){ b->x, b->y, b->vx, b->vy, b->state, b->facing, b->flap };
+    }
+    return count;
+}
+
+int LifeBeastView(BeastView *out) {
+    if (!out || !beast.alive) return 0;
+    *out = (BeastView){ .x = beast.x, .y = beast.y, .legT = beast.legT,
+        .headLift = beast.headLift, .dir = beast.dir, .state = beast.state, .blink = beast.blink };
+    for (int i = 0; i < 5; i++) out->tail[i] = beast.tail[i];
+    return 1;
+}
+
+int LifePlantViews(PlantView *out, int max) {
+    if (!out || max <= 0) return 0;
+    int count = 0;
+    for (int i = 0; i < PLANT_MAX && count < max; i++) {
+        Plant *p = &plants[i];
+        if (!p->alive) continue;
+        PlantView *v = &out[count++];
+        *v = (PlantView){ .x = (f32)p->x, .y = (f32)p->y, .sway = p->sway,
+            .lean = p->lean, .state = p->state, .pod = p->pod, .mouth = p->mouth, .perk = p->perk };
+        for (int k = 0; k < 3; k++) {
+            int x, y; PodPos(p, k, &x, &y);
+            v->podX[k] = (f32)x; v->podY[k] = (f32)y;
+        }
+    }
+    return count;
 }
 
 static void PlantsDraw(void) {

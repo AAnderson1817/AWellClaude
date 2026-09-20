@@ -7,6 +7,15 @@
 static Particle pool[FX_MAX];
 static int next;
 
+int FxViews(Particle *out, int max) {
+    if (!out || max <= 0) return 0;
+    int count = 0;
+    for (int i = 0; i < FX_MAX && count < max; i++) {
+        if (pool[i].life) out[count++] = pool[i];
+    }
+    return count;
+}
+
 // Deterministic, so two runs of the same scripted playtest produce the same frame.
 static u32 rng = 0x9E3779B9u;
 static float Rnd(void) {

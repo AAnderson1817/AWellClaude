@@ -137,6 +137,37 @@ static Color lpix[(RH + 1) * (RW + 1)];   // ambient + light, multiplied over th
 static Color gpix[(RH + 1) * (RW + 1)];   // light only, added back on top
 static Texture2D lightTex, glowTex;
 
+// Read-only presentation access. The 3D renderer consumes the same occluded light
+// and simulated surface as the original renderer; neither getter advances time.
+Texture2D RoomLightTexture(void) { return lightTex; }
+float RoomWaterHeight(int column) {
+    return column >= 0 && column < RW ? surfH[column] : 0.0f;
+}
+
+// The Drowned Quarter's art brief makes the whole room city-built. Its original
+// pixel presentation is still raw rock, so only this read-only presentation copy
+// recolors the STATIC bake green-white. Moving hunter light remains warm.
+void RoomDepthLightColors(Color *out) {
+    if (!out) return;
+    for (int j = 0; j <= RH; j++) for (int i = 0; i <= RW; i++) {
+        float warm = 0, cool = 0; int count = 0, wet = 0;
+        for (int dy = -1; dy <= 0; dy++) for (int dx = -1; dx <= 0; dx++) {
+            int x = i + dx, y = j + dy;
+            if (x < 0 || x >= RW || y < 0 || y >= RH) continue;
+            warm += roomIdx == 1 ? fmaxf(0, lnowW[y][x] - lstatW[y][x]) : lnowW[y][x];
+            cool += lnowC[y][x] + (roomIdx == 1 ? lstatW[y][x] : 0);
+            count++; wet += TileWater(tiles[y][x]) != 0;
+        }
+        float w = count ? powf(warm/count, 1.55f) : 0;
+        float c = count ? powf(cool/count, 1.55f) : 0;
+        float water = count ? wet/(float)count : 0;
+        float r = (.095f + w + c*.60f)*(1-.4f*water);
+        float g = (.115f + w*.815f + c*.96f)*(1-.1f*water);
+        float b = .16f + w*.56f + c*.76f;
+        out[j*(RW+1)+i] = (Color){(u8)(fminf(1,r)*255),(u8)(fminf(1,g)*255),(u8)(fminf(1,b)*255),255};
+    }
+}
+
 // Cool where nothing reaches, and a shade less cool near the ceiling, so the room
 // feels like it is under something rather than sealed inside it.
 static const f32 AMB_R = 0.118f, AMB_G = 0.130f, AMB_B = 0.222f;

@@ -1,0 +1,68 @@
+{
+  "version": "5.2.0 LTS",
+  "premise": "claude/PREMISE.md and claude/ROOMS.md",
+  "scope": "sealed door and decorative city orrery; no bell gameplay",
+  "source_z_up": true,
+  "runtime_axes": "x right, y up, front +z",
+  "embedded_assets": {
+    "vault-door": {
+      "triangles": 13392,
+      "material_meshes": 6,
+      "bounds_min": [
+        -2.494999885559082,
+        0.004934124648571014,
+        -0.2384416162967682
+      ],
+      "bounds_max": [
+        2.494999885559082,
+        5.986269950866699,
+        0.6247904896736145
+      ],
+      "dimensions": [
+        4.989999771118164,
+        5.981335826218128,
+        0.8632321059703827
+      ],
+      "role": "sealed non-opening portal",
+      "emission": "green-white only",
+      "material_names": [
+        "05 | bronze cavity and engraving",
+        "01 | cast bronze",
+        "04 | blue-black basalt",
+        "02 | rubbed raised brass",
+        "03 | recessed verdigris",
+        "06 | city green-white enamel"
+      ]
+    },
+    "orrery": {
+      "triangles": 15832,
+      "material_meshes": 7,
+      "bounds_min": [
+        -2.3116581439971924,
+        0.0038197189569473267,
+        -1.463824987411499
+      ],
+      "bounds_max": [
+        2.3116581439971924,
+        5.439956188201904,
+        1.4639215469360352
+      ],
+      "dimensions": [
+        4.623316287994385,
+        5.436136469244957,
+        2.927746534347534
+      ],
+      "role": "decorative distant city astronomy",
+      "emission": "green-white only",
+      "material_names": [
+        "04 | blue-black basalt",
+        "01 | cast bronze",
+        "03 | recessed verdigris",
+        "05 | bronze cavity and engraving",
+        "02 | rubbed raised brass",
+        "06 | city green-white enamel",
+        "07 | city green-white glass"
+      ]
+    }
+  }
+}

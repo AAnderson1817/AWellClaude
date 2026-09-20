@@ -8,11 +8,15 @@ stand, land, drop, jump through, walk into a wall."""
 import subprocess, sys, re, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def game_path():
+    """An explicit probe build avoids a display dependency; retain the native default."""
+    return os.environ.get("AWELL_GAME", os.path.join(ROOT, "build", "game.exe" if os.name == "nt" else "game"))
 LINE = re.compile(r"f=\s*(\d+) x=\s*([-\d.]+) y=\s*([-\d.]+) vx=\s*([-\d.]+) "
                   r"vy=\s*([-\d.]+) ground=(\d+) air=(\d+) coy=(\d+) buf=(\d+) room=(\d+) wet=(\d+) sfx=(\S+) hold=(\d) lamp=(\d)/([-\d]+),([-\d]+) stone=(-?\d)/([-\d]+),([-\d]+) fade=([\d.]+)")
 
 def run(plan, at=None, frames=None, room=None):
-    cmd = [os.path.join(ROOT, "build", "game"), "--play", plan, "--trace", "--nodraw"]
+    cmd = [game_path(), "--play", plan, "--trace", "--nodraw"]
     if at:     cmd += ["--at", "%d,%d" % at]
     if room:   cmd += ["--room", str(room)]
     if frames: cmd += ["--frames", str(frames)]

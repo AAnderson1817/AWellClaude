@@ -1,0 +1,115 @@
+{
+  "source_reopened": true,
+  "assets": {
+    "ceramic-pot": {
+      "triangles": 4912,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        0.6025750041007996,
+        0.7210000157356262,
+        0.6000000238418579
+      ],
+      "alpha": "opaque",
+      "external_textures": [],
+      "sha256": "066bca6df41a886edb7db931e51dc8066373e0f34ca9548e20a13258b6bf6b4e",
+      "bytes": 93540,
+      "materials": [
+        "Prop | original palClay.001",
+        "Prop | original palClayLit.001",
+        "Prop | ceramic cavity.001"
+      ]
+    },
+    "hunter-lantern": {
+      "triangles": 4876,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        0.5019999742507935,
+        0.7585000097751617,
+        0.3614400029182434
+      ],
+      "alpha": "opaque",
+      "external_textures": [],
+      "sha256": "9f183caf265059bc2267e6c5b3d80f8df295875fc7fa3574f49cb54d3ab05833",
+      "bytes": 141524,
+      "materials": [
+        "Prop | original palLampIron.001",
+        "Prop | worn lamp iron.001",
+        "Prop | opaque warm lamp glass.001"
+      ]
+    },
+    "player-seed": {
+      "triangles": 1680,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        0.75,
+        1.375,
+        0.5799997448921204
+      ],
+      "alpha": "opaque",
+      "external_textures": [],
+      "sha256": "135703e7b2628e798da596553c2ab5cb3ad7f56d78c24f4b179a7f3c27f83e32",
+      "bytes": 33148,
+      "materials": [
+        "Life | original palSkin.001",
+        "Life | original palSkinDeep.001"
+      ]
+    },
+    "beast-body": {
+      "triangles": 956,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        1.5,
+        0.6399999856948853,
+        0.5400000214576721
+      ],
+      "alpha": "opaque",
+      "external_textures": [],
+      "sha256": "7f9470d9c822a1a43c50a6ad78344b69647081d8bd7e3995c123a265964b220c",
+      "bytes": 20236,
+      "materials": [
+        "Life | original palFur.001",
+        "Life | original palFurLight.001"
+      ]
+    },
+    "beast-head": {
+      "triangles": 772,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        0.5300000011920929,
+        0.5257853865623474,
+        0.3799999952316284
+      ],
+      "alpha": "opaque",
+      "external_textures": [],
+      "sha256": "124d789eb2969c0bac19a71d6187993a8ac57a15481d32f6b704236571430a3d",
+      "bytes": 16876,
+      "materials": [
+        "Life | original palFur.002",
+        "Life | original palFurLight.002"
+      ]
+    },
+    "bird-body": {
+      "triangles": 836,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        0.6149999797344208,
+        0.46293748915195465,
+        0.3199999928474426
+      ],
+      "alpha": "opaque",
+      "external_textures": [],
+      "sha256": "addc165225190dc0adeb625c73e396c9c88c28aa2235e5d3cc503d2bef2e8d8c",
+      "bytes": 18132,
+      "materials": [
+        "Life | original palBird.001",
+        "Life | original palBirdLight.001"
+      ]
+    }
+  }
+}

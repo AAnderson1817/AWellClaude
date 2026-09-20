@@ -1,0 +1,164 @@
+{
+  "source_palette": "src/render.c",
+  "source_shape": "src/player.c,src/items.c,src/life.c",
+  "references": [
+    "public/art/references/vault-mouth/19-clay-pots.png",
+    "public/art/references/vault-mouth/10-pack-dead-lamp.png"
+  ],
+  "axes": "X right,Y up,Z front",
+  "assets": {
+    "ceramic-pot": {
+      "symbol": "FOUNDRY_POT",
+      "triangles": 4912,
+      "material_meshes": 3,
+      "bounds_min": [
+        -0.3025749921798706,
+        0.0,
+        -0.30000001192092896
+      ],
+      "bounds_max": [
+        0.30000001192092896,
+        0.7210000157356262,
+        0.30000001192092896
+      ],
+      "dimensions": [
+        0.6025750041007996,
+        0.7210000157356262,
+        0.6000000238418579
+      ],
+      "pivot": "ground-center",
+      "materials": [
+        "Prop | original palClay",
+        "Prop | original palClayLit",
+        "Prop | ceramic cavity"
+      ]
+    },
+    "hunter-lantern": {
+      "symbol": "FOUNDRY_HUNTER_LANTERN",
+      "triangles": 4876,
+      "material_meshes": 3,
+      "bounds_min": [
+        -0.25099998712539673,
+        -0.3125,
+        -0.1807200014591217
+      ],
+      "bounds_max": [
+        0.25099998712539673,
+        0.44600000977516174,
+        0.1807200014591217
+      ],
+      "dimensions": [
+        0.5019999742507935,
+        0.7585000097751617,
+        0.3614400029182434
+      ],
+      "pivot": "body-center; main tank/glass y[-.31,.31], handle above",
+      "materials": [
+        "Prop | original palLampIron",
+        "Prop | worn lamp iron",
+        "Prop | opaque warm lamp glass"
+      ]
+    },
+    "player-seed": {
+      "symbol": "FOUNDRY_PLAYER_SEED",
+      "triangles": 1680,
+      "material_meshes": 2,
+      "bounds_min": [
+        -0.375,
+        0.0,
+        -0.2899998724460602
+      ],
+      "bounds_max": [
+        0.375,
+        1.375,
+        0.2899998724460602
+      ],
+      "dimensions": [
+        0.75,
+        1.375,
+        0.5799997448921204
+      ],
+      "pivot": "ground-center; rigid original6x11pixel body",
+      "materials": [
+        "Life | original palSkinDeep",
+        "Life | original palSkin"
+      ]
+    },
+    "beast-body": {
+      "symbol": "FOUNDRY_BEAST_BODY",
+      "triangles": 956,
+      "material_meshes": 2,
+      "bounds_min": [
+        -0.75,
+        -0.3199999928474426,
+        -0.27000001072883606
+      ],
+      "bounds_max": [
+        0.75,
+        0.3199999928474426,
+        0.27000001072883606
+      ],
+      "dimensions": [
+        1.5,
+        0.6399999856948853,
+        0.5400000214576721
+      ],
+      "pivot": "body-center; longitudinal axis+X",
+      "materials": [
+        "Life | original palFur",
+        "Life | original palFurLight"
+      ]
+    },
+    "beast-head": {
+      "symbol": "FOUNDRY_BEAST_HEAD",
+      "triangles": 772,
+      "material_meshes": 2,
+      "bounds_min": [
+        -0.25999999046325684,
+        -0.18406251072883606,
+        -0.1899999976158142
+      ],
+      "bounds_max": [
+        0.27000001072883606,
+        0.34172287583351135,
+        0.1899999976158142
+      ],
+      "dimensions": [
+        0.5300000011920929,
+        0.5257853865623474,
+        0.3799999952316284
+      ],
+      "pivot": "head-center; faces+X, includes ears; no eyes",
+      "materials": [
+        "Life | original palFur",
+        "Life | original palFurLight"
+      ]
+    },
+    "bird-body": {
+      "symbol": "FOUNDRY_BIRD_BODY",
+      "triangles": 836,
+      "material_meshes": 2,
+      "bounds_min": [
+        -0.28999999165534973,
+        -0.18793751299381256,
+        -0.1599999964237213
+      ],
+      "bounds_max": [
+        0.32499998807907104,
+        0.2749999761581421,
+        0.1599999964237213
+      ],
+      "dimensions": [
+        0.6149999797344208,
+        0.46293748915195465,
+        0.3199999928474426
+      ],
+      "pivot": "body-center; faces+X; no eyes,beak,feet,wings",
+      "materials": [
+        "Life | original palBird",
+        "Life | original palBirdLight"
+      ]
+    }
+  },
+  "total_triangles": 14032
+}

@@ -1,0 +1,28 @@
+{
+  "source_reopened": true,
+  "source_room_hash": "11a8fb7ff807d5eb303c9e878f0fd3b3cc46fe8bce7d7ff6234c2aeef00cfc89",
+  "assets": {
+    "vault-terrain": {
+      "triangles": 17076,
+      "vertices": 23158,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "projected_mask_samples": 7920,
+      "mask_mismatches": 0,
+      "sha256": "770cc2a6b1ad4c70d64b624d5012a9b34e6d57c395d4083b3399a5333d1d4487",
+      "bytes": 665576,
+      "external_dependencies": []
+    },
+    "drowned-terrain": {
+      "triangles": 23592,
+      "vertices": 49459,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "projected_mask_samples": 7920,
+      "mask_mismatches": 0,
+      "sha256": "9e4402f042de030e31c0e2cb28add4ad90d6ae3f24132aa0d2ca96d2bb0193a8",
+      "bytes": 1332940,
+      "external_dependencies": []
+    }
+  }
+}
