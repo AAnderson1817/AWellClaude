@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "scope": "additive module and proposed guard; not yet integrated native game",
+  "sanitizer": "undefined, no recovery",
+  "original_idle_frames_exact": 6000,
+  "original_idle_trace_sha256": "ec3dec8b6e87a887cac49c3c0ab0f727ad413fdaec68dbdc7f21369276e67065",
+  "intentional_state_extension": "four appended real stones; itemCount 3 -> 7; authored offers/pickups may change original nearest-item selection",
+  "adapter": "isolated items.c copy: include inhabitants.h; guard only Fall(it); original Hold loop unchanged",
+  "output": [
+    "PASS initialization: 4 real cairn stones, original IDs/homes intact, 7/8 budget, idempotence and atomic capacity failure",
+    "PASS offer/take/return: original Hold transfers the same real stone, 4-tile reclaim works, distant stone remains recoverable",
+    "PASS interruptions: pickup instantly wins over carrying/approach; cooldown honored, no held-item seizure",
+    "PASS competing pickup: taking another member releases the hunter's carried/tended stone to real falling, with no stranded ownership",
+    "TEND first=2228 frames, actual item=3; lift/turn/return=96 frames",
+    "PASS authored idle/social responses: 20-40s actual-stone tending, pickup during tending, greeting edges, bedroll waiting",
+    "PASS persistent fire: real two-second lamp ignition, closer warm seat, one long phrase, quicker hum; lamp never appropriated",
+    "PASS persistence/reset: real stone travels and sinks in room 1, room re-entry never respawns it, full reset restores homes and four seed IDs",
+    "PASS full cairn/exhaustion: both legacy stones offered, all six picked up exactly once, no invisible reserves, reset restores only the four seed members",
+    "PASS detached views, bounded copies, inherited item/player/map/audio isolation, supported floor and player-space yielding",
+    "PASS conservation checked after 18841 steps; no renderer or audible-voice acceptance claimed"
+  ],
+  "sources": {
+    "src/inhabitants.c": "3c5242061ceb80180440238168b640b17d4ba00f34362d24686421e249d22a49",
+    "src/inhabitants.h": "c6da3d37fdca7b8627d201a558def009cd98e8f93b48ee69f7ef3a86f97f8062",
+    "src/items.c": "b863b0fe9f3882045dfe7ea3ced619c688b7d0bd29839b91d5d11143b3dca659",
+    "src/props.c": "b271e1f90f21310715be4520e62f256f7109bbbe43b821bb07c1a105d4d27efd",
+    "tools/tests/hunter_responses.c": "2af736f2dbc317f526cb3be9656ebec9b1196fcade12b04612606672fa162737",
+    "tools/tests/test_hunter.py": "842d4e26548f9c4eacfd9accc32321351607138ec7f471a1cdd1f43f4bb1d15d"
+  },
+  "pending": [
+    "main/build hooks",
+    "full-game baseline and authored-interaction differential",
+    "native presentation",
+    "actual synthesized voices/listening",
+    "human discovery/immersion review"
+  ]
+}

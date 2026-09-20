@@ -1,0 +1,341 @@
+{
+  "schema_version": 2,
+  "verified_utc": "2026-09-20T21:46:16.802965+00:00",
+  "scope": "Delivered arrays, calibrated camera, collision contacts, recessed architecture and per-mesh material binding contracts. Not artistic/AAA acceptance.",
+  "tolerances": {
+    "front_z_min": -0.1,
+    "rear_standoff": -0.45,
+    "landing_original_pixels": 0.5,
+    "raster_original_pixels": 0.5,
+    "support_front_fascia_tiles": 0.55,
+    "projected_stage_trim_tiles": 0.5
+  },
+  "sources": {
+    "checker_sha256": "d41bf19ec2233b84148ee940036f4fc5a6214a8017efe1723c794988716ac207",
+    "room_c_sha256": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "depth_c_sha256": "9cc51b4b428121b67ed936217c6911f9e15e0d778e486952ee7d257fc92126af",
+    "src\\generated\\terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "assets\\blender\\terrain-manifest.json": "4413bd82ece87c0acda0c367a5b69ba8adb7b1686846f7150e4aae47be2f5129",
+    "src\\generated\\support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "assets\\blender\\supports-manifest.json": "54051773199813e2d0ddaa82ad968c70ab042fc7209abf00cb1316361932c4f6"
+  },
+  "assets": [
+    {
+      "asset": "FOUNDRY_VAULT_TERRAIN",
+      "role": "terrain",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 42165,
+        "triangles": 25121,
+        "materials": 10,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "substrates": [
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0
+        ],
+        "world_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ],
+          [
+            -2.96,
+            0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ]
+        ],
+        "contact_samples": 1300,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "orthographic_mask_samples": 56320,
+        "orthographic_mask_mismatches": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 4165,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 37120,
+        "open_stage_covered_fraction_diagnostic": 0.112204
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "classification_labels": [
+        "Terrain | blue slate body",
+        "Terrain | slate cleavage planes",
+        "Terrain | deep shale seams",
+        "Terrain | deep dressed joints",
+        "Terrain | worn structural cornice",
+        "Terrain | limestone tone 0",
+        "Terrain | limestone tone 1",
+        "Terrain | limestone tone 2",
+        "Terrain | repaired cast bronze",
+        "Terrain | patinated inset metal"
+      ],
+      "room": 0,
+      "binding": "identity per-material classified draw and matching asset/model/family load found"
+    },
+    {
+      "asset": "FOUNDRY_DROWNED_TERRAIN",
+      "role": "terrain",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 155687,
+        "triangles": 69344,
+        "materials": 9,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "substrates": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          1,
+          2
+        ],
+        "world_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ],
+          [
+            -2.96,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.022115428095860423,
+            22.0
+          ]
+        ],
+        "contact_samples": 1180,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "orthographic_mask_samples": 56320,
+        "orthographic_mask_mismatches": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 4763,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 35136,
+        "open_stage_covered_fraction_diagnostic": 0.135559
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "classification_labels": [
+        "Terrain | deep dressed joints",
+        "Terrain | worn structural cornice",
+        "Terrain | limestone tone 2",
+        "Terrain | limestone tone 0",
+        "Terrain | limestone tone 1",
+        "Terrain | repaired cast bronze",
+        "Terrain | patinated inset metal",
+        "Terrain | unlit sealed interiors",
+        "Terrain | quiet oxidised sediment"
+      ],
+      "room": 1,
+      "binding": "identity per-material classified draw and matching asset/model/family load found"
+    },
+    {
+      "asset": "FOUNDRY_VAULT_SUPPORTS",
+      "role": "supports",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 73996,
+        "triangles": 71588,
+        "materials": 12,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "substrates": [
+          3,
+          3,
+          7,
+          7,
+          0,
+          0,
+          1,
+          1,
+          1,
+          0,
+          5,
+          6
+        ],
+        "world_bounds": [
+          [
+            4.880812,
+            33.9841
+          ],
+          [
+            -1.637308,
+            23.526009
+          ],
+          [
+            -5.897999,
+            0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            5.994199498646376,
+            33.00000199838592
+          ],
+          [
+            -0.3500004459533397,
+            22.250001311672293
+          ]
+        ],
+        "contact_samples": 1620,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "unrecessed_offmask_samples": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 3732,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 35456,
+        "open_stage_covered_fraction_diagnostic": 0.105257
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "classification_labels": [
+        "Support | split aged oak",
+        "Support | worn timber underside",
+        "Support | fresh old endgrain",
+        "Support | incised endgrain and growth lines",
+        "Support | hand-forged iron straps",
+        "Support | restrained bronze keys",
+        "Support | rubbed stone arris",
+        "Support | dressed stone",
+        "Support | stone recess",
+        "Support | rubbed shaft grate iron",
+        "Support | recessed rock receiver",
+        "Support | recessed masonry receiver"
+      ],
+      "room": 0,
+      "binding": "identity per-material classified draw and matching asset/model/family load found"
+    },
+    {
+      "asset": "FOUNDRY_DROWNED_SUPPORTS",
+      "role": "supports",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 13530,
+        "triangles": 7184,
+        "materials": 7,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "substrates": [
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          6
+        ],
+        "world_bounds": [
+          [
+            8.237371,
+            32.873356
+          ],
+          [
+            15.718154,
+            23.525991
+          ],
+          [
+            -5.897951,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            8.999999476831093,
+            32.000000691748966
+          ],
+          [
+            15.399999320162557,
+            22.250001311672293
+          ]
+        ],
+        "contact_samples": 876,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "unrecessed_offmask_samples": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 872,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 34240,
+        "open_stage_covered_fraction_diagnostic": 0.025467
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "classification_labels": [
+        "Support | rubbed shaft grate iron",
+        "Support | hand-forged iron straps",
+        "Support | restrained bronze keys",
+        "Support | rubbed stone arris",
+        "Support | dressed stone",
+        "Support | stone recess",
+        "Support | recessed masonry receiver"
+      ],
+      "room": 1,
+      "binding": "identity per-material classified draw and matching asset/model/family load found"
+    }
+  ],
+  "camera": {
+    "x": 20.0,
+    "y": 11.0,
+    "z": 52.0,
+    "fov": 24.415162
+  },
+  "material_bindings": {
+    "status": "pass",
+    "errors": [],
+    "family_map": {
+      "0": "untextured/metal",
+      "1": "city-stone",
+      "2": "vault-basalt",
+      "3": "longitudinal timber",
+      "5": "vault-basalt with rear fog",
+      "6": "city-stone with rear fog",
+      "7": "untextured modeled endgrain"
+    },
+    "scope": "Static source binding validation; does not prove GPU sampling, normal orientation, or visual quality."
+  },
+  "status": "pass",
+  "integration_scope": "required",
+  "omitted_supports": false
+}

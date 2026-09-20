@@ -1,0 +1,214 @@
+{
+  "status": "pass",
+  "scope": "Editable packed material and source preservation; not AAA or complete game acceptance",
+  "source_url": "https://polyhaven.com/a/rock_surface",
+  "author": "Amal Kumar",
+  "license": "CC0",
+  "physical_tile_width_m": 2,
+  "source_sha256": "2c84ebd8a20c94d80b29a8875bd5610139332b451de03ce46bf47dea2a01cf4f",
+  "blender": "5.2.0 LTS",
+  "preserved_v13_library_sha256": "f212cf541e7504bd5d05cb1992cffb532799bdc278733a85ee333d08db6b3c6c",
+  "images": {
+    "Diffuse": {
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "png_color_type": 2,
+      "colorspace": "sRGB",
+      "packed_original_bytes": 5690986,
+      "sha256": "3581fe9abecdf2e2afc0b7d64a7af4f05b4dc01f3058ac02b90f39977466df5c",
+      "channel_min": [
+        0.05514488369226456,
+        0.04419434815645218,
+        0.03535895049571991
+      ],
+      "channel_max": [
+        0.5029935836791992,
+        0.4542976915836334,
+        0.3676474094390869
+      ],
+      "wrap_delta_x_mean": 0.020573904737830162,
+      "interior_delta_x_mean": 0.020069677382707596,
+      "wrap_delta_y_mean": 0.019029002636671066,
+      "interior_delta_y_mean": 0.018876101821660995
+    },
+    "nor_gl": {
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "png_color_type": 2,
+      "colorspace": "Non-Color",
+      "packed_original_bytes": 5865641,
+      "sha256": "a9e14af4267b6c512987575bd1120f5fba5d6b1a178e4e58d3bab44be8895ffa",
+      "channel_min": [
+        0.07199206203222275,
+        0.08499275147914886,
+        0.6631418466567993
+      ],
+      "channel_max": [
+        0.9021133780479431,
+        0.9402151703834534,
+        0.99945068359375
+      ],
+      "decoded_length_min": 0.49980252981185913,
+      "decoded_length_max": 0.9996426105499268,
+      "normalized_length_error_max": 1.1920928955078125e-07,
+      "wrap_delta_x_mean": 0.044196367263793945,
+      "interior_delta_x_mean": 0.046353984624147415,
+      "wrap_delta_y_mean": 0.044700805097818375,
+      "interior_delta_y_mean": 0.04515053331851959
+    },
+    "Rough": {
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "png_color_type": 0,
+      "colorspace": "Non-Color",
+      "packed_original_bytes": 1861150,
+      "sha256": "01061a50b9f356580966f4d2c124c6c688bd11c27fd945be00e78c9712056e09",
+      "channel_min": [
+        0.6003814935684204,
+        0.6003814935684204,
+        0.6003814935684204
+      ],
+      "channel_max": [
+        0.9554436802864075,
+        0.9554436802864075,
+        0.9554436802864075
+      ],
+      "wrap_delta_x_mean": 0.021721800789237022,
+      "interior_delta_x_mean": 0.02108491212129593,
+      "wrap_delta_y_mean": 0.02079538069665432,
+      "interior_delta_y_mean": 0.019992422312498093
+    },
+    "Displacement": {
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "png_color_type": 0,
+      "colorspace": "Non-Color",
+      "packed_original_bytes": 1722990,
+      "sha256": "c00bf9a4041c723f9ef7f4417f12e74e11bb37407b4f8f4efdc5fe8ac4c9e0f4",
+      "channel_min": [
+        0.23070114850997925,
+        0.23070114850997925,
+        0.23070114850997925
+      ],
+      "channel_max": [
+        0.9888151288032532,
+        0.9888151288032532,
+        0.9888151288032532
+      ],
+      "wrap_delta_x_mean": 0.007906126789748669,
+      "interior_delta_x_mean": 0.00814081821590662,
+      "wrap_delta_y_mean": 0.008277648128569126,
+      "interior_delta_y_mean": 0.007946301251649857
+    }
+  },
+  "shader": {
+    "normal_decode": "RGB*2-1 -> normalize -> XYZ*.5+.5 -> tangent Normal Map",
+    "green_flip": false,
+    "normal_strength": 1,
+    "ao_node": false,
+    "active_displacement": false,
+    "diffuse_to_basecolor": true,
+    "roughness_to_roughness": true
+  },
+  "limits": [
+    "sphere UV compression/pole distortion is expected; rear seam is not a texture-tile seam",
+    "height amplitude uncalibrated and displacement disabled",
+    "actual game palette/sampling is verified separately by root"
+  ],
+  "shader_links": [
+    {
+      "from": "Stone | no metallic coating",
+      "output": "BSDF",
+      "to": "Material output | surface only",
+      "input": "Surface"
+    },
+    {
+      "from": "UVMap | one UV square = 2m",
+      "output": "UV",
+      "to": "Diffuse | original packed16 | sRGB",
+      "input": "Vector"
+    },
+    {
+      "from": "UVMap | one UV square = 2m",
+      "output": "UV",
+      "to": "nor_gl | original packed16 | Non-Color",
+      "input": "Vector"
+    },
+    {
+      "from": "UVMap | one UV square = 2m",
+      "output": "UV",
+      "to": "Rough | original packed16 | Non-Color",
+      "input": "Vector"
+    },
+    {
+      "from": "UVMap | one UV square = 2m",
+      "output": "UV",
+      "to": "Displacement | original packed16 | Non-Color",
+      "input": "Vector"
+    },
+    {
+      "from": "Diffuse | original packed16 | sRGB",
+      "output": "Color",
+      "to": "Stone | no metallic coating",
+      "input": "Base Color"
+    },
+    {
+      "from": "Rough | original packed16 | Non-Color",
+      "output": "Color",
+      "to": "Stone | no metallic coating",
+      "input": "Roughness"
+    },
+    {
+      "from": "nor_gl | original packed16 | Non-Color",
+      "output": "Color",
+      "to": "Decode RGB x2",
+      "input": "Vector"
+    },
+    {
+      "from": "Decode RGB x2",
+      "output": "Vector",
+      "to": "Decode XYZ -1",
+      "input": "Vector"
+    },
+    {
+      "from": "Decode XYZ -1",
+      "output": "Vector",
+      "to": "Normalize source XYZ",
+      "input": "Vector"
+    },
+    {
+      "from": "Normalize source XYZ",
+      "output": "Vector",
+      "to": "Encode half",
+      "input": "Vector"
+    },
+    {
+      "from": "Encode half",
+      "output": "Vector",
+      "to": "Encode RGB +half",
+      "input": "Vector"
+    },
+    {
+      "from": "Encode RGB +half",
+      "output": "Vector",
+      "to": "OpenGL +Y tangent normal | no green flip",
+      "input": "Color"
+    },
+    {
+      "from": "OpenGL +Y tangent normal | no green flip",
+      "output": "Normal",
+      "to": "Stone | no metallic coating",
+      "input": "Normal"
+    },
+    {
+      "from": "Displacement | original packed16 | Non-Color",
+      "output": "Color",
+      "to": "OPTIONAL height | OFF, amplitude uncalibrated",
+      "input": "Height"
+    }
+  ]
+}

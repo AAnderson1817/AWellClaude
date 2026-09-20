@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Package authored material maps for the embedded renderer, without art changes.
+"""Package source material maps for the embedded renderer, without art changes.
 
 Source RGB8 PNGs remain untouched. Base color is box-filtered in linear light;
 OpenGL +Y normals are vector-filtered and renormalized; scalar roughness is
@@ -21,7 +21,7 @@ import PIL
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-MATERIALS = ('city-stone', 'vault-basalt', 'aged-timber')
+MATERIALS = ('scanned-stone', 'vault-basalt', 'aged-timber')
 SIZE = 512
 
 

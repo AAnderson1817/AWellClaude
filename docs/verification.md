@@ -1,14 +1,36 @@
 # Verification
 
-The current material revision 13 has an [embedded-map packing report](evidence/materials/runtime-package.json),
-[architecture/material binding audit](evidence/materials/architecture-material-integration.json)
-with 19 adversarial mutations, [matched native texture comparison](evidence/materials/native/manifest.json),
-and [WebGL smoke record](evidence/materials/web-smoke.json). All 6,640 rendered
-original-state comparisons pass again across 15 scenarios in both presentation modes.
-The [material record](materials.md) details mapping, provenance, memory and local
-frame-loop timings. The [whole-brief artistic review](artistic-review-v13.md) remains
-**rework**; material validity does not establish finished craftsmanship or immersion.
+The current craft revision 14 passes the [actual-array architecture audit](evidence/craft-v14/final-architecture.json),
+including 19 adversarial mutations, and [deterministic embedded-material checks](evidence/craft-v14/runtime-material-package.json).
+All **6,640 rendered original-state comparisons across 15 scenarios** pass in both
+presentation modes in the [source-hashed preservation report](evidence/craft-v14/render-preservation.json).
+The hunter module and attire are separately delivered drafts, not active in this checkpoint.
 
+The [matched native captures](evidence/craft-v14/native/manifest.json) use the same
+geometry/materials with and without local source illumination. Window emission is
+present in both. At 1920×1080, after 120 warmup frames, 600 measured frame-loop calls
+averaged 3.1173 ms (Vault) / 2.2606 ms (Drowned) with local lights, versus
+3.1334 / 2.2724 ms without. The small difference is run variation, not a performance
+gain. A 4 ms rest between frames is outside the timer. These are local wall times,
+not GPU-only timings or a sustained-throughput/hardware guarantee. See [lighting](local-lighting.md).
+
+The [WebGL smoke record](evidence/craft-v14/web-smoke.json) pins source/build hashes:
+both rooms rendered at 720p, F2 switched flat/depth, brief movement worked, and no
+warning/error entries were captured. The self-contained HTML is 21,035,761 bytes.
+All 12 gallery runtime/model images loaded. This does not establish full browser
+playthrough or perceptual sound quality.
+
+Editable Blender terrain, face and scanned-material sources have separate clean
+reopen/reimport records. [Material provenance and delivery](materials.md) distinguish
+the credited CC0 scan from authored geometry and other surfaces. The
+[whole-brief artistic review](artistic-review-v14.md) remains **rework**: foreground
+rock, face carving, missing inhabitants/discovery and human acceptance remain open.
+
+Revision 13's [material package](evidence/materials/runtime-package.json),
+[native texture comparison](evidence/materials/native/manifest.json) and
+[browser smoke record](evidence/materials/web-smoke.json) remain historical evidence.
+The headless route/escape results below also retain their recorded revision scope;
+they were not rerun for a purely visual increment.
 
 The previous architecture revision has a separate [final geometry audit](evidence/architecture/final-v12.json)
 and [independent whole-brief review](artistic-review-v12.md). The geometry audit

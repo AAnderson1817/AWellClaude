@@ -3,26 +3,27 @@
   "blender_version": "5.2.0 LTS",
   "assets": {
     "city-face": {
-      "triangles": 38594,
-      "vertices": 20600,
+      "triangles": 39666,
+      "vertices": 19895,
       "mesh_objects": 1,
       "degenerate_triangles": 0,
       "invalid_normals": 0,
+      "invalid_corner_normals": 0,
       "nonfinite_values": 0,
       "dimensions_xyz": [
-        7.47706413269043,
-        4.949999904260039,
-        1.3962326049804688
+        7.474775075912476,
+        4.94535519182682,
+        1.371817946434021
       ],
       "material_names": [
         "City face | pale submerged limestone.001",
         "City face | sheltered mineral tide.001",
-        "City face | incised shadow.001",
         "City face | old cast bronze.001",
-        "City face | seated bronze verdigris.001"
+        "City face | seated bronze verdigris.001",
+        "City face | incised shadow.001"
       ],
-      "sha256": "49277a46aeee84bf231f8aa9665e5542dab4e330ec78e55c4e3601d61085adbd",
-      "bytes": 896040,
+      "sha256": "37667baf0017cccd797e89a48cce101b93d61e6e51796659c08fca36277450b4",
+      "bytes": 879888,
       "dimension_check": "pass",
       "triangle_count_check": "pass",
       "scoped_export_check": "pass"
@@ -33,6 +34,7 @@
       "mesh_objects": 1,
       "degenerate_triangles": 0,
       "invalid_normals": 0,
+      "invalid_corner_normals": 0,
       "nonfinite_values": 0,
       "dimensions_xyz": [
         0.4259999990463257,
@@ -42,18 +44,65 @@
       "material_names": [
         "City eye | opaque green-white opal.003"
       ],
-      "sha256": "80edc62f27f53ea729d78c7ae9a8a806d5b452c351e61e6217d0eaac3d018a48",
+      "sha256": "330757025a9e9898143bb8097ca7351429df0f9812bb4b5324ab64247943325c",
       "bytes": 20848,
       "dimension_check": "pass",
       "triangle_count_check": "pass",
       "scoped_export_check": "pass"
     }
   },
-  "source_file_sha256": "c98b5ae5ff2b49b97d1f3334dbcf717053d799daa5a7867c55e627744735fdeb",
+  "source_file_sha256": "056f1a9dbb325bdcc5a8e91cd671c472f8381fcbf05ac785ddff60d118f565c4",
   "source_collections": [
     "ASSET | city-face",
     "ASSET | city-eye",
     "PRESENTATION | excluded from export"
   ],
-  "scope": "geometry, dimensions, materials and clean package import; artistic judgment separate"
+  "scope": "geometry, dimensions, materials and clean package import; artistic judgment separate",
+  "embedded_header": {
+    "groups": [
+      {
+        "group": "city_face_0",
+        "vertices": 12502,
+        "triangles": 25000,
+        "float32_geometry": "pass"
+      },
+      {
+        "group": "city_face_1",
+        "vertices": 1536,
+        "triangles": 3072,
+        "float32_geometry": "pass"
+      },
+      {
+        "group": "city_face_2",
+        "vertices": 3169,
+        "triangles": 6286,
+        "float32_geometry": "pass"
+      },
+      {
+        "group": "city_face_3",
+        "vertices": 2471,
+        "triangles": 4878,
+        "float32_geometry": "pass"
+      },
+      {
+        "group": "city_face_4",
+        "vertices": 217,
+        "triangles": 430,
+        "float32_geometry": "pass"
+      },
+      {
+        "group": "city_eye_0",
+        "vertices": 442,
+        "triangles": 880,
+        "float32_geometry": "pass"
+      }
+    ],
+    "sha256": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91"
+  },
+  "protected_contract": {
+    "prior_occupied_envelope": "pass",
+    "world_anchor": "pass",
+    "eye_response_anchors": "pass",
+    "eye_triangles": 880
+  }
 }

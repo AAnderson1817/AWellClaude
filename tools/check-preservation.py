@@ -159,6 +159,9 @@ def main():
         results.append({"case": name, "frames": frames, "sha256": digest, "modes": ["flat", "depth"], "city_sound_counts": city_counts})
         print(f"PASS {name}: {frames} original frames match both presentation modes")
     report = {"baseline_git_ref": BASELINE_REF, "rendered": args.render,
+              "candidate_executable_sha256": hashlib.sha256(args.candidate.read_bytes()).hexdigest(),
+              "source_sha256": {str(path.relative_to(ROOT)).replace("\\", "/"): hashlib.sha256(path.read_bytes()).hexdigest()
+                                for path in sorted((ROOT / "src").rglob("*.c")) + sorted((ROOT / "src").rglob("*.h"))},
               "unchanged_contract": ["movement", "items", "fx behavior", "life behavior", "props behavior", "original audio", "room geometry", "prop placements"],
               "intentional_extension": "City responses add separately reported murmurs and hums; original dbgLastSfx retains its inherited gameplay-event meaning. No original trace fields are filtered.",
               "cases": results, "compared_frames": 2 * sum(r["frames"] for r in results)}

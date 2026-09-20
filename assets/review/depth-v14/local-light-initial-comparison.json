@@ -1,0 +1,19 @@
+{
+  "comparison": "Same initial room and frame120 before/after local-source shader; emissive windows in both. Preliminary, not a final source-hash benchmark.",
+  "size": [
+    1920,
+    1080
+  ],
+  "mean_abs_rgb_difference_0_255": [
+    0.08904224537037037,
+    0.09061535493827161,
+    0.06959876543209877
+  ],
+  "nonzero_pixels": 72044,
+  "difference_bounds": [
+    0,
+    12,
+    1822,
+    780
+  ]
+}

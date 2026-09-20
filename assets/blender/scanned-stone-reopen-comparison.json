@@ -1,0 +1,37 @@
+{
+  "scope": "All eight source and independently reopened renders, identical saved source",
+  "images": {
+    "geometry-clay": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "material-left": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "material-oblique": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "material-right": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "normal-clay-left": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "normal-clay-right": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "repeat-3x3-left": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    },
+    "repeat-3x3-right": {
+      "max_channel_delta_8bit": 0,
+      "mean_channel_delta_8bit": 0.0
+    }
+  }
+}

@@ -21,17 +21,18 @@ The architecture revision adds editable Blender shelf assemblies, recessed faça
 turned columns and rooted foliage, with local contact shading derived from actual
 visible geometry. The [art gallery](docs/art-direction.html) includes current game
 frames, Blender source previews and GLB links alongside the 60 reference images.
-The material revision adds authored stone, basalt and timber maps with embedded
-runtime delivery and editable [Blender material sources](docs/materials.md).
-The [independent review](docs/artistic-review-v13.md) still requires substantial
-material and hero-asset refinement before the requested AAA target is met.
+The current craft revision adds unequal stone courses, broader rock fracture planes,
+a sculpted face, credited scanned stone and local illumination from existing lamps.
+Embedded maps accompany editable [Blender material sources](docs/materials.md).
+The [whole-brief review](docs/artistic-review-v14.md) still requires substantial
+foreground and hero-asset refinement before the requested AAA target is met.
 
 **Status:** a playable presentation development branch. AAA visual quality and human
 immersion have not been certified. The scope is the existing Vault Mouth and Drowned
-Quarter; it is not a finished 25-room game. The city increment passes native Windows
-preservation and response tests and compiles for the web. Earlier depth-v10 browser
-checks are retained as historical evidence; current browser coverage is recorded
-separately in [verification](docs/verification.md). The hunter, native, remaining
+Quarter; it is not a finished 25-room game. The current craft increment passes 6,640 rendered baseline comparisons and bounded
+browser checks in both rooms; exact scope and older results are recorded in
+[verification](docs/verification.md). The hunter module and Blender attire are
+separately delivered but await integration. The native, remaining
 response-table content, full browser playthrough, perceptual audio review and Linux
 validation remain open.
 

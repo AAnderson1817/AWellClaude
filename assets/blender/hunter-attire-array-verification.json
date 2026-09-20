@@ -1,0 +1,87 @@
+{
+  "status": "pass",
+  "scope": "Actual C literals converted to float32; source/reimport raster comparisons; not native artistic acceptance",
+  "header_sha256": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9",
+  "assets": {
+    "FOUNDRY_HUNTER_HAT": {
+      "triangles": 3952,
+      "mesh_groups": 5,
+      "bounds": [
+        [
+          -0.5659999847412109,
+          1.1569290161132812,
+          -0.41600000858306885
+        ],
+        [
+          0.5920000076293945,
+          1.6129579544067383,
+          0.41600000858306885
+        ]
+      ],
+      "max_normal_length_error": 7.152557373046875e-07,
+      "degenerate_triangles": 0,
+      "invalid_indices": 0
+    },
+    "FOUNDRY_HUNTER_PACK": {
+      "triangles": 3068,
+      "mesh_groups": 4,
+      "bounds": [
+        [
+          -0.5735399723052979,
+          0.3100000023841858,
+          -0.6764749884605408
+        ],
+        [
+          0.414667010307312,
+          1.0569969415664673,
+          0.2108680009841919
+        ]
+      ],
+      "max_normal_length_error": 7.152557373046875e-07,
+      "degenerate_triangles": 0,
+      "invalid_indices": 0
+    }
+  },
+  "image_comparisons": {
+    "front": {
+      "mean_absolute_channel_delta_0_255": 1.0714285714285714e-05,
+      "max_channel_delta": 1.0
+    },
+    "side": {
+      "mean_absolute_channel_delta_0_255": 8.673469387755103e-06,
+      "max_channel_delta": 1.0
+    },
+    "back": {
+      "mean_absolute_channel_delta_0_255": 1.3775510204081633e-05,
+      "max_channel_delta": 1.0
+    },
+    "three-quarter": {
+      "mean_absolute_channel_delta_0_255": 4.591836734693878e-06,
+      "max_channel_delta": 1.0
+    },
+    "underside": {
+      "mean_absolute_channel_delta_0_255": 8.673469387755103e-06,
+      "max_channel_delta": 1.0
+    },
+    "clay-front": {
+      "mean_absolute_channel_delta_0_255": 1.2755102040816327e-05,
+      "max_channel_delta": 1.0
+    },
+    "clay-back": {
+      "mean_absolute_channel_delta_0_255": 1.1224489795918367e-05,
+      "max_channel_delta": 1.0
+    },
+    "clay-interface": {
+      "mean_absolute_channel_delta_0_255": 9.183673469387756e-06,
+      "max_channel_delta": 1.0
+    },
+    "native-scale": {
+      "mean_absolute_channel_delta_0_255": 2.712673611111111e-05,
+      "max_channel_delta": 1.0
+    },
+    "wire": {
+      "mean_absolute_channel_delta_0_255": 4.081632653061224e-06,
+      "max_channel_delta": 1.0
+    }
+  }
+}

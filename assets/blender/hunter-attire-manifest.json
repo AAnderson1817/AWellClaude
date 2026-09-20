@@ -1,0 +1,66 @@
+{
+  "blender_version": "5.2.0 LTS",
+  "axes": "X right,Y up,Z front",
+  "pivot": "same ground-center as unchanged player seed",
+  "assets": {
+    "hunter-hat": {
+      "symbol": "FOUNDRY_HUNTER_HAT",
+      "triangles": 3952,
+      "materials": [
+        "Hunter | warm worn felt",
+        "Hunter | rubbed binding",
+        "Hunter | dark leather",
+        "Hunter | dark cloth interior",
+        "Hunter | restrained bronze"
+      ],
+      "bounds_min": [
+        -0.5659999847412109,
+        1.1569288969039917,
+        -0.41600000858306885
+      ],
+      "bounds_max": [
+        0.5920000076293945,
+        1.6129575967788696,
+        0.41600000858306885
+      ]
+    },
+    "hunter-pack": {
+      "symbol": "FOUNDRY_HUNTER_PACK",
+      "triangles": 3068,
+      "materials": [
+        "Hunter | waxed canvas",
+        "Hunter | rubbed binding",
+        "Hunter | dark leather",
+        "Hunter | restrained bronze"
+      ],
+      "bounds_min": [
+        -0.573539674282074,
+        0.3100000023841858,
+        -0.6764746308326721
+      ],
+      "bounds_max": [
+        0.41466665267944336,
+        1.0569968223571777,
+        0.21086819469928741
+      ]
+    }
+  },
+  "source_sha256": "313fda8bd46a9939e4bf5759de66f98892cc067f9f3863e4e47cf1ce97321681",
+  "script_sha256": "db622bec604075733c45eaf14307cf5722987d53c97c992ca8e91bca706f47e7",
+  "status": "work_in_progress",
+  "texture_bytes": 0,
+  "protected_references": {
+    "assets/blender/life-props.blend": "2a3b597ac56d4667b401cca73a23a1b6a6eca768601be449b64078e64e8e1fe5",
+    "src/generated/life_assets.h": "b9afac63e54d5e26ee43af55e5f0945db57bf38e2fcc27dd8f18743e3df3fca2"
+  },
+  "reference_images": [
+    "public/art/references/vault-mouth/04-hunter-camp.png",
+    "public/art/references/vault-mouth/10-pack-dead-lamp.png",
+    "public/art/references/vault-mouth/08-hunter-cairn.png"
+  ],
+  "total_triangles": 7020,
+  "unique_material_count": 6,
+  "header_sha256": "da25a8245ad84339d99a2da8145bdda9f32f56f667e4f39a4f8b0959b867c7a9",
+  "glb_sha256": "69e8710d73c0bdebd38dd9ea9e07f9ed11cae66671754d4153d2959f3b50d81e",
+  "glb_bytes": 141372
+}

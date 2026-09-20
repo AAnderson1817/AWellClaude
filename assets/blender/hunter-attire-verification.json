@@ -1,0 +1,14 @@
+{
+  "source_reopened": true,
+  "glb_reimported": true,
+  "meshes": 19,
+  "triangles": 7020,
+  "degenerate_triangles": 0,
+  "invalid_normals": 0,
+  "boundary_edges": 0,
+  "nonmanifold_edges": 0,
+  "external_images": [],
+  "source_sha256": "313fda8bd46a9939e4bf5759de66f98892cc067f9f3863e4e47cf1ce97321681",
+  "glb_sha256": "69e8710d73c0bdebd38dd9ea9e07f9ed11cae66671754d4153d2959f3b50d81e",
+  "protected_references_unchanged": true
+}

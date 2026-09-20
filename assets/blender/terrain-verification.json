@@ -1,33 +1,33 @@
 {
   "source_reopened": true,
   "source_room_hash": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
-  "source_sha256": "3e564f36565865137d871ce9a7095add48c80cf075257f3fa5d9a1066b0cc8ed",
+  "source_sha256": "483f228be4a0904a6d5444aa9ddc76fb96126a795605a07d60aed6a57b02103a",
   "source_collections": {
-    "TERRAIN | Drowned Quarter": 720,
-    "TERRAIN | Vault Mouth": 181
+    "TERRAIN | Drowned Quarter": 690,
+    "TERRAIN | Vault Mouth": 179
   },
   "delivery_cleanup": "Quantized evaluated copies weld/dissolve bevel slivers before both C and GLB. Editable source retains modifiers.",
   "assets": {
     "vault-terrain": {
-      "triangles": 27682,
-      "vertices": 29928,
+      "triangles": 25121,
+      "vertices": 31211,
       "degenerate_triangles": 0,
       "invalid_normals": 0,
       "projected_mask_samples": 7920,
       "mask_mismatches": 0,
-      "sha256": "2a7176efd18cd537ff8f7951c7f51f82f557c2f162bfe79e7ce64dc1b95fae13",
-      "bytes": 893380,
+      "sha256": "c008a87a5f7626ecad03ab905a7dfabbd0e9b553420471b0c6c88a29337d63f9",
+      "bytes": 908064,
       "external_dependencies": []
     },
     "drowned-terrain": {
-      "triangles": 70634,
-      "vertices": 147660,
+      "triangles": 69344,
+      "vertices": 142800,
       "degenerate_triangles": 0,
       "invalid_normals": 0,
       "projected_mask_samples": 7920,
       "mask_mismatches": 0,
-      "sha256": "21a27137852d05133aac70f9937c580a628579aa6e8ffa783831dbcdf4189543",
-      "bytes": 3975376,
+      "sha256": "31cb60d27d074bd05a8048974d73f95216fc0c20769369376b1ab7f1a33cdaa1",
+      "bytes": 3851000,
       "external_dependencies": []
     }
   }

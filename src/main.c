@@ -331,7 +331,10 @@ int main(int argc, char **argv) {
     SetTraceLogLevel(LOG_WARNING);
     if (!dbgFixedStep) SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(GW * winScale, GH * winScale, "The Vault and the City Under It");
-    SetTargetFPS(dbgFixedStep ? 0 : 60);
+    // Rendered scripted checks still advance exactly one simulation tick per
+    // frame, but keep the normal presentation ceiling to avoid saturating the
+    // GPU. Headless traversal keeps its unrestricted simulation throughput.
+    SetTargetFPS(dbgFixedStep && noDraw ? 0 : 60);
     RenderInit();
     ItemsReset();
     ItemsAdd(IT_LAMP, lampRoom, lampTx, lampTy);   // items[0]: by default beside you where you begin

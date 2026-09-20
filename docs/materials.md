@@ -1,6 +1,25 @@
-# Authored material surfaces — revision 13
+# Material surfaces
 
-The game now embeds Blender-authored city stone, Vault basalt and aged timber
+Revision 14 replaces the runtime city-stone family with the scanned **Rock
+Surface** material by Amal Kumar, distributed by Poly Haven under CC0. It applies
+to dressed masonry and the carved face. [Credits and original-map provenance](asset-credits.md)
+identify the external authorship; the previous procedural images and Blender
+library remain untouched as a comparison. The current
+[packing report](evidence/craft-v14/runtime-material-package.json) records
+1,800,746 embedded PNG bytes. Texture count, 512-square runtime resolution and
+7–8 MiB estimated mip storage are unchanged.
+
+The four original 16-bit maps are retained in `public/materials/vendor/rock-surface/`.
+An offline import produces the documented RGB8/R8 packer inputs, normalizing the
+vendor's filtered normal vectors before runtime filtering. No AO or directional
+light is baked into albedo. Basalt and timber remain the authored v13 materials.
+The editable scanned material is in `assets/blender/scanned-stone.blend`.
+
+The records below describe the original v13 delivery and its dated comparison.
+
+## Authored material delivery — revision 13
+
+The v13 game embedded Blender-authored city stone, Vault basalt and aged timber
 surfaces. Each has a 1024-square RGB8 base color, tangent normal and roughness PNG
 in `public/materials/`. The editable `assets/blender/material-library.blend`
 contains procedural source materials and reusable shaders with packed PNGs.

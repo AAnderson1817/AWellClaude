@@ -1,0 +1,30 @@
+# Terrain craft revision 14
+
+This revision addresses two visible construction problems in the material checkpoint: repeated factory-cut ashlar and smoothly inflated rock. It does not establish AAA artistic acceptance.
+
+The city faces now use unequal course heights independent of the collision tile rows. Broad front planes remain quiet. Narrow beds are physically shallower, the edge returns vary, and sparse spalls interrupt selected block edges. The original standing caps, occupied facade recesses, column construction, material family meanings and room geometry identities remain intact. The first locked-camera trial showed a clearer course rhythm. Its loose-looking vertical marks were traced to a separate repeated `MetalBox` pass in the renderer, which root removed; the actual Blender doorway repairs are sparse and seated.
+
+The rock study progressed through two rejected constructions: closed polygon paving and a wavy sheet with arbitrary triangular facets. The accepted primary direction uses the exact envelope of asymmetric oblique plane groups. Neighboring geological patches share ridges, and every triangle within a patch is coplanar. World-space groups continue across the underlying collision cells. Narrow return planes meet the unchanged contact edges at `z=0`. Two jointed principal clefts and three small spalls provide selected recessed secondary breaks; they do not outline every patch.
+
+The governing reference anchors are the broad broken volumes and subordinate grain in `public/art/references/vault-mouth/27-raw-rock-seam.png`, the varied stone returns in `public/art/references/drowned-quarter/20-carved-cornice.png`, and the supported dressed opening in `public/art/references/drowned-quarter/14-drowned-doorway.png`. The reference rock has substantially richer fracture hierarchy and surface response than these primary studies. The city remains cleaner than the reference. Runtime micro relief comes from the separate material library; neutral source renders isolate geometric construction.
+
+## Evidence and limits
+
+- `assets/blender/review/terrain-v14/study-01` and `study-02` preserve the rejected primary studies. The top-level primary views show the revised direction, with previous construction on the left and the proposal on the right.
+- `assets/blender/review/terrain-v14/city-trial` preserves the first city source views. Locked-camera trial captures are under `assets/review/depth-v14/city-trial-vault` and `city-trial-water`.
+- `docs/evidence/craft-v14/city-terrain-build.json` records the city trial's source, C header, manifest and GLB hashes. Local source copies are retained under `.local/studies/terrain-v14-city`.
+- `docs/evidence/architecture/candidate-v14-city.json` independently passes the first city trial's actual delivered geometry, contact and material-family contracts. This is candidate evidence, not evidence for later changed exports.
+- Final actual-array verification is `docs/evidence/architecture/terrain-v14-delivery.json`: both terrain and support assets pass. Terrain alone passes 2,480 landing probes with zero front leaks, invalid normals or degenerate triangles. The prior deliberately rejected narrow-return candidate remains recorded in `candidate-v14-terrain.json`; its missing-contact failure was corrected by a `.12`-tile shallow arris before the steep return. Collision masks were not edited.
+- `assets/blender/terrain-verification.json` records the reopened editable source and clean GLB imports. Both room models pass 15,840 total projected-mask ray samples, with zero mismatches, invalid geometric/corner normals or degenerate triangles. Final source and reimport full/detail views under `assets/blender/review/terrain-v14` were inspected directly and correspond. Six negligible acute mass slivers were removed during delivery cleanup so Blender's angle-weighted geometric vertex normals remain valid after import; authored source topology and the city GLB remained unchanged by that cleanup.
+
+## Frozen delivery
+
+The final terrain header SHA-256 is `0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d`. The total is 94,465 triangles: Vault 25,121 in ten material groups, City 69,344 in nine. Each C material mesh remains within sixteen-bit indexing; substrate families retain their existing `0/1/2` meanings. The saved source SHA-256 is `483f228be4a0904a6d5444aa9ddc76fb96126a795605a07d60aed6a57b02103a`. The immutable `room.c` hash remains `905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35`.
+
+## Actual-camera artistic assessment
+
+The inspected combined candidates are `assets/review/depth-v14/candidate-vault/f0120.png` and `candidate-water/f0120.png`. They used the immediately preceding header `ffe5a923...`, before the six negligible slivers were removed; they are not mislabeled as final-hash captures. At this camera the broader course rhythm is clearer and the column's modeled base/capital read better after root removed duplicate renderer boxes. The rock has coherent angular primary volumes and restrained clefts, but still reads as clean low-poly facets, particularly the lower-left floor and ceiling. Its narrow contact returns also remain visually regular. These are useful primary forms, not completed reference-matched rock.
+
+The isolated `assets/review/depth-v14/scan-water/f0120.png` trial supplied visibly better granular/tool-work response in block centers and the shaft while preserving silhouette and landing readability. That is a useful next material direction; it does not by itself solve the sparse secondary fracture hierarchy or the remaining clean form transitions. Root subsequently adopted the scanned stone material separately. Further terrain craft should preserve the large quiet planes, introduce a few supported secondary broken returns at selected ridges, and avoid replacing the current structure with uniform surface noise or closed seams around every patch. AAA artistic acceptance remains **work in progress**.
+
+All Blender jobs use CPU rendering, sixteen threads and the shared low-sixteen-processor affinity mask. No global device settings or user processes are changed.

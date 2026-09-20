@@ -1,0 +1,14 @@
+{
+  "capturedUtc": "2026-09-20T21:52:03.0767390Z",
+  "sourceHashes": {
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "tools/tests/architecture_capture.c": "29978c799934e367b62616d0ae2df3b0897066508b91b7562009cd27ec6fc11b",
+    "src/main.c": "796c9408f46f3045f4f5b3c1acbf4f83a0200f7cbedc27c70c74eab009a3f4eb",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/depth.c": "9cc51b4b428121b67ed936217c6911f9e15e0d778e486952ee7d257fc92126af",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e"
+  },
+  "scope": "Same source/geometry, local source illumination; emissive panes present in both build control only; actual native images and local frame-loop wall timing. Not GPU-only timing or hardware-wide performance acceptance."
+}

@@ -1,0 +1,68 @@
+{
+  "asset": "Rock Surface",
+  "author": "Amal Kumar",
+  "source": "https://polyhaven.com/a/rock_surface",
+  "license": "CC0",
+  "license_url": "https://polyhaven.com/license",
+  "api_credit": "Powered by Poly Haven",
+  "imported_utc": "2026-09-20T21:44:54.742520+00:00",
+  "physical_width_m": 2,
+  "game_repeat_world_units": 5,
+  "scale_note": "Game art convention is 0.4 m per world unit; not a measured character height.",
+  "original_maps": {
+    "Diffuse": {
+      "file": "Diffuse.png",
+      "sha256": "3581fe9abecdf2e2afc0b7d64a7af4f05b4dc01f3058ac02b90f39977466df5c",
+      "bytes": 5690986,
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "color_type": 2,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rock_surface/rock_surface_diff_1k.png"
+    },
+    "nor_gl": {
+      "file": "nor_gl.png",
+      "sha256": "a9e14af4267b6c512987575bd1120f5fba5d6b1a178e4e58d3bab44be8895ffa",
+      "bytes": 5865641,
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "color_type": 2,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rock_surface/rock_surface_nor_gl_1k.png"
+    },
+    "Rough": {
+      "file": "Rough.png",
+      "sha256": "01061a50b9f356580966f4d2c124c6c688bd11c27fd945be00e78c9712056e09",
+      "bytes": 1861150,
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "color_type": 0,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rock_surface/rock_surface_rough_1k.png"
+    },
+    "Displacement": {
+      "file": "Displacement.png",
+      "sha256": "c00bf9a4041c723f9ef7f4417f12e74e11bb37407b4f8f4efdc5fe8ac4c9e0f4",
+      "bytes": 1722990,
+      "width": 1024,
+      "height": 1024,
+      "bits": 16,
+      "color_type": 0,
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rock_surface/rock_surface_disp_1k.png"
+    }
+  },
+  "conversion": {
+    "basecolor": "RGB16 high-byte extraction to RGB8; source sRGB unchanged",
+    "normal": "RGB16 high-byte decode; normalize each nonzero +Y vector; nearest RGB8; no green flip",
+    "roughness": "linear R16 / 257 rounded to nearest R8",
+    "displacement": "original preserved for editable material source; no runtime displacement",
+    "source_normal_length_min": 0.5015163473650247,
+    "source_normal_length_max": 1.0077973591495486
+  },
+  "converted_sha256": {
+    "basecolor": "9c9ba647d0e24ca02eaa7b9283be9e0af80f1d574acc40ea72e98a95960798d8",
+    "normal": "a19403dd856e2bd13d26d130d420fe0f62446706bfbeac4aad82e5f7c791171f",
+    "roughness": "e54f8ff92ced266253181e09dfb8504aaf77cafa41953ab0e83b566bff75443a"
+  },
+  "source_preservation": true
+}

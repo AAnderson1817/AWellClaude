@@ -4,7 +4,7 @@ from pathlib import Path
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'assets'/'blender'
-REVIEW=OUT/'review'/'architecture-v12';REVIEW.mkdir(parents=True,exist_ok=True)
+REVIEW=OUT/'review'/'terrain-v14';REVIEW.mkdir(parents=True,exist_ok=True)
 manifest=json.loads((OUT/'terrain-manifest.json').read_text());maps=manifest['mask_source']
 room_text=(ROOT/'src'/'room.c').read_text().split('static const char *MAPS')[1].split('u8  tiles')[0]
 current_rows=re.findall(r'"([#.*~,bofmsP\-]+)"',room_text)
@@ -45,7 +45,8 @@ for room,slug in enumerate(('vault-terrain','drowned-terrain')):
     assert max(-v.y for v in verts)<.00001
     report['assets'][slug]={'triangles':triangles,'vertices':len(verts),'degenerate_triangles':degen,'invalid_normals':badnorm,'projected_mask_samples':samples,'mask_mismatches':len(failures),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'bytes':path.stat().st_size,'external_dependencies':[]}
     cam=sc.camera;center=Vector((20,0,11));cam.location=(20,-48,14);cam.rotation_euler=(center-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.ortho_scale=41
-    sc.render.engine='CYCLES';sc.cycles.samples=20;sc.cycles.use_denoising=True
+    sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.render.threads_mode='FIXED';sc.render.threads=16
+    sc.cycles.samples=20;sc.cycles.use_denoising=True
     sc.render.resolution_x=1440;sc.render.resolution_y=810;sc.render.resolution_percentage=100;sc.render.image_settings.file_format='PNG'
     sc.render.filepath=str(REVIEW/(slug+'-runtime-reimport.png'));bpy.ops.render.render(write_still=True)
     sc.render.resolution_x=1000;sc.render.resolution_y=1100

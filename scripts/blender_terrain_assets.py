@@ -1,10 +1,10 @@
 """Terrain-only presentation meshes derived from the existing immutable tile masks.
 Blender Z-up authoring; C/GLB X-right,Y-up,+Z-front. No collision data is written.
 """
-import bpy, bmesh, math, re, json, hashlib
+import bpy, bmesh, math, re, json, hashlib, sys
 from pathlib import Path
 from mathutils import Vector
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'assets'/'blender';REVIEW=OUT/'review'/'architecture-v12';MODELS=ROOT/'public'/'models'
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'assets'/'blender';REVIEW=OUT/'review'/'terrain-v14';MODELS=ROOT/'public'/'models'
 REVIEW.mkdir(parents=True,exist_ok=True)
 HEADER=ROOT/'src'/'generated'/'terrain_assets.h'
 text=(ROOT/'src'/'room.c').read_text();mapblock=text.split('static const char *MAPS')[1].split('u8  tiles')[0]
@@ -33,15 +33,15 @@ MATS=[rock,rocklit,rockdark,mineral,mortar,*ashlar,trim,oxide,bronze,well]
 current=None
 def mesh(name,verts,faces,mat,indices=None,smooth=False):
     me=bpy.data.meshes.new(name);me.from_pydata(verts,[],faces);me.update()
-    bm=bmesh.new();bm.from_mesh(me)
-    if name.startswith('Continuous room'):bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=.000001)
-    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(me);bm.free()
-    o=bpy.data.objects.new(name,me);current.objects.link(o)
     if isinstance(mat,list):
         for m in mat:me.materials.append(m)
         for p,idx in zip(me.polygons,indices):p.material_index=idx
     else:me.materials.append(mat)
-    for p in me.polygons:p.use_smooth=smooth or (name.startswith('Continuous room') and p.material_index<4)
+    bm=bmesh.new();bm.from_mesh(me)
+    if name.startswith('Continuous room'):bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=.000001)
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(me);bm.free()
+    o=bpy.data.objects.new(name,me);current.objects.link(o)
+    for p in me.polygons:p.use_smooth=smooth
     return o
 def xyz(p):return (p[0],-p[2],p[1])
 def box(name,x0,x1,y0,y1,z0,z1,mat,bevel=0):
@@ -190,24 +190,12 @@ def build_mass(room):
             if not solid(room,tx,ty):continue
             top=22-ty;bottom=top-1;c=city(room,tx,ty)
             if c:
-                front=-2.50 if column(room,tx,ty) else -.36
+                front=-2.50 if column(room,tx,ty) else -.17
                 for x0,x1,y0,y1 in masonry_rects(room,(tx,tx+1,bottom,top)):
                     quad([(x0,y0,front),(x1,y0,front),(x1,y1,front),(x0,y1,front)],4)
             else:
-                n=5
-                for j in range(n):
-                    for i in range(n):
-                        points=[]
-                        for a,b in ((0,0),(1,0),(1,1),(0,1)):
-                            x=tx+(i+a)/n;y=bottom+(j+b)/n
-                            if 0<i+a<n:x+=(hashed(round(x*5),round(y*5))-.5)*.13
-                            if 0<j+b<n:y+=(hashed(round(x*5)+3,round(y*5)+7)-.5)*.13
-                            z,_=raw_front(room,x,y,tx,ty);points.append((x,y,z))
-                        _,phase=relief(tx+(i+.5)/n,bottom+(j+.5)/n)
-                        band=1 if phase<.22 else (2 if phase>.83 else 0)
-                        if phase>.70 and phase<.76:band=3
-                        quad(points,band)
-            front=-.36 if c else 0;depth=-2.8 if not c else -2.55;idx=4 if c else 2
+                for points,band in geological_cell(room,tx,ty):quad(points,band)
+            front=-.17 if c else 0;depth=-2.8 if not c else -2.55;idx=4 if c else 2
             # Boundary walls exist exactly where the collision mask has an edge.
             if not solid(room,tx,ty-1) and not column(room,tx,ty):quad([(tx,top,front),(tx+1,top,front),(tx+1,top,depth),(tx,top,depth)],8 if c else 1)
             if not solid(room,tx,ty+1) and not column(room,tx,ty):quad([(tx,bottom,depth),(tx+1,bottom,depth),(tx+1,bottom,front),(tx,bottom,front)],idx)
@@ -229,26 +217,36 @@ def city_runs(room,ty,exclude_column=True):
     return runs
 
 def masonry(room):
-    # Staggered long ashlar blocks with two deliberate course sizes. Recessed
-    # joints read as architecture instead of every collision tile becoming a cube.
-    chipped=0
+    # Broad unequal courses have a world-space construction rhythm independent
+    # of the immutable collision tile grid. Their faces are clipped to that mask.
+    heights=[.86,1.04,.69,.92,1.14,.77,.96]
+    low=0.;course=0
+    while low<22-1e-7:
+        high=min(22.,low+heights[(course+room*2)%len(heights)])
+        rects=[]
+        for ty in range(21,-1,-1):
+            a=max(low,21-ty);b=min(high,22-ty)
+            if b-a<1e-7:continue
+            for x0,x1 in city_runs(room,ty):
+                prev=next((r for r in rects if r[0]==x0 and r[1]==x1 and abs(r[3]-a)<1e-7),None)
+                if prev is None:rects.append([x0,x1,a,b])
+                else:prev[3]=b
+        breaks=[-3.+(course*.81)%2.3]
+        while breaks[-1]<43:breaks.append(breaks[-1]+1.64+1.28*hashed(len(breaks)*7+course,room+12))
+        for x0,x1,ya,yb in rects:
+            for j,(a,b) in enumerate(zip(breaks,breaks[1:])):
+                a=max(a,x0);b=min(b,x1)
+                if b-a<.055:continue
+                gap=.008+.009*hashed(course,j)
+                for ra,rb,rc,rd in masonry_rects(room,(a+gap,b-gap,ya+gap,yb-gap)):
+                    if rb-ra<.04 or rd-rc<.04:continue
+                    dressed_block('Dressed unequal course %02d block %02d'%(course,j),ra,rb,rc,rd,
+                        course*71+j*13+room*151,ashlar[(course+j+room)%3])
+        low=high;course+=1
+    # Preserve exact original standing caps and exposed boundary reveals.
     for ty in range(22):
         top=22-ty;bottom=top-1
-        courses=1 if ty%4 in (0,1) else 2
         for x0,x1 in city_runs(room,ty):
-            for k in range(courses):
-                low=bottom+k/courses;high=bottom+(k+1)/courses
-                x=x0;span=1.45+hashed(ty+k,room)*1.25
-                offset=(ty*.89+k*1.17)%span
-                breaks=[x0]+[b for b in [x0-offset+j*span for j in range(1,30)] if x0+.18<b<x1-.18]+[x1]
-                for j,(a,b) in enumerate(zip(breaks,breaks[1:])):
-                    front=-.015-.035*hashed(a+room,ty+k)
-                    inset=.024
-                    for ra,rb,rc,rd in masonry_rects(room,(a+inset,b-inset,low+inset,high-inset)):
-                        if room==1 and 7<=ty<=14 and x0 in (3,31) and rb-ra>.5 and rd-rc>.3 and hashed(a+9,ty)>.65 and chipped<12:
-                            cut_stone('Flood-worn ashlar course %02d block %02d'%(ty,j),ra,rb,rc,rd,-.38,front,ashlar[(ty+j+room)%3],ty+j*13);chipped+=1
-                        else:
-                            box('Ashlar course %02d block %02d'%(ty,j),ra,rb,rc,rd,-.38,front,ashlar[(ty+j+room)%3],.032 if courses==1 else .024)
             # Exposed top courses receive one broad cap, not a row of lumpy blocks.
             start=x0
             for x in range(x0,x1+1):
@@ -402,6 +400,332 @@ def column_shaft(room):
             z=cz+math.sqrt(max(0,1.185**2-(x-cx)**2))+.011;pts.append((x,y,z))
         sweep('Shaft inclined orbital inlay',pts,.012,oxide)
 
+
+def clip_halfplane(poly,a,b,c):
+    """Convex 2D clipping used for actual broad geological plane boundaries."""
+    result=[]
+    for p,q in zip(poly,poly[1:]+poly[:1]):
+        dp=a*p[0]+b*p[1]-c;dq=a*q[0]+b*q[1]-c
+        inside_p=dp<=1e-8;inside_q=dq<=1e-8
+        if inside_p:result.append(p)
+        if inside_p!=inside_q:
+            t=dp/(dp-dq);result.append((p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t))
+    return result
+
+
+def polygon_area(poly):
+    return abs(sum(p[0]*q[1]-q[0]*p[1] for p,q in zip(poly,poly[1:]+poly[:1])))*.5 if len(poly)>2 else 0
+
+
+def subtract_halfplanes(poly,constraints):
+    """Disjoint convex pieces outside the common inside of all constraints."""
+    inside=poly;outside=[]
+    for a,b,c in constraints:
+        fragment=clip_halfplane(inside,-a,-b,-c)
+        if polygon_area(fragment)>1e-8:outside.append(fragment)
+        inside=clip_halfplane(inside,a,b,c)
+        if polygon_area(inside)<1e-8:break
+    return outside
+
+
+def plane_envelope(domain,caps):
+    """Exact max(min(planes)) roof. Every returned polygon is truly planar."""
+    regions=[]
+    for ci,cap in enumerate(caps):
+        for plane in cap:
+            a,b,c=plane;poly=domain[:]
+            for d,e,g in cap:poly=clip_halfplane(poly,a-d,b-e,g-c)
+            if polygon_area(poly)<1e-8:continue
+            parts=[poly]
+            for oi,other in enumerate(caps):
+                if oi==ci:continue
+                constraints=[(a-d,b-e,g-c) for d,e,g in other]
+                parts=[fragment for part in parts for fragment in subtract_halfplanes(part,constraints)]
+                if not parts:break
+            regions.extend((part,plane,ci) for part in parts if polygon_area(part)>1e-8)
+    return regions
+
+
+# The major geological groups are composed in world space, not repeated on
+# individual tiles. Their shared oblique planes remain continuous across cell
+# clipping. Peaks stay behind the play plane; useful faces are 10–25 degrees.
+ROCK_PEAKS=[(1.2,21.1,-.10),(7.8,21.35,-.16),(14.,21.2,-.12),
+    (21.2,21.35,-.15),(27.6,21.1,-.17),(34.4,21.3,-.12),(39.,20.5,-.10),
+    (.2,18.1,-.13),(1.03,15.23,-.07),(3.88,14.87,-.19),
+    (2.72,13.52,-.05),(.23,13.49,-.24),(.15,10.2,-.15),
+    (1.03,6.04,-.07),(3.88,5.56,-.19),(2.72,3.71,-.05),
+    (.23,3.67,-.24),(.8,.95,-.10),(6.6,1.05,-.13),(12.,.85,-.11),
+    (17.1,1.15,-.08),(34.2,18.5,-.12)]
+ROCK_CAPS=[]
+for i,(cx,cy,height) in enumerate(ROCK_PEAKS):
+    slopes=[(.13,.36),(-.29,.14),(.10,-.26),(-.16,-.17)]
+    # Small coherent orientation changes preserve a common tilted cleavage
+    # direction without copying the same pyramid to each collision tile.
+    turn=(-.10,.045,.13,-.025)[i%4];co=math.cos(turn);si=math.sin(turn)
+    cap=[]
+    for a,b in slopes:
+        a,b=a*co-b*si,a*si+b*co
+        cap.append((a,b,height-a*cx-b*cy))
+    ROCK_CAPS.append(cap)
+
+# Two principal clefts have joined angular segments of unequal width; their
+# internal cross-sections are open, not separate closed slashes. Three small
+# edge spalls provide a second scale. Large untouched planar areas dominate.
+ROCK_SCARS=[]
+def fracture_strip(points,widths,depth):
+    left=[];right=[]
+    for i,p in enumerate(points):
+        a=points[max(0,i-1)];b=points[min(len(points)-1,i+1)]
+        dx=b[0]-a[0];dy=b[1]-a[1];length=math.hypot(dx,dy);nx=-dy/length;ny=dx/length
+        left.append((p[0]+nx*widths[i],p[1]+ny*widths[i]))
+        right.append((p[0]-nx*widths[i],p[1]-ny*widths[i]))
+    for i in range(len(points)-1):
+        walls=[0,2]
+        if i==0:walls.append(3)
+        if i==len(points)-2:walls.append(1)
+        ROCK_SCARS.append(([right[i],right[i+1],left[i+1],left[i]],depth,walls))
+fracture_strip([(1.12,14.31),(1.70,14.46),(1.92,14.63),(2.61,14.78),(3.10,14.94)],
+               [.006,.043,.067,.035,.006],.145)
+fracture_strip([(.53,5.03),(1.07,5.16),(1.51,5.43),(2.16,5.52)],
+               [.006,.041,.057,.006],.12)
+ROCK_SCARS += [
+    ([(2.90,13.69),(3.35,13.83),(3.20,13.87),(2.94,13.75)],.08,[0,1,2,3]),
+    ([(1.16,3.81),(1.73,3.99),(1.55,4.05),(1.21,3.87)],.075,[0,1,2,3]),
+    ([(33.23,19.14),(34.19,19.45),(33.98,19.48),(33.30,19.23)],.095,[0,1,2,3])]
+
+
+def geological_cell(room,tx,ty):
+    top=22-ty;bottom=top-1;domain=[(tx,bottom),(tx+1,bottom),(tx+1,top),(tx,top)]
+    caps=ROCK_CAPS[:]
+    # Flat, collider-exact contact edges join the rock with narrow straight
+    # return planes. They are part of the same roof, never a floating trim bar.
+    # A .12-tile shallow arris supplies the readable original contact fascia.
+    # Starting the steep return at the silhouette itself would vanish below
+    # z=-.10 before the calibrated half-original-pixel contact probe.
+    def contact(a,b,c):
+        width=.12;shallow=.65;steep=8.
+        caps.append([(-shallow*a,-shallow*b,-shallow*c),
+                     (-steep*a,-steep*b,width*(steep-shallow)-steep*c)])
+    if not solid(room,tx,ty-1):contact(0,-1,top)
+    if not solid(room,tx,ty+1):contact(0,1,-bottom)
+    if not solid(room,tx-1,ty):contact(1,0,-tx)
+    if not solid(room,tx+1,ty):contact(-1,0,tx+1)
+    output=[]
+    for poly,(a,b,c),ci in plane_envelope(domain,caps):
+        parts=[poly]
+        band=(1 if ci%7==3 else 0) if ci<len(ROCK_CAPS) else 0
+        height=lambda p:a*p[0]+b*p[1]+c
+        for scar,depth,wall_edges in ROCK_SCARS:
+            if max(p[0] for p in scar)<tx or min(p[0] for p in scar)>tx+1 or max(p[1] for p in scar)<bottom or min(p[1] for p in scar)>top:continue
+            constraints=[]
+            for p,q in zip(scar,scar[1:]+scar[:1]):
+                dx=q[0]-p[0];dy=q[1]-p[1];constraints.append((dy,-dx,dy*p[0]-dx*p[1]))
+            next_parts=[]
+            for part in parts:
+                inside=part[:]
+                for aa,bb,cc in constraints:inside=clip_halfplane(inside,aa,bb,cc)
+                if polygon_area(inside)<1e-8:next_parts.append(part);continue
+                next_parts.extend(subtract_halfplanes(part,constraints))
+                output.append(([(x,y,height((x,y))-depth) for x,y in inside],2))
+                for p,q in zip(inside,inside[1:]+inside[:1]):
+                    if any(abs(aa*p[0]+bb*p[1]-cc)<1e-6 and abs(aa*q[0]+bb*q[1]-cc)<1e-6 for ii,(aa,bb,cc) in enumerate(constraints) if ii in wall_edges):
+                        output.append(([(p[0],p[1],height(p)),(q[0],q[1],height(q)),
+                                        (q[0],q[1],height(q)-depth),(p[0],p[1],height(p)-depth)],2))
+            parts=next_parts
+        output.extend(([(x,y,height((x,y))) for x,y in part],band) for part in parts)
+    return output
+
+
+def dressed_block(name,x0,x1,y0,y1,seed,mat):
+    """Quiet broad planes with heterogeneous returns and sparse edge spalls."""
+    w=x1-x0;h=y1-y0;cx=(x0+x1)/2;cy=(y0+y1)/2
+    outline=[];inset=[];widths=[]
+    corners=[(x0,y0),(x1,y0),(x1,y1),(x0,y1)]
+    chip_edge=(0 if hashed(seed,22)<.6 else 2) if hashed(seed,27)>.79 else -1
+    for edge,(p,q) in enumerate(zip(corners,corners[1:]+corners[:1])):
+        dx=q[0]-p[0];dy=q[1]-p[1];length=math.hypot(dx,dy);nx=-dy/length;ny=dx/length
+        bw=.012+.035*hashed(seed+edge*3,31)
+        samples=(.04,.22,.36,.48,.72,.96) if edge==chip_edge else (.035,.965)
+        for k,t in enumerate(samples):
+            # A small localized broken edge has several unequal intermediate
+            # points; most of the edge remains a long dressed arris.
+            chip=(.018,.055,.079,.022)[k-1] if edge==chip_edge and 1<=k<=4 else 0
+            chip*=.65+.5*hashed(seed,17)
+            ox=p[0]+dx*t+nx*chip;oy=p[1]+dy*t+ny*chip
+            width=bw*(.65+.65*hashed(seed+edge,k+2))
+            outline.append((ox,oy));widths.append(width)
+    # One positive affine inset preserves the simple outer polygon, including
+    # its sparse concave spall. Independent edge offsets can cross near short
+    # block corners and create long diagonal overlap slivers in the front.
+    edge_widths=[min(.012+.032*hashed(seed+e*3,31),min(w,h)*.13) for e in range(4)]
+    bottom,right,top,left=edge_widths
+    inset=[(x0+left+(x-x0)*(w-left-right)/w,
+            y0+bottom+(y-y0)*(h-bottom-top)/h) for x,y in outline]
+    sx=(hashed(seed,5)-.5)*.014/max(w,.3);sy=(hashed(seed,9)-.5)*.018/max(h,.3)
+    cut=cx+w*(hashed(seed,4)-.5)*.35
+    depth=-.047-.028*hashed(seed,8)
+    fold=(.020+.018*hashed(seed,14))/max(w,.4) if hashed(seed,7)>.6 else 0
+    def z(x,y):return depth+sx*(x-cx)+sy*(y-cy)-fold*max(0,x-cut)
+    verts=[];faces=[]
+    def face(points):
+        n=len(verts);verts.extend(xyz(p) for p in points);faces.append(tuple(n+i for i in range(len(points))))
+    # All front polygons are genuinely planar, split along their shared crease.
+    for poly in (clip_halfplane(inset,1,0,cut),clip_halfplane(inset,-1,0,-cut)):
+        if len(poly)>2:face([(x,y,z(x,y)) for x,y in poly])
+    for i in range(len(outline)):
+        j=(i+1)%len(outline);a=outline[i];d=outline[j];p=inset[i];q=inset[j]
+        face([(a[0],a[1],z(*a)-widths[i]*.65),(d[0],d[1],z(*d)-widths[j]*.65),(q[0],q[1],z(*q)),(p[0],p[1],z(*p))])
+        face([(a[0],a[1],-.26),(d[0],d[1],-.26),(d[0],d[1],z(*d)-widths[j]*.65),(a[0],a[1],z(*a)-widths[i]*.65)])
+    face([(x,y,-.26) for x,y in reversed(outline)])
+    obj=mesh(name,verts,faces,mat)
+    bm=bmesh.new();bm.from_mesh(obj.data)
+    bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=1e-6)
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free()
+    return obj
+
+
+def study_cleavage_panel(x0,x1,y0,y1,mat):
+    """Exact upper envelope of asymmetric oblique lower-plane groups."""
+    def area(poly):return abs(sum(p[0]*q[1]-q[0]*p[1] for p,q in zip(poly,poly[1:]+poly[:1])))*.5 if len(poly)>2 else 0
+    def subtract_constraints(poly,constraints):
+        # Remove only the common inside of all halfplanes. Outside fragments
+        # remain coplanar with their source geological plane.
+        inside=poly;outside=[]
+        for a,b,c in constraints:
+            fragment=clip_halfplane(inside,-a,-b,-c)
+            if area(fragment)>1e-8:outside.append(fragment)
+            inside=clip_halfplane(inside,a,b,c)
+            if area(inside)<1e-8:break
+        return outside
+    # Each group is an asymmetric convex rock roof. min(planes) gives its actual
+    # facets; max(groups) joins neighboring roofs continuously at exact ridges.
+    # The slopes are 10–25 degree useful surfaces, not triangulation artifacts.
+    specs=[(1.03,3.04,-.07,[(.13,.36),(-.29,.14),(.10,-.26),(-.16,-.17)]),
+           (3.88,2.56,-.19,[(.18,.30),(-.32,.08),(.09,-.39),(-.14,-.22)]),
+           (2.72,.71,-.05,[(.12,.41),(-.31,.13),(.08,-.28),(-.16,-.19)]),
+           (.23,.67,-.24,[(.20,.31),(-.29,.12),(.14,-.29),(-.13,-.20)])]
+    caps=[]
+    for cx,cy,h,slopes in specs:
+        caps.append([(a,b,h-a*(x0+cx)-b*(y0+cy)) for a,b in slopes])
+    regions=[];domain=[(x0,y0),(x1,y0),(x1,y1),(x0,y1)]
+    for ci,cap in enumerate(caps):
+        for plane in cap:
+            a,b,c=plane;poly=domain[:]
+            for d,e,g in cap:
+                poly=clip_halfplane(poly,a-d,b-e,g-c)
+            if area(poly)<1e-8:continue
+            parts=[poly]
+            for oi,other in enumerate(caps):
+                if oi==ci:continue
+                constraints=[(a-d,b-e,g-c) for d,e,g in other]
+                parts=[fragment for part in parts for fragment in subtract_constraints(part,constraints)]
+            regions.extend((part,plane) for part in parts if area(part)>1e-8)
+    # One interrupted deep fracture is a tapered scar, not a perimeter around
+    # every face. Its recessed floor and side returns are actual geometry.
+    scar=[(x0+3.26,y0+1.65),(x0+4.52,y0+2.08),(x0+4.24,y0+2.09),(x0+3.30,y0+1.73)]
+    constraints=[]
+    for p,q in zip(scar,scar[1:]+scar[:1]):
+        dx=q[0]-p[0];dy=q[1]-p[1];constraints.append((dy,-dx,dy*p[0]-dx*p[1]))
+    v=[];f=[]
+    def face(points):
+        n=len(v);v.extend(xyz(p) for p in points);f.append(tuple(n+i for i in range(len(points))))
+    for poly,(a,b,c) in regions:
+        def height(p):return a*p[0]+b*p[1]+c
+        inside=poly[:]
+        for aa,bb,cc in constraints:inside=clip_halfplane(inside,aa,bb,cc)
+        if area(inside)<1e-8:face([(x,y,height((x,y))) for x,y in poly])
+        else:
+            for part in subtract_constraints(poly,constraints):face([(x,y,height((x,y))) for x,y in part])
+            face([(x,y,height((x,y))-.18) for x,y in inside])
+            for p,q in zip(inside,inside[1:]+inside[:1]):
+                if any(abs(aa*p[0]+bb*p[1]-cc)<1e-6 and abs(aa*q[0]+bb*q[1]-cc)<1e-6 for aa,bb,cc in constraints):
+                    face([(p[0],p[1],height(p)),(q[0],q[1],height(q)),(q[0],q[1],height(q)-.18),(p[0],p[1],height(p)-.18)])
+        for p,q in zip(poly,poly[1:]+poly[:1]):
+            if ((abs(p[0]-x0)<1e-7 and abs(q[0]-x0)<1e-7) or (abs(p[0]-x1)<1e-7 and abs(q[0]-x1)<1e-7) or (abs(p[1]-y0)<1e-7 and abs(q[1]-y0)<1e-7) or (abs(p[1]-y1)<1e-7 and abs(q[1]-y1)<1e-7)):
+                face([(p[0],p[1],height(p)),(q[0],q[1],height(q)),(q[0],q[1],-1.3),(p[0],p[1],-1.3)])
+    o=mesh('Study joined exact geological plane envelope',v,f,mat)
+    bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=1e-6);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
+    box('Study solid backing',x0,x1,y0,y1,-1.4,-1.3,mat)
+
+
+def run_primary_studies():
+    """Isolated form evidence. Does not write terrain source, C or GLB delivery."""
+    global current
+    review=OUT/'review'/'terrain-v14';review.mkdir(parents=True,exist_ok=True)
+    clay=material('STUDY | neutral worked surface',(.18,.18,.18),.78)
+    joint=material('STUDY | neutral inset bedding',(.12,.12,.12),.88)
+    citystudy=bpy.data.collections.new('STUDY | city current left, proposed right');scene.collection.children.link(citystudy);current=citystudy
+    heights=[0,.77,1.72,2.31,3.29,4.10]
+    for side in (0,1):
+        offset=side*6
+        box('Study masonry solid backing',offset,offset+5,0,4.10,-.38,-.14 if side else -.36,joint)
+        for row,(y0,y1) in enumerate(zip(heights,heights[1:])):
+            breaks=[0,1.7,3.6,5] if row%2==0 else [0,.77,2.91,5]
+            for col,(a,b) in enumerate(zip(breaks,breaks[1:])):
+                if side:
+                    gap=.008+.009*hashed(row,col)
+                    dressed_block('Study worked ashlar',offset+a+gap,offset+b-gap,y0+gap,y1-gap,row*13+col+6,clay)
+                else:
+                    box('Study current ashlar',offset+a+.024,offset+b-.024,y0+.024,y1-.024,-.38,-.032,clay,.032)
+    rawstudy=bpy.data.collections.new('STUDY | rock current left, proposed right');scene.collection.children.link(rawstudy);current=rawstudy
+    v=[];f=[]
+    for j in range(21):
+        for i in range(26):
+            x=i*.2;y=j*.2;z,_=relief(x,y);v.append(xyz((x,y,z)))
+    for j in range(20):
+        for i in range(25):
+            n=j*26+i;f.append((n,n+1,n+27,n+26))
+    mesh('Study current smooth relief',v,f,clay,smooth=True)
+    study_cleavage_panel(6,11,0,4.1,clay)
+    stage=bpy.data.collections.new('STUDY | neutral presentation');scene.collection.children.link(stage)
+    world=bpy.data.worlds.new('Study neutral world');world.use_nodes=True;scene.world=world
+    bg=world.node_tree.nodes.get('Background');bg.inputs['Color'].default_value=(.16,.16,.16,1);bg.inputs['Strength'].default_value=.4
+    for name,loc,power,size in [('Neutral area key',(-2,-6,8),1800,5),('Soft frontal fill',(10,-8,3),500,6)]:
+        ld=bpy.data.lights.new(name,'AREA');ld.energy=power;ld.size=size;o=bpy.data.objects.new(name,ld);stage.objects.link(o);o.location=loc;o.rotation_euler=(Vector((5.5,0,2))-o.location).to_track_quat('-Z','Y').to_euler()
+    cd=bpy.data.cameras.new('Study camera');cam=bpy.data.objects.new('Study camera',cd);stage.objects.link(cam);scene.camera=cam;cd.type='ORTHO';cd.ortho_scale=12.1
+    scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.render.threads_mode='FIXED';scene.render.threads=16
+    scene.cycles.samples=16;scene.cycles.use_denoising=True;scene.render.resolution_x=1540;scene.render.resolution_y=700;scene.render.resolution_percentage=100;scene.render.image_settings.file_format='PNG'
+    for label,col in [('city',citystudy),('basalt',rawstudy)]:
+        citystudy.hide_render=col!=citystudy;rawstudy.hide_render=col!=rawstudy
+        for view,loc in [('front',(5.5,-18,2.05)),('grazing',(7.4,-18,5.5))]:
+            cam.location=loc;cam.rotation_euler=(Vector((5.5,0,2.05))-cam.location).to_track_quat('-Z','Y').to_euler()
+            scene.render.filepath=str(review/(label+'-primary-'+view+'.png'));bpy.ops.render.render(write_still=True)
+    study_path=ROOT/'.local'/'studies';study_path.mkdir(parents=True,exist_ok=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(study_path/'terrain-v14-primary.blend'))
+    print('PRIMARY_STUDIES_COMPLETE; no terrain source or exports changed',flush=True)
+
+
+def run_rock_mask_study():
+    """Inspect composed planes after clipping to actual raw-rock masks."""
+    global current
+    review=OUT/'review'/'terrain-v14';review.mkdir(parents=True,exist_ok=True)
+    current=bpy.data.collections.new('STUDY | mapped Vault primary rock');scene.collection.children.link(current)
+    obj=build_mass(0)
+    clay=material('STUDY | neutral mapped rock',(.18,.18,.18),.78)
+    dark=material('STUDY | neutral fracture returns',(.12,.12,.12),.88)
+    for i in range(len(obj.data.materials)):obj.data.materials[i]=dark if i==2 else clay
+    stage=bpy.data.collections.new('STUDY | mapped rock lighting');scene.collection.children.link(stage)
+    world=bpy.data.worlds.new('Study mapped world');world.use_nodes=True;scene.world=world
+    bg=world.node_tree.nodes.get('Background');bg.inputs['Color'].default_value=(.12,.12,.12,1);bg.inputs['Strength'].default_value=.45
+    for name,loc,power,size in [('Grazing broad key',(-3,-6,22),1400,5),('Soft fill',(8,-9,12),600,6)]:
+        ld=bpy.data.lights.new(name,'AREA');ld.energy=power;ld.size=size;o=bpy.data.objects.new(name,ld);stage.objects.link(o);o.location=loc;o.rotation_euler=(Vector((3,0,14))-o.location).to_track_quat('-Z','Y').to_euler()
+    cd=bpy.data.cameras.new('Mapped rock camera');cam=bpy.data.objects.new('Mapped rock camera',cd);stage.objects.link(cam);scene.camera=cam;cd.type='ORTHO'
+    scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.render.threads_mode='FIXED';scene.render.threads=16
+    scene.cycles.samples=16;scene.cycles.use_denoising=True;scene.render.resolution_x=1100;scene.render.resolution_y=950;scene.render.resolution_percentage=100;scene.render.image_settings.file_format='PNG'
+    for label,center,scale in [('island',(2.5,0,14.5),6.5),('lower',(2.5,0,4.5),8.0),('ceiling',(20,0,20.5),42.)]:
+        target=Vector(center);cam.location=target+Vector((1,-18,2.5));cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cd.ortho_scale=scale
+        scene.render.filepath=str(review/('basalt-mask-'+label+'.png'));bpy.ops.render.render(write_still=True)
+    path=ROOT/'.local'/'studies';path.mkdir(parents=True,exist_ok=True);bpy.ops.wm.save_as_mainfile(filepath=str(path/'terrain-v14-mapped-rock.blend'))
+    print('ROCK_MASK_STUDY_COMPLETE; no delivered terrain changed',flush=True)
+
+
+if '--rock-study' in sys.argv:
+    run_rock_mask_study()
+    raise SystemExit(0)
+if '--study' in sys.argv:
+    run_primary_studies()
+    raise SystemExit(0)
+
 collections=[]
 for room in range(2):
     current=bpy.data.collections.new('TERRAIN | '+('Vault Mouth' if room==0 else 'Drowned Quarter'));scene.collection.children.link(current);collections.append(current)
@@ -418,10 +742,14 @@ def array(name,ctype,values):
     lines.append('};')
 def srgb(c):return 12.92*c if c<=.0031308 else 1.055*c**(1/2.4)-.055
 manifest={'source':'src/room.c MAPS; city presentation follows root IsCity','room_source_sha256':hashlib.sha256((ROOT/'src'/'room.c').read_bytes()).hexdigest(),'mask_source':maps,'scope':'solid tiles only; one-way shelves, actors, plants, water, lights and props excluded',
-          'architecture_revision':'recessed drowned house openings; volumetric capitals and supported trim',
+          'architecture_revision':'v14: unequal dressed courses, shallow mortar beds, heterogeneous arrises and sparse edge spalls; connected angular geological planes with sparse jointed fractures; sealed openings and exact standing caps retained',
+          'geological_construction':{'method':'world-space max-of-min oblique plane envelope clipped to original raw-rock mask',
+              'peaks':ROCK_PEAKS,'principal_fractures':2,'subordinate_spalls':3,
+              'contact_arris_width':.12,'contact_arris_slope':.65,'contact_return_slope':8.0,'contact_plane_z':0,'smooth_geological_normals':False,
+              'material_note':'Broad geology is geometric; the existing separately authored PBR library supplies runtime micro relief. Source terrain stage uses neutral material values for volume inspection.'},
           'door_recesses_xy':DOORS,'window_recesses_xy':WINDOWS,
           'recess_contract':'front mass and ashlar are removed inside wells; sealed rear retains full solid coverage; no collision changes',
-          'references':['public/art/references/drowned-quarter/14-drowned-doorway.png','public/art/references/drowned-quarter/20-carved-cornice.png','public/art/references/drowned-quarter/13-sunken-column.png','public/art/references/vault-mouth/16-city-column.png'],
+          'references':['public/art/references/drowned-quarter/14-drowned-doorway.png','public/art/references/drowned-quarter/20-carved-cornice.png','public/art/references/drowned-quarter/13-sunken-column.png','public/art/references/vault-mouth/16-city-column.png','public/art/references/vault-mouth/27-raw-rock-seam.png'],
           'delivery_budget':{'total_triangles':100000,'material_meshes_per_room':12,'front_z_max':0},'assets':{}}
 total=0
 for room,col in enumerate(collections):
@@ -437,7 +765,19 @@ for room,col in enumerate(collections):
         bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=.00002)
         bmesh.ops.dissolve_degenerate(bm,edges=list(bm.edges),dist=.00002)
         bmesh.ops.triangulate(bm,faces=list(bm.faces))
-        tiny=[f for f in bm.faces if f.calc_area()<1e-6 or min(e.calc_length() for e in f.edges)<1e-5]
+        tiny=[]
+        for face in bm.faces:
+            area=face.calc_area();lengths=[e.calc_length() for e in face.edges]
+            too_small=area<1e-6 or min(lengths)<1e-5
+            # Exact clipped geological envelopes can leave a negligible acute
+            # triangle after quantization. At these tiny corner angles Blender's
+            # imported angle-weighted vertex normal rounds to zero, even with a
+            # valid stored corner normal. Clean only micro-slivers in the mass;
+            # preserve the authored dressed profiles and ornament elsewhere.
+            if src.name.startswith('Continuous room') and area<.00025:
+                denom=max(lengths[i]*lengths[j] for i in range(3) for j in range(i))
+                too_small |= denom<1e-12 or 2*area/denom<.001
+            if too_small:tiny.append(face)
         if tiny:bmesh.ops.delete(bm,geom=tiny,context='FACES_ONLY')
         unused=[v for v in bm.verts if not v.link_faces]
         if unused:bmesh.ops.delete(bm,geom=unused,context='VERTS')
@@ -490,8 +830,9 @@ for room,col in enumerate(collections):
             if z>.00001 or not any(solid(room,tx,ty) for tx,ty in candidates):violations.append([x,y,z])
     assert not violations,(slug,violations[:10])
     manifest['assets'][slug]={'triangles':triangles,'material_meshes':len(groups),'source_objects':len(col.objects),'bounds_min':lo,'bounds_max':hi,'solid_tile_count':sum(c in '#*' for row in maps[room] for c in row),'mask_vertex_violations':len(violations),'material_names':list(groups)};total+=triangles
-lines.append('#endif');HEADER.write_text('\n'.join(lines)+'\n')
+lines.append('#endif')
 manifest['total_triangles']=total;assert total<100000,total
+HEADER.write_text('\n'.join(lines)+'\n')
 (OUT/'terrain-manifest.json').write_text(json.dumps(manifest,indent=2))
 
 # Neutral stage is excluded from geometry export. Render complete-room and detail views.
@@ -505,7 +846,8 @@ light('Terrain broad key',(-3,-14,31),18000,(.84,.96,1),22)
 light('Terrain green reflected fill',(38,-8,15),10000,(.62,.89,.76),18)
 light('Terrain grazing top',(22,4,27),14000,(.92,.90,.78),12)
 cd=bpy.data.cameras.new('Terrain review');cam=bpy.data.objects.new('Terrain review',cd);stage.objects.link(cam);scene.camera=cam;cd.type='ORTHO';cd.ortho_scale=41
-scene.render.engine='CYCLES';scene.cycles.samples=20;scene.cycles.use_denoising=True;scene.render.image_settings.file_format='PNG'
+scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.render.threads_mode='FIXED';scene.render.threads=16
+scene.cycles.samples=20;scene.cycles.use_denoising=True;scene.render.image_settings.file_format='PNG'
 scene.render.resolution_x=1440;scene.render.resolution_y=810;scene.render.resolution_percentage=100
 cam.location=(20,-48,14);cam.rotation_euler=(Vector((20,0,11))-cam.location).to_track_quat('-Z','Y').to_euler()
 for c in collections:c.hide_render=c!=collections[0];c.hide_viewport=c!=collections[0]

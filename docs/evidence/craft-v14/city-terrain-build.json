@@ -1,0 +1,22 @@
+[
+  {
+    "path": "src/generated/terrain_assets.h",
+    "sha256": "a8df60aa5a3eba67cb90afb28455c14fe9ee1f5e469b7afe231419f478dc0e8f"
+  },
+  {
+    "path": "assets/blender/terrain.blend",
+    "sha256": "53eba79c75cb995ace20fbdc02f374bfe7aaa885251f79877ba5f6c669b6b493"
+  },
+  {
+    "path": "assets/blender/terrain-manifest.json",
+    "sha256": "1909050aafcd7f6413a0d5924efc85e5d484a9dd6296906833f38c2438b70745"
+  },
+  {
+    "path": "public/models/vault-terrain.glb",
+    "sha256": "0e6358ee7996e3aa884059f1c86db843985f7abac34a02d579bd89a17ef500ec"
+  },
+  {
+    "path": "public/models/drowned-terrain.glb",
+    "sha256": "31cb60d27d074bd05a8048974d73f95216fc0c20769369376b1ab7f1a33cdaa1"
+  }
+]

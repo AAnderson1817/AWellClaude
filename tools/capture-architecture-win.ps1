@@ -1,4 +1,4 @@
-param([string]$OutputDirectory='docs/evidence/architecture/native',[switch]$Materials)
+param([string]$OutputDirectory='docs/evidence/architecture/native',[switch]$Materials,[switch]$LocalLights)
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path $PSScriptRoot -Parent
 Set-Location -LiteralPath $projectRoot
@@ -7,11 +7,13 @@ $raylib=Join-Path $projectRoot '.toolchain/raylib-5.5_win64_mingw-w64'
 $env:ZIG_GLOBAL_CACHE_DIR=Join-Path $projectRoot '.toolchain/zig-cache'
 $sources=Get-ChildItem src/*.c | Where-Object Name -ne 'main.c' | ForEach-Object FullName
 $folder=[IO.Path]::GetFullPath((Join-Path $projectRoot $OutputDirectory))
-$modes=if($Materials){@('with-materials','without-materials')}else{@('with-occlusion','without-occlusion')}
+if($Materials -and $LocalLights){throw 'Choose a single comparison control.'}
+$modes=if($Materials){@('with-materials','without-materials')}elseif($LocalLights){@('with-local-lights','without-local-lights')}else{@('with-occlusion','without-occlusion')}
 foreach($mode in $modes) {
     $flags=@()
     if($mode -eq 'without-occlusion'){$flags+= '-DAWELL_DEPTH_NO_AO'}
     if($mode -eq 'without-materials'){$flags+= '-DAWELL_DEPTH_NO_SURFACE_TEXTURES'}
+    if($mode -eq 'without-local-lights'){$flags+= '-DAWELL_DEPTH_NO_LOCAL_LIGHTS'}
     $exe=Join-Path $projectRoot "build/architecture-$mode.exe"
     & $zig cc -std=c99 -O2 @flags tools/tests/architecture_capture.c $sources -I "$raylib/include" "$raylib/lib/libraylib.a" -lopengl32 -lgdi32 -lwinmm -o $exe
     if($LASTEXITCODE -ne 0){throw 'Architecture native review build failed'}
@@ -26,6 +28,6 @@ foreach($mode in $modes) {
     }
 }
 $hashes=@{}
-foreach($path in @('src/depth.c','src/generated/terrain_assets.h','src/generated/support_assets.h','src/generated/foliage_assets.h','src/generated/material_textures.h')){$hashes[$path]=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLower()}
-$control=if($Materials){'surface textures'}else{'AO'}
+foreach($path in @('src/main.c','src/depth.c','tools/tests/architecture_capture.c','src/generated/terrain_assets.h','src/generated/support_assets.h','src/generated/foliage_assets.h','src/generated/material_textures.h','src/generated/city_assets.h')){$hashes[$path]=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLower()}
+$control=if($Materials){'surface textures'}elseif($LocalLights){'local source illumination; emissive panes present in both'}else{'AO'}
 [ordered]@{capturedUtc=(Get-Date).ToUniversalTime().ToString('o');sourceHashes=$hashes;scope="Same source/geometry, $control build control only; actual native images and local frame-loop wall timing. Not GPU-only timing or hardware-wide performance acceptance."} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $folder 'manifest.json') -Encoding utf8

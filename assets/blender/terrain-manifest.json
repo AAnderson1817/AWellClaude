@@ -52,7 +52,130 @@
     ]
   ],
   "scope": "solid tiles only; one-way shelves, actors, plants, water, lights and props excluded",
-  "architecture_revision": "recessed drowned house openings; volumetric capitals and supported trim",
+  "architecture_revision": "v14: unequal dressed courses, shallow mortar beds, heterogeneous arrises and sparse edge spalls; connected angular geological planes with sparse jointed fractures; sealed openings and exact standing caps retained",
+  "geological_construction": {
+    "method": "world-space max-of-min oblique plane envelope clipped to original raw-rock mask",
+    "peaks": [
+      [
+        1.2,
+        21.1,
+        -0.1
+      ],
+      [
+        7.8,
+        21.35,
+        -0.16
+      ],
+      [
+        14.0,
+        21.2,
+        -0.12
+      ],
+      [
+        21.2,
+        21.35,
+        -0.15
+      ],
+      [
+        27.6,
+        21.1,
+        -0.17
+      ],
+      [
+        34.4,
+        21.3,
+        -0.12
+      ],
+      [
+        39.0,
+        20.5,
+        -0.1
+      ],
+      [
+        0.2,
+        18.1,
+        -0.13
+      ],
+      [
+        1.03,
+        15.23,
+        -0.07
+      ],
+      [
+        3.88,
+        14.87,
+        -0.19
+      ],
+      [
+        2.72,
+        13.52,
+        -0.05
+      ],
+      [
+        0.23,
+        13.49,
+        -0.24
+      ],
+      [
+        0.15,
+        10.2,
+        -0.15
+      ],
+      [
+        1.03,
+        6.04,
+        -0.07
+      ],
+      [
+        3.88,
+        5.56,
+        -0.19
+      ],
+      [
+        2.72,
+        3.71,
+        -0.05
+      ],
+      [
+        0.23,
+        3.67,
+        -0.24
+      ],
+      [
+        0.8,
+        0.95,
+        -0.1
+      ],
+      [
+        6.6,
+        1.05,
+        -0.13
+      ],
+      [
+        12.0,
+        0.85,
+        -0.11
+      ],
+      [
+        17.1,
+        1.15,
+        -0.08
+      ],
+      [
+        34.2,
+        18.5,
+        -0.12
+      ]
+    ],
+    "principal_fractures": 2,
+    "subordinate_spalls": 3,
+    "contact_arris_width": 0.12,
+    "contact_arris_slope": 0.65,
+    "contact_return_slope": 8.0,
+    "contact_plane_z": 0,
+    "smooth_geological_normals": false,
+    "material_note": "Broad geology is geometric; the existing separately authored PBR library supplies runtime micro relief. Source terrain stage uses neutral material values for volume inspection."
+  },
   "door_recesses_xy": [
     [
       6.29,
@@ -98,7 +221,8 @@
     "public/art/references/drowned-quarter/14-drowned-doorway.png",
     "public/art/references/drowned-quarter/20-carved-cornice.png",
     "public/art/references/drowned-quarter/13-sunken-column.png",
-    "public/art/references/vault-mouth/16-city-column.png"
+    "public/art/references/vault-mouth/16-city-column.png",
+    "public/art/references/vault-mouth/27-raw-rock-seam.png"
   ],
   "delivery_budget": {
     "total_triangles": 100000,
@@ -107,9 +231,9 @@
   },
   "assets": {
     "vault-terrain": {
-      "triangles": 27682,
-      "material_meshes": 11,
-      "source_objects": 181,
+      "triangles": 25121,
+      "material_meshes": 10,
+      "source_objects": 179,
       "bounds_min": [
         0.0,
         0.0,
@@ -118,28 +242,27 @@
       "bounds_max": [
         40.0,
         22.0,
-        -0.0
+        0.0
       ],
       "solid_tile_count": 300,
       "mask_vertex_violations": 0,
       "material_names": [
-        "Terrain | slate cleavage planes",
         "Terrain | blue slate body",
+        "Terrain | slate cleavage planes",
         "Terrain | deep shale seams",
-        "Terrain | quiet oxidised sediment",
         "Terrain | deep dressed joints",
         "Terrain | worn structural cornice",
-        "Terrain | limestone tone 2",
         "Terrain | limestone tone 0",
         "Terrain | limestone tone 1",
+        "Terrain | limestone tone 2",
         "Terrain | repaired cast bronze",
         "Terrain | patinated inset metal"
       ]
     },
     "drowned-terrain": {
-      "triangles": 70634,
+      "triangles": 69344,
       "material_meshes": 9,
-      "source_objects": 720,
+      "source_objects": 690,
       "bounds_min": [
         0.0,
         0.0,
@@ -155,9 +278,9 @@
       "material_names": [
         "Terrain | deep dressed joints",
         "Terrain | worn structural cornice",
-        "Terrain | limestone tone 1",
         "Terrain | limestone tone 2",
         "Terrain | limestone tone 0",
+        "Terrain | limestone tone 1",
         "Terrain | repaired cast bronze",
         "Terrain | patinated inset metal",
         "Terrain | unlit sealed interiors",
@@ -165,5 +288,5 @@
       ]
     }
   },
-  "total_triangles": 98316
+  "total_triangles": 94465
 }

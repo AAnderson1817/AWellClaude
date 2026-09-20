@@ -21,11 +21,18 @@
   ],
   "mouth_local": [
     0,
-    1.37,
-    0.14503562475910856
+    1.4,
+    0.26000022888183594
   ],
   "governing_reference": "public/art/references/drowned-quarter/03-drowned-face-v2.png",
-  "interpretation": "original broad, quiet mask; rounded temple silhouette and eclipse repairs translate the reference into fixed-view carved relief",
+  "interpretation": "continuous mineral sculpture with explicit nasal alae and mouth lofts, irregular architectural burial returns and seated bronze orbital inlays",
+  "quality_state": "work_in_progress_pending_native_and_independent_review",
+  "editable_source": "skull scaffold, nasal/upper/lower lip control cages, nostril and mouth Boolean cutters, joined surface; separate delivery-only reduction",
+  "reduction": {
+    "source_head_triangles": 308124,
+    "delivery_head_triangles": 25000,
+    "method": "delivery-only collapse; source controls and dense sculpt preserved"
+  },
   "source": "assets/blender/city-face.blend",
   "budget": {
     "triangles_max": 43000,
@@ -35,30 +42,30 @@
   "assets": {
     "city-face": {
       "symbol": "FOUNDRY_CITY_FACE",
-      "triangles": 38594,
+      "triangles": 39666,
       "material_meshes": 5,
       "bounds_min": [
-        -3.738532066345215,
-        0.02500000037252903,
+        -3.7373499870300293,
+        0.026767000555992126,
         -0.25999999046325684
       ],
       "bounds_max": [
-        3.738532066345215,
-        4.974999904632568,
-        1.136232614517212
+        3.7374250888824463,
+        4.9721221923828125,
+        1.1118179559707642
       ],
       "dimensions": [
-        7.47706413269043,
-        4.949999904260039,
-        1.3962326049804688
+        7.474775075912476,
+        4.94535519182682,
+        1.371817946434021
       ],
       "pivot": "base center; add world(25,1,-1.8)",
       "materials": [
         "City face | pale submerged limestone",
         "City face | sheltered mineral tide",
-        "City face | incised shadow",
         "City face | old cast bronze",
-        "City face | seated bronze verdigris"
+        "City face | seated bronze verdigris",
+        "City face | incised shadow"
       ]
     },
     "city-eye": {
@@ -85,5 +92,32 @@
         "City eye | opaque green-white opal"
       ]
     }
-  }
+  },
+  "material_families": [
+    {
+      "slot": 0,
+      "material": "City face | pale submerged limestone",
+      "family": 1
+    },
+    {
+      "slot": 1,
+      "material": "City face | sheltered mineral tide",
+      "family": 1
+    },
+    {
+      "slot": 2,
+      "material": "City face | old cast bronze",
+      "family": 0
+    },
+    {
+      "slot": 3,
+      "material": "City face | seated bronze verdigris",
+      "family": 0
+    },
+    {
+      "slot": 4,
+      "material": "City face | incised shadow",
+      "family": 1
+    }
+  ]
 }

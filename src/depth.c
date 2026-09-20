@@ -27,7 +27,7 @@ static Shader surface, finish,waterShader,occlusionShader;
 static Texture2D waterMask;
 static Model cube, orb, cylinder, cone, torus, leaf, archPane;
 static Texture2D mattes[2];
-static Texture2D depthLight;
+static Texture2D depthLight,solidMask;
 static Texture2D materialBase[3],materialDetail[3],materialWhite;
 static Model doorModels[8],orreryModels[8];
 static Model terrainModels[ROOM_COUNT][12];
@@ -42,6 +42,7 @@ static float substrate;
 static float plantBend;
 static int geometryPassLoc;
 static int textureUseLoc,materialMeanLoc;
+static int localPositionsLoc,localColorsLoc;
 static const Color BASALT = {60,72,82,255};
 static const Color STONE = {95,108,112,255};
 static const Color BRONZE = {139,114,73,255};
@@ -70,6 +71,13 @@ static const char *FRAG = FHEADER
 "uniform float metalness; uniform float roughness; uniform float emission; uniform float substrate; uniform float waterLevel;\n"
 "uniform float geometryPass;\n"
 "uniform sampler2D texture0;uniform sampler2D surfaceMap;uniform float textureUse;uniform vec3 materialMean;\n"
+"uniform sampler2D solidMap;uniform vec4 localPositions[4];uniform vec3 localColors[4];\n"
+"float stageVisibility(vec3 point,vec3 source){"
+" vec2 origin=point.xy,finish=source.xy;vec2 own=floor(vec2(origin.x,22.-origin.y));"
+" vec2 lamp=floor(vec2(finish.x,22.-finish.y));float visible=1.;"
+" for(int j=1;j<17;j++){vec2 q=mix(origin,finish,float(j)/17.);vec2 cell=floor(vec2(q.x,22.-q.y));"
+" if(any(notEqual(cell,own))&&any(notEqual(cell,lamp)))"
+" visible*=1.-SAMPLE(solidMap,(cell+.5)/vec2(40.,22.)).r;}return visible;}\n"
 "float hash(vec3 v){return fract(sin(dot(v,vec3(12.9898,78.233,32.21)))*43758.5453);}\n"
 "float noise3(vec3 v){vec3 i=floor(v),f=fract(v);f=f*f*(3.-2.*f);\n"
 " float a=mix(hash(i),hash(i+vec3(1,0,0)),f.x),b=mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x);\n"
@@ -129,6 +137,13 @@ static const char *FRAG = FHEADER
 " vec3 light=vec3(.035,.055,.07)+baked*1.8;\n"
 " vec3 c=base*light*(.48+ndl*.55)+base*vec3(.024,.035,.034)*grazing;\n"
 " c+=mix(vec3(.65,.75,.78),base,metalness)*spec*(.03+length(baked)*.8);\n"
+" if(emission<.1){for(int i=0;i<4;i++){vec3 delta=localPositions[i].xyz-p;float distance=length(delta);"
+" float reach=localPositions[i].w; if(reach>0. && distance<reach){"
+" vec3 D=delta/max(distance,.001);float facing=max(dot(N,D),0.);"
+" float attenuation=pow(1.-distance/reach,2.);"
+" if(facing>.001){float visible=stageVisibility(p,localPositions[i].xyz);"
+" vec3 Hlocal=normalize(D+V);float highlight=pow(max(dot(N,Hlocal),0.),mix(92.,13.,rough));"
+" c+=(base*facing*(1.-metalness*.45)+mix(vec3(.12),base,metalness)*highlight*.35)*localColors[i]*attenuation*visible;}}}}\n"
 " c+=base*edge*.045+base*emission;\n"
 " float fog=(substrate>4.5 && substrate<6.5)?1.-exp(-max(-p.z-1.,0.)*.15):1.-exp(-max(-p.z-5.,0.)*.072);\n"
 " c=mix(c,vec3(.075,.13,.145),fog);\n"
@@ -239,6 +254,8 @@ static void Init(void){
     surface.locs[SHADER_LOC_MATRIX_NORMAL]=GetShaderLocation(surface,"matNormal");
     surface.locs[SHADER_LOC_MAP_EMISSION]=GetShaderLocation(surface,"lightMap");
     surface.locs[SHADER_LOC_MAP_NORMAL]=GetShaderLocation(surface,"surfaceMap");
+    surface.locs[SHADER_LOC_MAP_OCCLUSION]=GetShaderLocation(surface,"solidMap");
+    localPositionsLoc=GetShaderLocation(surface,"localPositions");localColorsLoc=GetShaderLocation(surface,"localColors");
     metalLoc=GetShaderLocation(surface,"metalness");roughLoc=GetShaderLocation(surface,"roughness");emissionLoc=GetShaderLocation(surface,"emission");cameraLoc=GetShaderLocation(surface,"eye");timeLoc=GetShaderLocation(finish,"time");
     substrateLoc=GetShaderLocation(surface,"substrate");waterLevelLoc=GetShaderLocation(surface,"waterLevel");
     plantBendLoc=GetShaderLocation(surface,"plantBend");
@@ -276,6 +293,8 @@ static void Init(void){
     occludedTarget=LoadRenderTexture(DW,DH);SetTextureFilter(occludedTarget.texture,TEXTURE_FILTER_BILINEAR);
     Image maskImage=GenImageColor(RW,RH,BLACK);waterMask=LoadTextureFromImage(maskImage);UnloadImage(maskImage);
     SetTextureFilter(waterMask,TEXTURE_FILTER_POINT);SetTextureWrap(waterMask,TEXTURE_WRAP_CLAMP);
+    maskImage=GenImageColor(RW,RH,BLACK);solidMask=LoadTextureFromImage(maskImage);UnloadImage(maskImage);
+    SetTextureFilter(solidMask,TEXTURE_FILTER_POINT);SetTextureWrap(solidMask,TEXTURE_WRAP_CLAMP);
     Image lightImage=GenImageColor(RW+1,RH+1,WHITE);depthLight=LoadTextureFromImage(lightImage);UnloadImage(lightImage);
     SetTextureFilter(depthLight,TEXTURE_FILTER_BILINEAR);SetTextureWrap(depthLight,TEXTURE_WRAP_CLAMP);
     Image matte=LoadImageFromMemory(".jpg",vault_matte,sizeof vault_matte);
@@ -291,6 +310,7 @@ static void Init(void){
 }
 static void Draw(Model *m,Vector3 pos,Vector3 scale,Vector3 axis,float angle,Color color,float metal,float rough,float glow){
     m->materials[0].maps[MATERIAL_MAP_EMISSION].texture=depthLight;
+    m->materials[0].maps[MATERIAL_MAP_OCCLUSION].texture=solidMask;
     SetShaderValue(surface,metalLoc,&metal,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,roughLoc,&rough,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,emissionLoc,&glow,SHADER_UNIFORM_FLOAT);
     float family=metal>.25f||glow>.1f?0:substrate;
     SetShaderValue(surface,substrateLoc,&family,SHADER_UNIFORM_FLOAT);
@@ -380,13 +400,16 @@ static void CityBackMeshes(void){
             Box(cx+side*r,(archY+y-h)*.5f,z,.22f,archY-y+h,.48f,Shade(STONE,.62f));
         }
         substrate=0;
-        Color glass=Shade(COOL,.035f+v->light*.24f);
-        Draw(&archPane,(Vector3){cx,archY,z-.19f},(Vector3){r-.11f,r-.11f,1},(Vector3){0,0,1},0,glass,0,.8f,v->light*.09f);
-        Box(cx,(archY+y-h)*.5f,z-.19f,(r-.11f)*2,archY-y+h,.10f,glass);
+        // The city light is inside the recess. Its emissive glass must remain
+        // legible independently of the room's reflected-light field; the same
+        // simulation value still douses it when a hunter lamp approaches.
+        Color glass=Shade(COOL,.035f+v->light*.42f);
+        Draw(&archPane,(Vector3){cx,archY,z-.19f},(Vector3){r-.11f,r-.11f,1},(Vector3){0,0,1},0,glass,0,.55f,v->light*.9f);
+        Draw(&cube,(Vector3){cx,(archY+y-h)*.5f,z-.19f},(Vector3){(r-.11f)*2,archY-y+h,.10f},(Vector3){0,0,1},0,glass,0,.55f,v->light*.9f);
         // Broad shade across the lower panes makes the interior read as space.
         for(int j=0;j<4;j++){
             float yy=y-h+(j+.5f)*(h-r)/4;
-            Box(cx,yy,z-.125f,(r-.12f)*2,(h-r)/4+.01f,.035f,Shade(glass,.6f+j*.1f));
+            Draw(&cube,(Vector3){cx,yy,z-.125f},(Vector3){(r-.12f)*2,(h-r)/4+.01f,.035f},(Vector3){0,0,1},0,Shade(glass,.64f+j*.09f),0,.55f,v->light*(.66f+j*.08f));
         }
         if(v->crossing && v->light>.02f){
             float f=v->facing>0?v->silhouette:1-v->silhouette;
@@ -473,7 +496,6 @@ static void Terrain(void){
                 if(city){Box(x+.5f,yy-.19f,.09f,.92f,.06f,.22f,Shade(STONE,.83f));}
                 else if(R(x+2,y)>.55f){Foliage(x+.5f,yy,-.7f,.34f,x+y,0);}
             }
-            if(city && x%3==0 && y%2==0)MetalBox(x+.5f,yy-.5f,.03f,.035f,.62f,.04f,Shade(COPPER,.7f));
             if(t==T_VEIN){
                 Color light=city?COOL:WARM;
                 if(city){MetalBox(x+.5f,yy-.37f,.12f,.58f,.58f,.18f,BRONZE);Box(x+.5f,yy-.37f,.23f,.39f,.4f,.06f,COPPER);}
@@ -608,8 +630,9 @@ static void PropMeshes(int back){
         case PR_BALUSTRADE:
             for(int k=0;k<4;k++)Rod((Vector3){x+k*.28f,y,.04f},(Vector3){x+k*.28f,y+.5f,.04f},.045f,STONE,0);
             Box(x+.45f,y+.53f,.04f,1.2f,.13f,.22f,STONE);break;
-        case PR_CAPITAL:Box(x+p->len*.5f,y-.13f,.08f,p->len+.24f,.26f,.3f,Shade(STONE,1.3f));break;
-        case PR_BASE:Box(x+p->len*.5f,y-.8f,.06f,p->len+.24f,.3f,.3f,Shade(STONE,1.15f));break;
+        // The terrain asset carries the column's abacus and turned base at
+        // these original anchors. Extra boxes would cover their carved profiles.
+        case PR_CAPITAL:case PR_BASE:break;
         default:break;
         }
     }
@@ -702,9 +725,42 @@ static void ResetEyes(float left,float top,float width,float height){
         if(resetFade<=.45f)DrawEllipse(px,py-(int)(height*.035f/22.5f),width*.023f/40.f,height*.024f/22.5f,palEye);
     }
 }
+static void LocalLightField(void){
+    // Read-only illumination of the modeled surfaces from authored sources.
+    // The existing occluded warm/cool field remains the ambient contribution.
+    // These shadows use the fixed 2D solid mask, not a 3D shadow-map claim.
+    Color pixels[RW*RH];
+    for(int y=0;y<RH;y++)for(int x=0;x<RW;x++)pixels[y*RW+x]=(tileFlags[tiles[y][x]]&TF_OPAQUE)?WHITE:BLACK;
+    UpdateTexture(solidMask,pixels);
+    float positions[4][4]={{0}},colors[4][3]={{0}};int count=0;
+    float lx,ly;
+    if(LampPos(&lx,&ly)){
+        positions[count][0]=lx/TS;positions[count][1]=Y(ly);positions[count][2]=.35f;positions[count][3]=5.2f;
+        colors[count][0]=.68f;colors[count][1]=.68f*.815f;colors[count][2]=.68f*.56f;count++;
+    }
+    PropView props[48];int n=PropsViews(props,48);
+    for(int i=0;i<n&&count<4;i++){
+        PropView *p=&props[i];float power=0;Color color=WARM;float x=0,y=0,z=.35f,reach=0;
+        if(p->kind==PR_FIRE&&p->fireLit){x=p->tx+.5f;y=Y(p->ty*TS+3);power=.48f;reach=5.2f;}
+        else if(p->kind==PR_CHAINLAMP){float length=p->len*TS-3.f;x=(p->tx*TS+4+sinf(p->angle)*length)/TS;y=Y(p->ty*TS+cosf(p->angle)*length);power=.42f;reach=6.2f;color=COOL;}
+        if(power>0){positions[count][0]=x;positions[count][1]=y;positions[count][2]=z;positions[count][3]=reach;
+            colors[count][0]=color.r/255.f*power;colors[count][1]=color.g/255.f*power;colors[count][2]=color.b/255.f*power;count++;}
+    }
+    CityWindow windows[CITY_WINDOW_MAX];n=CityWindowViews(windows,CITY_WINDOW_MAX);
+    for(int i=0;i<n&&count<4;i++){
+        CityWindow *w=&windows[i];positions[count][0]=(w->x+w->w*.5f)/TS;positions[count][1]=Y(w->y+w->h*.5f);positions[count][2]=-1.35f;positions[count][3]=4.2f;
+        colors[count][0]=COOL.r/255.f*w->light*.36f;colors[count][1]=COOL.g/255.f*w->light*.36f;colors[count][2]=COOL.b/255.f*w->light*.36f;count++;
+    }
+#if defined(AWELL_DEPTH_NO_LOCAL_LIGHTS)
+    memset(positions,0,sizeof positions);
+#endif
+    SetShaderValueV(surface,localPositionsLoc,positions,SHADER_UNIFORM_VEC4,4);
+    SetShaderValueV(surface,localColorsLoc,colors,SHADER_UNIFORM_VEC3,4);
+}
 void DepthDraw(void){
     if(!ready)Init();
     Color lightPixels[(RW+1)*(RH+1)];RoomDepthLightColors(lightPixels);UpdateTexture(depthLight,lightPixels);
+    LocalLightField();
     float eye[3]={camera.position.x,camera.position.y,camera.position.z};SetShaderValue(surface,cameraLoc,eye,SHADER_UNIFORM_VEC3);
     float waterLevel=roomIdx==1?15.f:-100.f;SetShaderValue(surface,waterLevelLoc,&waterLevel,SHADER_UNIFORM_FLOAT);
     // The small geometry buffer contains actual visible world depth and normals.
@@ -774,7 +830,7 @@ void DepthUnload(void){
     UnloadShader(surface);UnloadShader(finish);UnloadRenderTexture(target);ready=0;
     UnloadShader(waterShader);UnloadRenderTexture(waterTarget);UnloadTexture(waterMask);
     UnloadShader(occlusionShader);UnloadRenderTexture(geometryTarget);UnloadRenderTexture(occludedTarget);
-    UnloadTexture(depthLight);
+    UnloadTexture(depthLight);UnloadTexture(solidMask);
     for(int i=0;i<3;i++){UnloadTexture(materialBase[i]);UnloadTexture(materialDetail[i]);}
     for(int i=0;i<2;i++)if(mattes[i].id)UnloadTexture(mattes[i]);
 }

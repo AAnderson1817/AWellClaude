@@ -1,0 +1,42 @@
+{
+  "verifiedUtc": "2026-09-20T21:58:05.990158+00:00",
+  "revision": "craft-v14",
+  "browser": "Codex in-app Chromium",
+  "viewport": [
+    1280,
+    720
+  ],
+  "sourceHashes": {
+    "src/generated/support_assets.h": "60694aedfed6ac5347f5b0868dc7a7d848757fb7ff0e1578232ff7c791ebc404",
+    "src/generated/material_textures.h": "906179eaa371eb74c5639e8f568ee3b3ccbcdbcf3577ae9cb3cfb8384f55a0b3",
+    "tools/tests/architecture_capture.c": "29978c799934e367b62616d0ae2df3b0897066508b91b7562009cd27ec6fc11b",
+    "src/main.c": "796c9408f46f3045f4f5b3c1acbf4f83a0200f7cbedc27c70c74eab009a3f4eb",
+    "src/generated/city_assets.h": "584a85eae70803b884e6e1468a7bae3e0abdeaa28f5e7d6a4cc48dc753a36d91",
+    "src/generated/terrain_assets.h": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+    "src/depth.c": "9cc51b4b428121b67ed936217c6911f9e15e0d778e486952ee7d257fc92126af",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e"
+  },
+  "builds": {
+    "build/play.html": {
+      "sha256": "5416497675e9554f35377fbd769e07133d44e1252c2d523ecabb19a095d603fd",
+      "bytes": 21035761
+    },
+    "build/game.js": {
+      "sha256": "838fe5054a147535dd0a9f15f735bcc4e733d1cde7b9d532193e4644e196fc0d",
+      "bytes": 21034612
+    },
+    "build/review-water.html": {
+      "sha256": "9f149ebcf22e7271c52f452ea2ecd954b8b524aa4e86165cc5c47887371fc25d",
+      "bytes": 21035791
+    }
+  },
+  "observations": [
+    "Rebuilt Vault play.html and Drowned review-water.html rendered their embedded geometry, scanned stone and local-light shader.",
+    "Both rooms inspected in depth mode, switched with F2 to flat and back to depth.",
+    "Captured warning/error logs were empty for both room pages.",
+    "F4 accepted; brief right-arrow movement observed in Vault. This is not a traversal playthrough.",
+    "Gallery restored to Drowned Quarter filter; all 12 current runtime/model images complete with nonzero natural widths.",
+    "Playable tab restored to play.html after controlled native benchmark; gallery preserved."
+  ],
+  "scope": "Bounded live browser smoke observation. No prolonged play, listening, immersion, input-latency or cross-hardware performance acceptance."
+}

@@ -1,0 +1,3404 @@
+{
+  "hunter-hat": {
+    "schema_version": 1,
+    "blender_version": "5.2.0 LTS",
+    "blend_file": "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\assets\\blender\\hunter-attire.blend",
+    "collection": "ASSET | hunter-hat",
+    "scene": "HUNTER | tailored camp attire",
+    "view_layer": "ViewLayer",
+    "frame": 1,
+    "unit_system": "METRIC",
+    "unit_scale_length": 1.0,
+    "policy": {
+      "max_triangles": 12000,
+      "require_uv": false
+    },
+    "object_count": 7,
+    "object_types": {
+      "MESH": 7
+    },
+    "objects": [
+      {
+        "name": "Brim rolled hem",
+        "type": "MESH",
+        "dimensions": [
+          1.1579999923706055,
+          0.8320000171661377,
+          0.11028575897216797
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 288,
+          "edges": 576,
+          "polygons": 288,
+          "triangles": 576,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5659999847412109,
+              -0.41600000858306885,
+              1.158626675605774
+            ],
+            "max": [
+              0.5920000076293945,
+              0.41600000858306885,
+              1.268912434577942
+            ],
+            "dimensions": [
+              1.1579999923706055,
+              0.8320000171661377,
+              0.11028575897216797
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        },
+        "evaluated": {
+          "vertices": 288,
+          "edges": 864,
+          "polygons": 576,
+          "triangles": 576,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5659999847412109,
+              -0.41600000858306885,
+              1.158626675605774
+            ],
+            "max": [
+              0.5920000076293945,
+              0.41600000858306885,
+              1.268912434577942
+            ],
+            "dimensions": [
+              1.1579999923706055,
+              0.8320000171661377,
+              0.11028575897216797
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        }
+      },
+      {
+        "name": "Crown band | surface-fitted leather",
+        "type": "MESH",
+        "dimensions": [
+          0.6940368413925171,
+          0.5628045797348022,
+          0.05962574481964111
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 144,
+          "edges": 240,
+          "polygons": 96,
+          "triangles": 192,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.33479273319244385,
+              -0.2734641432762146,
+              1.2259999513626099
+            ],
+            "max": [
+              0.34349751472473145,
+              0.2734641432762146,
+              1.2799999713897705
+            ],
+            "dimensions": [
+              0.6782902479171753,
+              0.5469282865524292,
+              0.054000020027160645
+            ]
+          },
+          "topology": {
+            "boundary_edges": 96,
+            "nonmanifold_edges_including_boundary_and_loose": 96,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        },
+        "evaluated": {
+          "vertices": 288,
+          "edges": 864,
+          "polygons": 576,
+          "triangles": 576,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.34273847937583923,
+              -0.28140145540237427,
+              1.2218629121780396
+            ],
+            "max": [
+              0.35129833221435547,
+              0.281403124332428,
+              1.2814886569976807
+            ],
+            "dimensions": [
+              0.6940368115901947,
+              0.5628045797348022,
+              0.05962574481964111
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        }
+      },
+      {
+        "name": "Felt crown | open fitted underside, shaped crease",
+        "type": "MESH",
+        "dimensions": [
+          0.6600828170776367,
+          0.5296034812927246,
+          0.4424319267272949
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 336,
+          "edges": 624,
+          "polygons": 289,
+          "triangles": 622,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.3168586790561676,
+              -0.25595998764038086,
+              1.1749999523162842
+            ],
+            "max": [
+              0.32552534341812134,
+              0.25595998764038086,
+              1.6039952039718628
+            ],
+            "dimensions": [
+              0.6423840224742889,
+              0.5119199752807617,
+              0.4289952516555786
+            ]
+          },
+          "topology": {
+            "boundary_edges": 48,
+            "nonmanifold_edges_including_boundary_and_loose": 48,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | warm worn felt"
+          ]
+        },
+        "evaluated": {
+          "vertices": 672,
+          "edges": 2010,
+          "polygons": 1340,
+          "triangles": 1340,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.32579147815704346,
+              -0.264800488948822,
+              1.1705256700515747
+            ],
+            "max": [
+              0.3342913091182709,
+              0.2648029625415802,
+              1.6129575967788696
+            ],
+            "dimensions": [
+              0.6600827872753143,
+              0.5296034514904022,
+              0.4424319267272949
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | warm worn felt"
+          ]
+        }
+      },
+      {
+        "name": "Hat band buckle forged frame",
+        "type": "MESH",
+        "dimensions": [
+          0.08487500250339508,
+          0.01385641098022461,
+          0.07062506675720215
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 48,
+          "edges": 96,
+          "polygons": 48,
+          "triangles": 96,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.2006250023841858,
+              -0.25892820954322815,
+              1.2171249389648438
+            ],
+            "max": [
+              -0.11574999988079071,
+              -0.24507179856300354,
+              1.287750005722046
+            ],
+            "dimensions": [
+              0.08487500250339508,
+              0.01385641098022461,
+              0.07062506675720215
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        },
+        "evaluated": {
+          "vertices": 48,
+          "edges": 144,
+          "polygons": 96,
+          "triangles": 96,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.2006250023841858,
+              -0.25892820954322815,
+              1.2171249389648438
+            ],
+            "max": [
+              -0.11574999988079071,
+              -0.24507179856300354,
+              1.287750005722046
+            ],
+            "dimensions": [
+              0.08487500250339508,
+              0.01385641098022461,
+              0.07062506675720215
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        }
+      },
+      {
+        "name": "Hat band buckle seated tongue",
+        "type": "MESH",
+        "dimensions": [
+          0.007794231176376343,
+          0.016767367720603943,
+          0.03653299808502197
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 12,
+          "edges": 18,
+          "polygons": 8,
+          "triangles": 20,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.16389711201190948,
+              -0.2563836872577667,
+              1.2269835472106934
+            ],
+            "max": [
+              -0.15610288083553314,
+              -0.23961631953716278,
+              1.2635165452957153
+            ],
+            "dimensions": [
+              0.007794231176376343,
+              0.016767367720603943,
+              0.03653299808502197
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        },
+        "evaluated": {
+          "vertices": 12,
+          "edges": 30,
+          "polygons": 20,
+          "triangles": 20,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.16389711201190948,
+              -0.2563836872577667,
+              1.2269835472106934
+            ],
+            "max": [
+              -0.15610288083553314,
+              -0.23961631953716278,
+              1.2635165452957153
+            ],
+            "dimensions": [
+              0.007794231176376343,
+              0.016767367720603943,
+              0.03653299808502197
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        }
+      },
+      {
+        "name": "Hat | fitted dark inner sweatband",
+        "type": "MESH",
+        "dimensions": [
+          0.5799367427825928,
+          0.45211800932884216,
+          0.043466806411743164
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 96,
+          "edges": 144,
+          "polygons": 48,
+          "triangles": 96,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.2816355228424072,
+              -0.2169100046157837,
+              1.1759999990463257
+            ],
+            "max": [
+              0.28236445784568787,
+              0.21921050548553467,
+              1.218000054359436
+            ],
+            "dimensions": [
+              0.5639999806880951,
+              0.43612051010131836,
+              0.04200005531311035
+            ]
+          },
+          "topology": {
+            "boundary_edges": 96,
+            "nonmanifold_edges_including_boundary_and_loose": 96,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark cloth interior"
+          ]
+        },
+        "evaluated": {
+          "vertices": 192,
+          "edges": 576,
+          "polygons": 384,
+          "triangles": 384,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.2896078824996948,
+              -0.2249087393283844,
+              1.1752668619155884
+            ],
+            "max": [
+              0.29032886028289795,
+              0.22720927000045776,
+              1.2187336683273315
+            ],
+            "dimensions": [
+              0.5799367427825928,
+              0.45211800932884216,
+              0.043466806411743164
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark cloth interior"
+          ]
+        }
+      },
+      {
+        "name": "Uneven supple brim | annular cloth",
+        "type": "MESH",
+        "dimensions": [
+          1.1419365406036377,
+          0.8174443244934082,
+          0.11406314373016357
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 240,
+          "edges": 432,
+          "polygons": 192,
+          "triangles": 384,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5569999814033508,
+              -0.40700000524520874,
+              1.1664209365844727
+            ],
+            "max": [
+              0.5830000042915344,
+              0.40700000524520874,
+              1.2611182928085327
+            ],
+            "dimensions": [
+              1.1399999856948853,
+              0.8140000104904175,
+              0.09469735622406006
+            ]
+          },
+          "topology": {
+            "boundary_edges": 96,
+            "nonmanifold_edges_including_boundary_and_loose": 96,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | warm worn felt"
+          ]
+        },
+        "evaluated": {
+          "vertices": 480,
+          "edges": 1440,
+          "polygons": 960,
+          "triangles": 960,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5580117106437683,
+              -0.410146564245224,
+              1.1569288969039917
+            ],
+            "max": [
+              0.5839248895645142,
+              0.4072977900505066,
+              1.2709920406341553
+            ],
+            "dimensions": [
+              1.1419366002082825,
+              0.8174443542957306,
+              0.11406314373016357
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | warm worn felt"
+          ]
+        }
+      }
+    ],
+    "textures": [],
+    "totals": {
+      "base": {
+        "vertices": 1164,
+        "edges": 2130,
+        "polygons": 969,
+        "triangles": 1986
+      },
+      "evaluated": {
+        "vertices": 1980,
+        "edges": 5928,
+        "polygons": 3952,
+        "triangles": 3952
+      }
+    },
+    "errors": [],
+    "warnings": [
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Crown band | surface-fitted leather"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Felt crown | open fitted underside, shaped crease"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Hat | fitted dark inner sweatband"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Uneven supple brim | annular cloth"
+      }
+    ],
+    "manual_checks": [
+      "Inspect silhouette, proportions, reference fidelity, material response, lighting, and close-up renders.",
+      "Verify mechanical attachment, clearances, floating parts, self-intersections, face orientation, and shading.",
+      "Inspect topology/deformation quality; these counts do not certify topology quality or game readiness.",
+      "Verify UV overlap, padding, texel density, seam placement, and bake artifacts; UV ranges are not overlap tests.",
+      "Validate export/re-import in the target engine, collision, LODs, naming, pivots, and the agreed budgets.",
+      "Counts are per collection object, not unique datablocks or expanded instances; inspect collection, particle, Geometry Nodes instances, unsupported geometry, and render-only subdivisions/displacement separately.",
+      "Evaluated geometry uses the current viewport depsgraph and frame; render visibility, render modifiers, animation frames, linked libraries, caches, fonts, and non-image dependencies need separate validation.",
+      "Texture scan includes all image nodes in assigned materials and nested groups, even disconnected nodes; it checks file presence or packing, not decoding, color space, resolution, licensing, or export inclusion."
+    ],
+    "status": "review"
+  },
+  "hunter-pack": {
+    "schema_version": 1,
+    "blender_version": "5.2.0 LTS",
+    "blend_file": "C:\\Users\\Derpd\\Documents\\ChatGPT\\AnimalWell\\assets\\blender\\hunter-attire.blend",
+    "collection": "ASSET | hunter-pack",
+    "scene": "HUNTER | tailored camp attire",
+    "view_layer": "ViewLayer",
+    "frame": 1,
+    "unit_system": "METRIC",
+    "unit_scale_length": 1.0,
+    "policy": {
+      "max_triangles": 12000,
+      "require_uv": false
+    },
+    "object_count": 12,
+    "object_types": {
+      "MESH": 12
+    },
+    "objects": [
+      {
+        "name": "Closure | one broad leather tongue",
+        "type": "MESH",
+        "dimensions": [
+          0.06499998271465302,
+          0.08862036466598511,
+          0.6044244766235352
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 26,
+          "edges": 37,
+          "polygons": 12,
+          "triangles": 24,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.26249998807907104,
+              0.5730000138282776,
+              0.41999998688697815
+            ],
+            "max": [
+              -0.19750000536441803,
+              0.6485185027122498,
+              1.0160000324249268
+            ],
+            "dimensions": [
+              0.06499998271465302,
+              0.07551848888397217,
+              0.5960000455379486
+            ]
+          },
+          "topology": {
+            "boundary_edges": 26,
+            "nonmanifold_edges_including_boundary_and_loose": 26,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        },
+        "evaluated": {
+          "vertices": 52,
+          "edges": 150,
+          "polygons": 100,
+          "triangles": 100,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.26249998807907104,
+              0.5678980350494385,
+              0.4177374541759491
+            ],
+            "max": [
+              -0.19750000536441803,
+              0.6565183997154236,
+              1.0221619606018066
+            ],
+            "dimensions": [
+              0.06499998271465302,
+              0.08862036466598511,
+              0.6044245064258575
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        }
+      },
+      {
+        "name": "Closure | seated bronze buckle forged frame",
+        "type": "MESH",
+        "dimensions": [
+          0.1276249885559082,
+          0.01385641098022461,
+          0.13475006818771362
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 48,
+          "edges": 96,
+          "polygons": 48,
+          "triangles": 96,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.29087498784065247,
+              0.6570717692375183,
+              0.6557499766349792
+            ],
+            "max": [
+              -0.16324999928474426,
+              0.6709281802177429,
+              0.7905000448226929
+            ],
+            "dimensions": [
+              0.1276249885559082,
+              0.01385641098022461,
+              0.13475006818771362
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        },
+        "evaluated": {
+          "vertices": 48,
+          "edges": 144,
+          "polygons": 96,
+          "triangles": 96,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.29087498784065247,
+              0.6570717692375183,
+              0.6557499766349792
+            ],
+            "max": [
+              -0.16324999928474426,
+              0.6709281802177429,
+              0.7905000448226929
+            ],
+            "dimensions": [
+              0.1276249885559082,
+              0.01385641098022461,
+              0.13475006818771362
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        }
+      },
+      {
+        "name": "Closure | seated bronze buckle seated tongue",
+        "type": "MESH",
+        "dimensions": [
+          0.007794231176376343,
+          0.01694929599761963,
+          0.0759546160697937
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 12,
+          "edges": 18,
+          "polygons": 8,
+          "triangles": 20,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.2338971197605133,
+              0.6595253348350525,
+              0.6695227026939392
+            ],
+            "max": [
+              -0.22610288858413696,
+              0.6764746308326721,
+              0.7454773187637329
+            ],
+            "dimensions": [
+              0.007794231176376343,
+              0.01694929599761963,
+              0.0759546160697937
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        },
+        "evaluated": {
+          "vertices": 12,
+          "edges": 30,
+          "polygons": 20,
+          "triangles": 20,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.2338971197605133,
+              0.6595253348350525,
+              0.6695227026939392
+            ],
+            "max": [
+              -0.22610288858413696,
+              0.6764746308326721,
+              0.7454773187637329
+            ],
+            "dimensions": [
+              0.007794231176376343,
+              0.01694929599761963,
+              0.0759546160697937
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | restrained bronze"
+          ]
+        }
+      },
+      {
+        "name": "Flap | worn continuous binding",
+        "type": "MESH",
+        "dimensions": [
+          0.6053683161735535,
+          0.2672952115535736,
+          0.2939877510070801
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 174,
+          "edges": 342,
+          "polygons": 170,
+          "triangles": 344,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5326841473579407,
+              0.36049899458885193,
+              0.746999979019165
+            ],
+            "max": [
+              0.0726841539144516,
+              0.6277942061424255,
+              1.0409877300262451
+            ],
+            "dimensions": [
+              0.6053683012723923,
+              0.2672952115535736,
+              0.2939877510070801
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        },
+        "evaluated": {
+          "vertices": 174,
+          "edges": 516,
+          "polygons": 344,
+          "triangles": 344,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5326841473579407,
+              0.36049899458885193,
+              0.746999979019165
+            ],
+            "max": [
+              0.0726841539144516,
+              0.6277942061424255,
+              1.0409877300262451
+            ],
+            "dimensions": [
+              0.6053683012723923,
+              0.2672952115535736,
+              0.2939877510070801
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        }
+      },
+      {
+        "name": "Left | continuous seated shoulder strap",
+        "type": "MESH",
+        "dimensions": [
+          0.19999998807907104,
+          0.6832136511802673,
+          0.6601108908653259
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 62,
+          "edges": 91,
+          "polygons": 30,
+          "triangles": 60,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.44999998807907104,
+              -0.2038888931274414,
+              0.3888888955116272
+            ],
+            "max": [
+              -0.25,
+              0.4699999988079071,
+              1.034999966621399
+            ],
+            "dimensions": [
+              0.19999998807907104,
+              0.6738888919353485,
+              0.6461110711097717
+            ]
+          },
+          "topology": {
+            "boundary_edges": 62,
+            "nonmanifold_edges_including_boundary_and_loose": 62,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        },
+        "evaluated": {
+          "vertices": 124,
+          "edges": 366,
+          "polygons": 244,
+          "triangles": 244,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.44999998807907104,
+              -0.21086819469928741,
+              0.3818889260292053
+            ],
+            "max": [
+              -0.25,
+              0.4723454415798187,
+              1.0419998168945312
+            ],
+            "dimensions": [
+              0.19999998807907104,
+              0.6832136362791061,
+              0.6601108908653259
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        }
+      },
+      {
+        "name": "Left | upper sewn anchor",
+        "type": "MESH",
+        "dimensions": [
+          0.0949999988079071,
+          0.027910679578781128,
+          0.10179108381271362
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 8,
+          "edges": 10,
+          "polygons": 3,
+          "triangles": 6,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.4675000011920929,
+              0.49000000953674316,
+              0.8399999737739563
+            ],
+            "max": [
+              -0.3725000023841858,
+              0.5,
+              0.9399999976158142
+            ],
+            "dimensions": [
+              0.0949999988079071,
+              0.009999990463256836,
+              0.10000002384185791
+            ]
+          },
+          "topology": {
+            "boundary_edges": 8,
+            "nonmanifold_edges_including_boundary_and_loose": 8,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        },
+        "evaluated": {
+          "vertices": 16,
+          "edges": 42,
+          "polygons": 28,
+          "triangles": 28,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.4675000011920929,
+              0.4810446798801422,
+              0.839104413986206
+            ],
+            "max": [
+              -0.3725000023841858,
+              0.5089553594589233,
+              0.9408954977989197
+            ],
+            "dimensions": [
+              0.0949999988079071,
+              0.027910679578781128,
+              0.10179108381271362
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        }
+      },
+      {
+        "name": "Pack | compressed waxed-canvas body",
+        "type": "MESH",
+        "dimensions": [
+          0.6479678750038147,
+          0.3658682107925415,
+          0.7049999833106995
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 624,
+          "edges": 1200,
+          "polygons": 578,
+          "triangles": 1244,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.573539674282074,
+              0.24584053456783295,
+              0.3100000023841858
+            ],
+            "max": [
+              0.07442820072174072,
+              0.6117087602615356,
+              1.0149999856948853
+            ],
+            "dimensions": [
+              0.6479678750038147,
+              0.3658682256937027,
+              0.7049999833106995
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        },
+        "evaluated": {
+          "vertices": 624,
+          "edges": 1866,
+          "polygons": 1244,
+          "triangles": 1244,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.573539674282074,
+              0.24584053456783295,
+              0.3100000023841858
+            ],
+            "max": [
+              0.07442820072174072,
+              0.6117087602615356,
+              1.0149999856948853
+            ],
+            "dimensions": [
+              0.6479678750038147,
+              0.3658682256937027,
+              0.7049999833106995
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        }
+      },
+      {
+        "name": "Pack | overlapping curved flap",
+        "type": "MESH",
+        "dimensions": [
+          0.5901609063148499,
+          0.26955294609069824,
+          0.30128854513168335
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 117,
+          "edges": 212,
+          "polygons": 96,
+          "triangles": 192,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.523687481880188,
+              0.36500000953674316,
+              0.7559999823570251
+            ],
+            "max": [
+              0.06368750333786011,
+              0.621999979019165,
+              1.0479999780654907
+            ],
+            "dimensions": [
+              0.5873749852180481,
+              0.2569999694824219,
+              0.2919999957084656
+            ]
+          },
+          "topology": {
+            "boundary_edges": 40,
+            "nonmanifold_edges_including_boundary_and_loose": 40,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        },
+        "evaluated": {
+          "vertices": 234,
+          "edges": 696,
+          "polygons": 464,
+          "triangles": 464,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.5250804424285889,
+              0.3614470362663269,
+              0.7557082772254944
+            ],
+            "max": [
+              0.06508048623800278,
+              0.6309999823570251,
+              1.0569968223571777
+            ],
+            "dimensions": [
+              0.5901609286665916,
+              0.26955294609069824,
+              0.30128854513168335
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        }
+      },
+      {
+        "name": "Pack | sewn side panel welt",
+        "type": "MESH",
+        "dimensions": [
+          0.12792620062828064,
+          0.08546540141105652,
+          0.6942132711410522
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 66,
+          "edges": 126,
+          "polygons": 62,
+          "triangles": 128,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.513627827167511,
+              0.4942186772823334,
+              0.3201490342617035
+            ],
+            "max": [
+              -0.38570162653923035,
+              0.5796840786933899,
+              1.0143623352050781
+            ],
+            "dimensions": [
+              0.12792620062828064,
+              0.08546540141105652,
+              0.6942133009433746
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        },
+        "evaluated": {
+          "vertices": 66,
+          "edges": 192,
+          "polygons": 128,
+          "triangles": 128,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.513627827167511,
+              0.4942186772823334,
+              0.3201490342617035
+            ],
+            "max": [
+              -0.38570162653923035,
+              0.5796840786933899,
+              1.0143623352050781
+            ],
+            "dimensions": [
+              0.12792620062828064,
+              0.08546540141105652,
+              0.6942133009433746
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        }
+      },
+      {
+        "name": "Pack | sewn side panel welt.001",
+        "type": "MESH",
+        "dimensions": [
+          0.06573732197284698,
+          0.08626487851142883,
+          0.692868709564209
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 66,
+          "edges": 126,
+          "polygons": 62,
+          "triangles": 128,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.043245501816272736,
+              0.49422892928123474,
+              0.320719838142395
+            ],
+            "max": [
+              0.02249181643128395,
+              0.5804938077926636,
+              1.013588547706604
+            ],
+            "dimensions": [
+              0.06573731824755669,
+              0.08626487851142883,
+              0.692868709564209
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        },
+        "evaluated": {
+          "vertices": 66,
+          "edges": 192,
+          "polygons": 128,
+          "triangles": 128,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.043245501816272736,
+              0.49422892928123474,
+              0.320719838142395
+            ],
+            "max": [
+              0.02249181643128395,
+              0.5804938077926636,
+              1.013588547706604
+            ],
+            "dimensions": [
+              0.06573731824755669,
+              0.08626487851142883,
+              0.692868709564209
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | rubbed binding"
+          ]
+        }
+      },
+      {
+        "name": "Right | continuous seated shoulder strap",
+        "type": "MESH",
+        "dimensions": [
+          0.4896666407585144,
+          0.6832136511802673,
+          0.6601109504699707
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 62,
+          "edges": 91,
+          "polygons": 30,
+          "triangles": 60,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.07500000298023224,
+              -0.2038888931274414,
+              0.3888888955116272
+            ],
+            "max": [
+              0.41466665267944336,
+              0.4699999988079071,
+              1.034999966621399
+            ],
+            "dimensions": [
+              0.4896666556596756,
+              0.6738888919353485,
+              0.6461110711097717
+            ]
+          },
+          "topology": {
+            "boundary_edges": 62,
+            "nonmanifold_edges_including_boundary_and_loose": 62,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        },
+        "evaluated": {
+          "vertices": 124,
+          "edges": 366,
+          "polygons": 244,
+          "triangles": 244,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.07500000298023224,
+              -0.21086819469928741,
+              0.38188889622688293
+            ],
+            "max": [
+              0.41466665267944336,
+              0.4723454415798187,
+              1.0419998168945312
+            ],
+            "dimensions": [
+              0.4896666556596756,
+              0.6832136362791061,
+              0.6601109206676483
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | dark leather"
+          ]
+        }
+      },
+      {
+        "name": "Right | upper sewn anchor",
+        "type": "MESH",
+        "dimensions": [
+          0.0949999988079071,
+          0.027910679578781128,
+          0.10179108381271362
+        ],
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_mode": "XYZ",
+        "rotation_euler": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_quaternion": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "world_scale_magnitudes": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "nonuniform_local_scale": false,
+        "nonuniform_world_scale": false,
+        "negative_local_scale": false,
+        "negative_world_determinant": false,
+        "hide_viewport": false,
+        "hide_render": false,
+        "instance_type": "NONE",
+        "modifiers": [
+          {
+            "name": "Tailored thickness and closed hem",
+            "type": "SOLIDIFY",
+            "viewport": true,
+            "render": true
+          },
+          {
+            "name": "Final runtime triangulation | non-destructive",
+            "type": "TRIANGULATE",
+            "viewport": true,
+            "render": true
+          }
+        ],
+        "empty_material_slots": [],
+        "base": {
+          "vertices": 8,
+          "edges": 10,
+          "polygons": 3,
+          "triangles": 6,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.0925000011920929,
+              0.49000000953674316,
+              0.8399999737739563
+            ],
+            "max": [
+              0.0024999999441206455,
+              0.5,
+              0.9399999976158142
+            ],
+            "dimensions": [
+              0.09500000113621354,
+              0.009999990463256836,
+              0.10000002384185791
+            ]
+          },
+          "topology": {
+            "boundary_edges": 8,
+            "nonmanifold_edges_including_boundary_and_loose": 8,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        },
+        "evaluated": {
+          "vertices": 16,
+          "edges": 42,
+          "polygons": 28,
+          "triangles": 28,
+          "degenerate_triangles": 0,
+          "nonfinite_vertices": 0,
+          "world_bounds": {
+            "min": [
+              -0.0925000011920929,
+              0.4810446798801422,
+              0.839104413986206
+            ],
+            "max": [
+              0.0024999999441206455,
+              0.5089553594589233,
+              0.9408954977989197
+            ],
+            "dimensions": [
+              0.09500000113621354,
+              0.027910679578781128,
+              0.10179108381271362
+            ]
+          },
+          "topology": {
+            "boundary_edges": 0,
+            "nonmanifold_edges_including_boundary_and_loose": 0,
+            "edges_with_more_than_two_faces": 0,
+            "loose_edges": 0,
+            "isolated_vertices": 0,
+            "zero_length_edges": 0,
+            "zero_area_faces": 0,
+            "epsilon_local_units": 1e-08
+          },
+          "uv": {
+            "available": false,
+            "active": null,
+            "layers": [],
+            "tile_range_note": "Bounding range only; upper integer borders belong to the preceding tile. Does not measure occupied tiles, overlap, texel density, or padding."
+          },
+          "faces_without_material": 0,
+          "material_names": [
+            "Hunter | waxed canvas"
+          ]
+        }
+      }
+    ],
+    "textures": [],
+    "totals": {
+      "base": {
+        "vertices": 1273,
+        "edges": 2359,
+        "polygons": 1102,
+        "triangles": 2308
+      },
+      "evaluated": {
+        "vertices": 1556,
+        "edges": 4602,
+        "polygons": 3068,
+        "triangles": 3068
+      }
+    },
+    "errors": [],
+    "warnings": [
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Closure | one broad leather tongue"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Left | continuous seated shoulder strap"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Left | upper sewn anchor"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Pack | overlapping curved flap"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Right | continuous seated shoulder strap"
+      },
+      {
+        "code": "topology_review",
+        "message": "base mesh has boundary, nonmanifold, loose, or degenerate geometry; review its metrics.",
+        "object": "Right | upper sewn anchor"
+      }
+    ],
+    "manual_checks": [
+      "Inspect silhouette, proportions, reference fidelity, material response, lighting, and close-up renders.",
+      "Verify mechanical attachment, clearances, floating parts, self-intersections, face orientation, and shading.",
+      "Inspect topology/deformation quality; these counts do not certify topology quality or game readiness.",
+      "Verify UV overlap, padding, texel density, seam placement, and bake artifacts; UV ranges are not overlap tests.",
+      "Validate export/re-import in the target engine, collision, LODs, naming, pivots, and the agreed budgets.",
+      "Counts are per collection object, not unique datablocks or expanded instances; inspect collection, particle, Geometry Nodes instances, unsupported geometry, and render-only subdivisions/displacement separately.",
+      "Evaluated geometry uses the current viewport depsgraph and frame; render visibility, render modifiers, animation frames, linked libraries, caches, fonts, and non-image dependencies need separate validation.",
+      "Texture scan includes all image nodes in assigned materials and nested groups, even disconnected nodes; it checks file presence or packing, not decoding, color space, resolution, licensing, or export inclusion."
+    ],
+    "status": "review"
+  }
+}
