@@ -17,6 +17,13 @@ receives an answer from the face; fish approach a floating lamp and scatter from
 body. These extend the existing Hold interaction without changing access or geometry.
 See [response implementation and limits](docs/city-response-implementation.md).
 
+The architecture revision adds editable Blender shelf assemblies, recessed façades,
+turned columns and rooted foliage, with local contact shading derived from actual
+visible geometry. The [art gallery](docs/art-direction.html) includes current game
+frames, Blender source previews and GLB links alongside the 60 reference images.
+The [independent review](docs/artistic-review-v12.md) still requires substantial
+material and hero-asset refinement before the requested AAA target is met.
+
 **Status:** a playable presentation development branch. AAA visual quality and human
 immersion have not been certified. The scope is the existing Vault Mouth and Drowned
 Quarter; it is not a finished 25-room game. The city increment passes native Windows

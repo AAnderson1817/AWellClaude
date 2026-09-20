@@ -1,0 +1,16 @@
+{
+  "verifiedUtc": "2026-09-20T20:28:55.1253775Z",
+  "baselineGitRef": "99de7856bedfa059439da1b89435f54c98bddaf7",
+  "sanitizer": "undefined; no recovery",
+  "renderedComparison": false,
+  "routeChecks": 35,
+  "escapeSurfaces": 36,
+  "snapshotFrames": 3600,
+  "cityResponseTests": "four windows, mural/fire coupling, face sinking-stone acknowledgment, eight-fish shoal, detached snapshots",
+  "citySoundExtensions": [
+    "city-murmur",
+    "city-hum"
+  ],
+  "pythonToolTests": 5,
+  "status": "passed"
+}

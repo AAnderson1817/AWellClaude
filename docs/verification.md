@@ -1,5 +1,26 @@
 # Verification
 
+The current architecture revision has a separate [final geometry audit](evidence/architecture/final-v12.json)
+and [independent whole-brief review](artistic-review-v12.md). The geometry audit
+checks the actual delivered C arrays, 2D landing contacts, normals, indices,
+recessed support placement, and renderer integration; seven deliberately broken
+fixtures establish that the checker rejects relevant defects. Artistic verdict:
+**rework**. Geometry validity does not establish AAA craft or immersion.
+
+The [matched native captures](evidence/architecture/native/manifest.json) compare
+the same source/assets with and without geometry contact shading. Each room has
+120 warmup frames followed by 600 measured frame-loop calls at 1920×1080. On this
+host, mean times were 2.84/2.24 ms with occlusion and 1.59/1.36 ms without. These
+are local wall-time throughput observations with vsync disabled, not GPU-only
+timings or a cross-hardware guarantee. The current headless checks are in
+[architecture/checks](evidence/architecture/checks/summary.json); 6,640 actually
+rendered comparison frames also pass in
+[render-preservation-report.json](evidence/architecture/checks/render-preservation-report.json).
+
+The web verification for this revision is recorded separately in
+[architecture/web-smoke.json](evidence/architecture/web-smoke.json). Earlier records
+below retain their original revision scope.
+
 The final depth-v11 browser check is recorded in
 [city-responses/web-smoke.json](evidence/city-responses/web-smoke.json), including
 current source and build hashes. Both rooms rendered in the in-app Chromium browser

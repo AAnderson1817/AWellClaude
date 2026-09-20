@@ -1,0 +1,303 @@
+{
+  "source": "src/room.c MAPS",
+  "source_sha256": "05a9de36d4756814b94af0fd7b82970da293c087d80bb4e06a2ff1758c47405c",
+  "source_blend": "supports.blend",
+  "blender_version": "5.2.0 LTS",
+  "runtime_axes": "X right,Y up,Z front",
+  "runtime_transform": "identity; absolute world coordinates",
+  "projection_contract": {
+    "camera": [
+      20,
+      11,
+      52
+    ],
+    "look_at": [
+      20,
+      11,
+      0
+    ],
+    "vertical_fov_degrees": 24.415162,
+    "forced_perspective": "world=(20+(screenX-20)*(52-z)/52,11+(screenY-11)*(52-z)/52,z)",
+    "front_lip_z": 0,
+    "front_lip_top": "22-mapRow",
+    "front_lip_span": "exact [x0,x1] from immutable one-way run",
+    "rear_receiver_front_z": -5.055,
+    "rear_receiver_back_z": -5.898,
+    "brackets_and_corbels": "z<=-.45 below near fascia; no added collision or gameplay surfaces",
+    "receiver_form": "0.46-tile narrow chamfered spines on actual anchor axes; no broad wall bays"
+  },
+  "runs": [
+    {
+      "room": 0,
+      "row": 4,
+      "x0": 19,
+      "x1": 24,
+      "top": 18,
+      "kind": "timber",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 5,
+      "x0": 13,
+      "x1": 18,
+      "top": 17,
+      "kind": "timber",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 5,
+      "x0": 27,
+      "x1": 32,
+      "top": 17,
+      "kind": "stone",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 6,
+      "x0": 6,
+      "x1": 12,
+      "top": 16,
+      "kind": "timber",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 8,
+      "x0": 28,
+      "x1": 33,
+      "top": 14,
+      "kind": "stone",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 9,
+      "x0": 6,
+      "x1": 10,
+      "top": 13,
+      "kind": "timber",
+      "rear_receiver": "floor",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 11,
+      "x0": 26,
+      "x1": 30,
+      "top": 11,
+      "kind": "stone",
+      "rear_receiver": "floor",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 12,
+      "x0": 11,
+      "x1": 15,
+      "top": 10,
+      "kind": "timber",
+      "rear_receiver": "floor",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 15,
+      "x0": 6,
+      "x1": 10,
+      "top": 7,
+      "kind": "timber",
+      "rear_receiver": "floor",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 16,
+      "x0": 22,
+      "x1": 26,
+      "top": 6,
+      "kind": "stone",
+      "rear_receiver": "floor",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 0,
+      "row": 20,
+      "x0": 21,
+      "x1": 27,
+      "top": 2,
+      "kind": "grate",
+      "rear_receiver": "existing solid abutments at either end; no shaft-blocking pier"
+    },
+    {
+      "room": 1,
+      "row": 1,
+      "x0": 21,
+      "x1": 27,
+      "top": 21,
+      "kind": "grate",
+      "rear_receiver": "existing solid abutments at either end; no shaft-blocking pier"
+    },
+    {
+      "room": 1,
+      "row": 3,
+      "x0": 16,
+      "x1": 22,
+      "top": 19,
+      "kind": "stone",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 1,
+      "row": 3,
+      "x0": 26,
+      "x1": 32,
+      "top": 19,
+      "kind": "stone",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 1,
+      "row": 5,
+      "x0": 9,
+      "x1": 14,
+      "top": 17,
+      "kind": "stone",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    },
+    {
+      "room": 1,
+      "row": 5,
+      "x0": 27,
+      "x1": 32,
+      "top": 17,
+      "kind": "stone",
+      "rear_receiver": "ceiling",
+      "receiver_front_z": -5.055,
+      "receiver_back_z": -5.898
+    }
+  ],
+  "assets": {
+    "vault-supports": {
+      "symbol": "FOUNDRY_VAULT_SUPPORTS",
+      "triangles": 71588,
+      "material_meshes": 12,
+      "materials": [
+        "Support | split aged oak",
+        "Support | worn timber underside",
+        "Support | fresh old endgrain",
+        "Support | incised endgrain and growth lines",
+        "Support | hand-forged iron straps",
+        "Support | restrained bronze keys",
+        "Support | rubbed stone arris",
+        "Support | dressed stone",
+        "Support | stone recess",
+        "Support | rubbed shaft grate iron",
+        "Support | recessed rock receiver",
+        "Support | recessed masonry receiver"
+      ],
+      "material_families": [
+        "wood",
+        "wood",
+        "wood",
+        "wood",
+        "metal",
+        "metal",
+        "stone",
+        "stone",
+        "stone",
+        "metal",
+        "rear_rock",
+        "rear_stone"
+      ],
+      "bounds_min": [
+        4.880812168121338,
+        -1.6373083591461182,
+        -5.897999286651611
+      ],
+      "bounds_max": [
+        33.984100341796875,
+        23.52600860595703,
+        0.0
+      ],
+      "dimensions": [
+        29.103288173675537,
+        25.16331696510315,
+        5.897999286651611
+      ],
+      "source_objects": 374,
+      "one_way_runs": 11
+    },
+    "drowned-supports": {
+      "symbol": "FOUNDRY_DROWNED_SUPPORTS",
+      "triangles": 7184,
+      "material_meshes": 7,
+      "materials": [
+        "Support | rubbed shaft grate iron",
+        "Support | hand-forged iron straps",
+        "Support | restrained bronze keys",
+        "Support | rubbed stone arris",
+        "Support | dressed stone",
+        "Support | stone recess",
+        "Support | recessed masonry receiver"
+      ],
+      "material_families": [
+        "metal",
+        "metal",
+        "metal",
+        "stone",
+        "stone",
+        "stone",
+        "rear_stone"
+      ],
+      "bounds_min": [
+        8.237371444702148,
+        15.718153953552246,
+        -5.897950649261475
+      ],
+      "bounds_max": [
+        32.873355865478516,
+        23.525991439819336,
+        -0.0
+      ],
+      "dimensions": [
+        24.635984420776367,
+        7.80783748626709,
+        5.897950649261475
+      ],
+      "source_objects": 106,
+      "one_way_runs": 5
+    }
+  },
+  "total_triangles": 78772,
+  "substrate_codes": {
+    "metal": 0,
+    "stone": 1,
+    "wood": 3,
+    "rear_rock": 5,
+    "rear_stone": 6
+  }
+}

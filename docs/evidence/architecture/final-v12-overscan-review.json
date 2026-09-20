@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "verified_utc": "2026-09-20T20:38:39.903522+00:00",
+  "scope": "Delivered arrays, calibrated camera, collision contacts and recessed architecture. Not artistic/AAA acceptance.",
+  "tolerances": {
+    "front_z_min": -0.1,
+    "rear_standoff": -0.45,
+    "landing_original_pixels": 0.5,
+    "raster_original_pixels": 0.5,
+    "support_front_fascia_tiles": 0.55
+  },
+  "sources": {
+    "checker_sha256": "87a29146f7e64928b75bf122f676733966bca4ff6ed615d958f920d673de1015",
+    "room_c_sha256": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "depth_c_sha256": "8186c176af08395f2d9e0ab99efb3cb37c50c8b8305bc9825bd8af2b0da3fb2d",
+    "src\\generated\\terrain_assets.h": "5601938f81e16194c3581857a3669d4a68588e4119148f4b7f499820a91fbd1a",
+    "src\\generated\\support_assets.h": "b431b8c4525a4265ecea0ef803981eee3073b2dbb6df3f2bb64026a36bbc0994"
+  },
+  "assets": [
+    {
+      "asset": "FOUNDRY_VAULT_TERRAIN",
+      "role": "terrain",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 32654,
+        "triangles": 27682,
+        "materials": 11,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "world_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ],
+          [
+            -2.96,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ]
+        ],
+        "contact_samples": 1300,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "orthographic_mask_samples": 56320,
+        "orthographic_mask_mismatches": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 4165,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 37120,
+        "open_stage_covered_fraction_diagnostic": 0.112204
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "room": 0,
+      "binding": "identity draw found"
+    },
+    {
+      "asset": "FOUNDRY_DROWNED_TERRAIN",
+      "role": "terrain",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 158707,
+        "triangles": 70634,
+        "materials": 9,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "world_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ],
+          [
+            -2.96,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0341149745239786,
+            22.0
+          ]
+        ],
+        "contact_samples": 1180,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "orthographic_mask_samples": 56320,
+        "orthographic_mask_mismatches": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 4763,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 35136,
+        "open_stage_covered_fraction_diagnostic": 0.135559
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "room": 1,
+      "binding": "identity draw found"
+    },
+    {
+      "asset": "FOUNDRY_VAULT_SUPPORTS",
+      "role": "supports",
+      "status": "fail",
+      "errors": [
+        "Projected architecture exceeds the stage trim allowance of .25 tiles"
+      ],
+      "metrics": {
+        "vertices": 73996,
+        "triangles": 71588,
+        "materials": 12,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "world_bounds": [
+          [
+            4.880812,
+            33.9841
+          ],
+          [
+            -1.637308,
+            23.526009
+          ],
+          [
+            -5.897999,
+            0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            5.994199498646376,
+            33.00000199838592
+          ],
+          [
+            -0.3500004459533397,
+            22.250001311672293
+          ]
+        ],
+        "contact_samples": 1620,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "unrecessed_offmask_samples": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 3732,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 35456,
+        "open_stage_covered_fraction_diagnostic": 0.105257
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "room": 0,
+      "binding": "identity per-material support draw found"
+    },
+    {
+      "asset": "FOUNDRY_DROWNED_SUPPORTS",
+      "role": "supports",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 13530,
+        "triangles": 7184,
+        "materials": 7,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "world_bounds": [
+          [
+            8.237371,
+            32.873356
+          ],
+          [
+            15.718154,
+            23.525991
+          ],
+          [
+            -5.897951,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            8.999999476831093,
+            32.000000691748966
+          ],
+          [
+            15.399999320162557,
+            22.250001311672293
+          ]
+        ],
+        "contact_samples": 876,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "unrecessed_offmask_samples": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 872,
+        "full_stage_samples_diagnostic": 56320,
+        "open_stage_samples_diagnostic": 34240,
+        "open_stage_covered_fraction_diagnostic": 0.025467
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "room": 1,
+      "binding": "identity per-material support draw found"
+    }
+  ],
+  "camera": {
+    "x": 20.0,
+    "y": 11.0,
+    "z": 52.0,
+    "fov": 24.415162
+  },
+  "adversarial_fixtures": {
+    "status": "passed",
+    "valid_fixture": "passed",
+    "valid_recessed_support": "passed",
+    "rejected_mutations": {
+      "shifted contact": [
+        "60 map-derived contact probes do not match the visible front lip",
+        "64 front-band samples occupy unauthored air/water beyond tolerance",
+        "64 solid-mask sample mismatches in delivered terrain"
+      ],
+      "receded contact": [
+        "60 map-derived contact probes do not match the visible front lip"
+      ],
+      "front intrusion": [
+        "Architecture protrudes in front of z0: 0.04"
+      ],
+      "inverted normals": [
+        "reversed_normal_triangles: 2"
+      ],
+      "non-emissive rule": [
+        "mesh 0: invalid/nonzero-emission architecture material"
+      ],
+      "invalid index": [
+        "mesh 0: invalid 16-bit index/triangle storage",
+        "60 map-derived contact probes do not match the visible front lip",
+        "128 solid-mask sample mismatches in delivered terrain"
+      ],
+      "unrecessed rear receiver": [
+        "112 off-envelope support samples are closer than the -.45 rear stand-off"
+      ]
+    }
+  },
+  "status": "fail",
+  "integration_scope": "required",
+  "omitted_supports": false
+}

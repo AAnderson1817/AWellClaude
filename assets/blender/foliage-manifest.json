@@ -1,0 +1,66 @@
+{
+  "axes": "X right,Y up,Z toward camera",
+  "pivot": "root at origin",
+  "blender_version": "5.2.0 LTS",
+  "profile": "conventional real-time",
+  "external_dependencies": [],
+  "artistic_state": "work_in_progress",
+  "assets": {
+    "vault-rooted-bush": {
+      "symbol": "FOUNDRY_VAULT_BUSH",
+      "triangles": 30926,
+      "material_meshes": 6,
+      "bounds_min": [
+        -0.8006855249404907,
+        -0.0799960047006607,
+        -0.1990058571100235
+      ],
+      "bounds_max": [
+        0.7952412366867065,
+        1.3349155187606812,
+        0.23458650708198547
+      ],
+      "dimensions": [
+        1.5959267616271973,
+        1.4149115234613419,
+        0.43359236419200897
+      ],
+      "materials": [
+        "Rooted wood | umber",
+        "Rooted wood | aged ridge",
+        "Vault | young lamina",
+        "Leaf | subdued underside",
+        "Leaf | attached midrib",
+        "Vault | olive lamina"
+      ],
+      "sha256": "835cc0308beb2ad67abfbc9168c0013d2da49936adcae648a8f156dc05ab7484"
+    },
+    "drowned-rooted-fronds": {
+      "symbol": "FOUNDRY_DROWNED_FRONDS",
+      "triangles": 18576,
+      "material_meshes": 4,
+      "bounds_min": [
+        -0.5074001550674438,
+        -0.08203816413879395,
+        -0.48290348052978516
+      ],
+      "bounds_max": [
+        0.5930272340774536,
+        1.3249331712722778,
+        0.25056055188179016
+      ],
+      "dimensions": [
+        1.1004273891448975,
+        1.4069713354110718,
+        0.7334640324115753
+      ],
+      "materials": [
+        "Rooted wood | umber",
+        "Drowned | worn olive margin",
+        "Drowned | mineral green lamina",
+        "Leaf | subdued underside"
+      ],
+      "sha256": "9ceca3a76f5bd77e7348ee45741645ceb0c7e877c23d723ddb6d409c9b38382d"
+    }
+  }
+}

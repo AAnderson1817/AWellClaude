@@ -1,0 +1,10 @@
+{
+  "capturedUtc": "2026-09-20T20:40:49.9048654Z",
+  "sourceHashes": {
+    "src/generated/terrain_assets.h": "5601938f81e16194c3581857a3669d4a68588e4119148f4b7f499820a91fbd1a",
+    "src/depth.c": "f3377749e6c18c1612ed8d0edfc33d4aaaf601f2930be9b0f229e17e00da4dc0",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "src/generated/support_assets.h": "4f83aab3ed2a13c68c58fe3ea0a98fcb3f0bf75b8dbd7dc3f0eff7eda7e2cd62"
+  },
+  "scope": "Same source/geometry, AO build control only; actual native images and local frame-loop wall timing. Not GPU-only timing or hardware-wide performance acceptance."
+}

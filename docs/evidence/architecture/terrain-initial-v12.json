@@ -1,0 +1,157 @@
+{
+  "verified_utc": "2026-09-20T20:25:56.780759+00:00",
+  "scope": "Delivered arrays, calibrated camera, collision contacts and recessed architecture. Not artistic/AAA acceptance.",
+  "tolerances": {
+    "front_z_min": -0.1,
+    "rear_standoff": -0.45,
+    "landing_original_pixels": 0.5,
+    "raster_original_pixels": 0.5,
+    "support_front_fascia_tiles": 0.55
+  },
+  "sources": {
+    "room_c_sha256": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
+    "depth_c_sha256": "15f4494abd30b91c640388ecc3b8b5d7d8ee4af2765daa0123e83e04702b0bf6",
+    "src\\generated\\terrain_assets.h": "7ff5881e127b1efaaa6089b8f1ba309b175e50eac91c86b76c8d0a92f95ddb28"
+  },
+  "assets": [
+    {
+      "asset": "FOUNDRY_VAULT_TERRAIN",
+      "role": "terrain",
+      "status": "pass",
+      "errors": [],
+      "metrics": {
+        "vertices": 30159,
+        "triangles": 28392,
+        "materials": 11,
+        "invalid_normals": 0,
+        "degenerate_triangles": 0,
+        "reversed_normal_triangles": 0,
+        "world_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ],
+          [
+            -2.96,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ]
+        ],
+        "contact_samples": 1300,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "orthographic_mask_samples": 56320,
+        "orthographic_mask_mismatches": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 4165,
+        "full_stage_samples_diagnostic": 56320
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "room": 0,
+      "binding": "identity draw found"
+    },
+    {
+      "asset": "FOUNDRY_DROWNED_TERRAIN",
+      "role": "terrain",
+      "status": "fail",
+      "errors": [
+        "invalid_normals: 26",
+        "degenerate_triangles: 12",
+        "reversed_normal_triangles: 1"
+      ],
+      "metrics": {
+        "vertices": 155559,
+        "triangles": 70838,
+        "materials": 9,
+        "invalid_normals": 26,
+        "degenerate_triangles": 12,
+        "reversed_normal_triangles": 1,
+        "world_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0,
+            22.0
+          ],
+          [
+            -2.96,
+            -0.0
+          ]
+        ],
+        "projected_bounds": [
+          [
+            0.0,
+            40.0
+          ],
+          [
+            0.0341149745239786,
+            22.0
+          ]
+        ],
+        "contact_samples": 1180,
+        "contact_failures": 0,
+        "front_band_leak_samples": 0,
+        "orthographic_mask_samples": 56320,
+        "orthographic_mask_mismatches": 0,
+        "whole_depth_projected_offmask_samples_diagnostic": 4763,
+        "full_stage_samples_diagnostic": 56320
+      },
+      "contact_examples": [],
+      "front_leak_examples": [],
+      "room": 1,
+      "binding": "identity draw found"
+    }
+  ],
+  "camera": {
+    "x": 20.0,
+    "y": 11.0,
+    "z": 52.0,
+    "fov": 24.415162
+  },
+  "adversarial_fixtures": {
+    "status": "passed",
+    "valid_fixture": "passed",
+    "rejected_mutations": {
+      "shifted contact": [
+        "60 map-derived contact probes do not match the visible front lip",
+        "64 front-band samples occupy unauthored air/water beyond tolerance",
+        "64 solid-mask sample mismatches in delivered terrain"
+      ],
+      "receded contact": [
+        "60 map-derived contact probes do not match the visible front lip"
+      ],
+      "front intrusion": [
+        "Architecture protrudes in front of z0: 0.04"
+      ],
+      "inverted normals": [
+        "reversed_normal_triangles: 2"
+      ],
+      "non-emissive rule": [
+        "mesh 0: invalid/nonzero-emission architecture material"
+      ],
+      "invalid index": [
+        "mesh 0: invalid 16-bit index/triangle storage",
+        "60 map-derived contact probes do not match the visible front lip",
+        "128 solid-mask sample mismatches in delivered terrain"
+      ]
+    }
+  },
+  "status": "fail",
+  "integration_scope": "required",
+  "omitted_supports": true
+}

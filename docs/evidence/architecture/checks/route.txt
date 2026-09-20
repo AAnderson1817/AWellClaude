@@ -1,0 +1,37 @@
+A  floor           -> lower left step      from col 6: LJ:6,L:8,-:50
+B  lower step      -> the lip (4,17)       from col 5: LJ:6,L:8,-:50
+C  the lip         -> upper left step      from col 4: LJ:6,L:8,-:50
+D  upper left step -> shelf row 15         from col 1: RJ:12,R:8,-:50
+E  shelf row 15    -> shelf row 12         from col 6: RJ:20,R:8,-:50
+F  shelf row 12    -> shelf row 9          from col 11: LJ:12,L:8,-:50
+G  shelf row 9     -> shelf row 6          from col 6: J:12,-:50
+H  shelf row 6     -> upper-left shelf     from col 6: LJ:6,L:8,-:50
+I  upper-left      -> shelf row 6          from col 1: R:4,RJ:6,R:8,-:50
+J  shelf row 6     -> shelf row 5          from col 8: R:12,RJ:12,R:8,-:50
+K  shelf row 5     -> shelf row 4          from col 14: R:12,RJ:12,R:8,-:50
+L  shelf row 4     -> shelf row 5 (rt)     from col 22: R:12,RJ:6,R:8,-:50
+M  shelf row 5 (rt)-> upper-right shelf    from col 27: RJ:6,R:40,-:50
+N  upper-right     -> shelf row 8          from col 33: LJ:12,L:8,-:50
+O  shelf row 8     -> shelf row 11         from col 30: LJ:6,L:8,-:50
+P  shelf row 11    -> right mass           from col 26: RJ:6,R:18,-:50
+Q  right mass      -> shelf row 16         from col 31: LJ:12,L:40,-:50
+R  shelf row 16    -> pillar top           from col 22: LJ:12,L:8,-:50
+S  pillar top      -> the floor            from col 18: RJ:20,R:40,-:50
+W0 the shaft, down (hold Down on the shelf) D from (22,19): room 1, floating
+W1 water -> left island                    from the water: -:110,L:64,LJ:12,L:6,-:60
+W2 water -> right island                   from the water: -:110,R:40,RJ:6,R:6,-:60
+W3 left island -> shelf row 5              from col 3: R:12,RJ:6,R:8,-:50
+W4 shelf row 5 -> shelf row 3              from col 12: R:8,RJ:6,R:8,-:50
+W5 shelf row 3 -> the throat shelf         from col 19: R:12,RJ:6,R:8,-:50
+W6 right island -> shelf row 5 (rt)        from col 31: LJ:6,L:8,-:50
+W7 shelf row 5 (rt) -> shelf row 3 (rt)    from col 27: LJ:6,L:8,-:50
+W8 shelf row 3 (rt) -> the throat shelf    from col 26: LJ:6,L:8,-:50
+W9 the shaft, up (jump from the throat)    J from the throat: room 0, row 20
+W10 standing jump, end of A2 -> A1         J from (21,2): on A1
+W11 standing jump, end of A3 -> A1         J from (26,2): on A1
+W12 failed exit lands back on A1           short jump: back on A1; with Down held: in the water
+X0 hold R on the flooded floor, heavy      from the flooded floor, heavy: room 0, at the start, hands empty
+X1 hold R: the stone goes home             stone taken up, R held: stone back at 0/290
+X2 let go of R early: nothing happens      R held 40 frames and let go: still there, still holding, fade back to 0
+
+unmakeable hops: none -- both rooms close

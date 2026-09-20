@@ -1,0 +1,34 @@
+{
+  "source_reopened": true,
+  "blender_version": "5.2.0 LTS",
+  "assets": {
+    "vault-supports": {
+      "triangles": 71588,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        29.103288173675537,
+        25.16331696510315,
+        5.897999286651611
+      ],
+      "checks": "pass",
+      "sha256": "aa35e10aebabaad64f863391794acf96bcaf690ae41a00722b25e029bf5cc024",
+      "bytes": 2057424
+    },
+    "drowned-supports": {
+      "triangles": 7184,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        24.635984420776367,
+        7.80783748626709,
+        5.897950649261475
+      ],
+      "checks": "pass",
+      "sha256": "45235cc859db60c6d4811643f6eb9ab20ff77d56e003122d6e5431765205eb3a",
+      "bytes": 309176
+    }
+  },
+  "source_sha256": "451cd8bd5d6934c504eb022f95983b914ee69bea00e3aafdb6bceb343398cc9c",
+  "scope": "Source/GLB technical delivery only; map projection gate is independently verified by another script; runtime visual review remains required."
+}

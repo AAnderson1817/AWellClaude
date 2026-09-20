@@ -1,0 +1,22 @@
+{
+  "checkedUtc": "2026-09-20T20:46:56.1890372Z",
+  "platform": "Codex in-app Chromium WebGL",
+  "sourceHashes": {
+    "src/depth.c": "f3377749e6c18c1612ed8d0edfc33d4aaaf601f2930be9b0f229e17e00da4dc0",
+    "src/generated/support_assets.h": "4f83aab3ed2a13c68c58fe3ea0a98fcb3f0bf75b8dbd7dc3f0eff7eda7e2cd62",
+    "src/generated/foliage_assets.h": "d5432133d8f95effb66442fc414edcfe1e9efea2c51fbbc069dadb8712f9a15e",
+    "build/game.js": "157aefb5da05950dcffd2babaa342ac17b4dd31c42bec5acc70711dda9a02764",
+    "src/generated/terrain_assets.h": "5601938f81e16194c3581857a3669d4a68588e4119148f4b7f499820a91fbd1a",
+    "build/play.html": "c3d773e5d6fb608a7886b8d25dc82ea13da61bea5e1c8b1dfb78f98128ad436f"
+  },
+  "buildBytes": 18071725,
+  "observations": [
+    "Vault rendered updated supports, columns and foliage",
+    "Drowned rendered recessed facade openings, fronds and water",
+    "F2 switched to inherited flat renderer and back",
+    "Six Right key presses moved the player in depth mode",
+    "F4 key accepted; still-frame inspection alone does not certify motion comfort",
+    "No captured console warning or error entries in either tested page"
+  ],
+  "scope": "Live bounded browser observations; no full playthrough or audio/listening acceptance"
+}

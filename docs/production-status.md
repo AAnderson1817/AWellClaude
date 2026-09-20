@@ -3,7 +3,7 @@
 This branch extends the existing two-room C/raylib game. It is a working 3D
 presentation and city response candidate, with original mechanics retained and
 native and web builds. The overall goal remains active. This status describes the
-city response increment after the earlier depth-v10 milestone.
+architecture revision 12 after the city response milestone.
 
 ## Delivered
 
@@ -11,6 +11,10 @@ city response increment after the earlier depth-v10 milestone.
   following authored collision silhouettes, layered city mattes and foreground framing.
 - Embedded modeled door, astronomical instrument, terrain, pot, lantern and creature
   parts, with editable Blender sources and clean GLB reimport verification.
+- Blender-authored timber/stone shelves, narrow recessed anchor piers, deep sealed
+  façade openings, turned columns and rooted volumetric foliage. Geometry-derived
+  contact shading replaces the old depth-based darkening. Source/GLB packages and
+  actual C arrays are checked separately against the original landing edges.
 - Existing responsive props, wildlife, bulbs, lamp/stone behavior, water and reset
   presented in 3D; flat presentation available with F2.
 - Authored mural concealment/recovery, four reactive windows, seven-second face eye
@@ -26,7 +30,7 @@ city response increment after the earlier depth-v10 milestone.
 
 ## Acceptance still open
 
-The [current whole-brief review](artistic-review-v11.md) returns **rework**. The
+The [current whole-brief review](artistic-review-v12.md) returns **rework**. The
 playable surfaces, structural supports and inhabited architecture remain below the
 governing references. The new face, fish, windows and mural have observed responses,
 connecting material culture with behavior, but do not settle the broader quality
@@ -34,14 +38,14 @@ target. Source-asset technical verification and the repaired window-pane bounds
 are separate from artistic acceptance.
 
 The slice still has no completed ending or full deeper discovery structure. The
-hunter and native, face-mouth bubbles, drowned facade openings, remaining response-table
+hunter and native, face-mouth bubbles, remaining response-table
 dressing and final sound pass remain unfinished. Implemented responses are described
 in [city-response-implementation.md](city-response-implementation.md); automated and
 controlled visual fixtures do not establish spontaneous discovery or immersion.
 No new gates or player verbs conceal the remaining gaps.
 
-Further production should refine the playable materials and supports from the
-reference collection, implement the existing response tables through actual observed
+Further production should refine the playable materials, hero objects and creature
+craft from the reference collection, implement the existing response tables through actual observed
 toy interactions, and run blind playtests with sound. Record what players discover
 and misunderstand. AAA craft, immersion, sensory comfort, wordless teaching and the
 full design law cannot be marked complete from automated preservation tests.

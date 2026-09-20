@@ -11,6 +11,8 @@
 #include "generated/life_assets.h"
 #include "generated/city_assets.h"
 #include "generated/mural_assets.h"
+#include "generated/foliage_assets.h"
+#include "generated/support_assets.h"
 #include <math.h>
 #include <string.h>
 
@@ -19,8 +21,8 @@
 #define DH 1080
 static int ready;
 static Camera3D camera;
-static RenderTexture2D target,waterTarget;
-static Shader surface, finish,waterShader;
+static RenderTexture2D target,waterTarget,geometryTarget,occludedTarget;
+static Shader surface, finish,waterShader,occlusionShader;
 static Texture2D waterMask;
 static Model cube, orb, cylinder, cone, torus, leaf, archPane;
 static Texture2D mattes[2];
@@ -29,10 +31,14 @@ static Model doorModels[8],orreryModels[8];
 static Model terrainModels[ROOM_COUNT][12];
 static Model faceModels[12],eyeModels[4];
 static Model muralRockModels[8],muralPigmentModels[8];
+static Model bushModels[8],frondModels[8];
+static Model supportModels[ROOM_COUNT][12];
 static Model potModels[8],lampModels[8],seedModels[8],beastBodyModels[8],beastHeadModels[8],birdModels[8];
-static int metalLoc, roughLoc, emissionLoc, cameraLoc, timeLoc, substrateLoc, waterLevelLoc;
+static int metalLoc, roughLoc, emissionLoc, cameraLoc, timeLoc, substrateLoc, waterLevelLoc, plantBendLoc;
 // Surface identity is explicit: living forms do not inherit masonry noise.
 static float substrate;
+static float plantBend;
+static int geometryPassLoc;
 static const Color BASALT = {60,72,82,255};
 static const Color STONE = {95,108,112,255};
 static const Color BRONZE = {139,114,73,255};
@@ -49,14 +55,17 @@ static const Color WARM = {255,172,82,255};
 #endif
 static const char *VERT = VHEADER
 "IN vec3 vertexPosition; IN vec3 vertexNormal; IN vec2 vertexTexCoord; IN vec4 vertexColor;\n"
-"uniform mat4 mvp; uniform mat4 matModel; uniform mat4 matNormal;\n"
+"uniform mat4 mvp; uniform mat4 matModel; uniform mat4 matNormal; uniform float plantBend;\n"
 "OUT vec3 p; OUT vec3 localP; OUT vec3 n; OUT vec2 uv; OUT vec4 vc;\n"
-"void main(){ localP=vertexPosition; p=(matModel*vec4(vertexPosition,1.)).xyz; n=normalize((matNormal*vec4(vertexNormal,0.)).xyz);"
-"uv=vertexTexCoord;vc=vertexColor;gl_Position=mvp*vec4(vertexPosition,1.);}\n";
+"void main(){ localP=vertexPosition;vec3 v=vertexPosition;vec3 vn=vertexNormal;float h=max(v.y,0.);"
+"v.x+=plantBend*h*h;vn.y-=2.*plantBend*h*vn.x;"
+"p=(matModel*vec4(v,1.)).xyz; n=normalize((matNormal*vec4(vn,0.)).xyz);"
+"uv=vertexTexCoord;vc=vertexColor;gl_Position=mvp*vec4(v,1.);}\n";
 static const char *FRAG = FHEADER
 "IN vec3 p; IN vec3 localP; IN vec3 n; IN vec2 uv; IN vec4 vc;\n"
 "uniform vec4 colDiffuse; uniform sampler2D lightMap; uniform vec3 eye;\n"
 "uniform float metalness; uniform float roughness; uniform float emission; uniform float substrate; uniform float waterLevel;\n"
+"uniform float geometryPass;\n"
 "float hash(vec3 v){return fract(sin(dot(v,vec3(12.9898,78.233,32.21)))*43758.5453);}\n"
 "float noise3(vec3 v){vec3 i=floor(v),f=fract(v);f=f*f*(3.-2.*f);\n"
 " float a=mix(hash(i),hash(i+vec3(1,0,0)),f.x),b=mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x);\n"
@@ -64,10 +73,14 @@ static const char *FRAG = FHEADER
 " return mix(mix(a,b,f.y),mix(c,d,f.y),f.z);}\n"
 "void main(){\n"
 " vec3 N=normalize(n); vec3 V=normalize(eye-p); vec3 L=normalize(vec3(-.45,.8,.6));vec3 H=normalize(L+V);\n"
+" if(geometryPass>.5){vec3 en=N/(abs(N.x)+abs(N.y)+abs(N.z));vec2 oct=en.xy;"
+" if(en.z<0.)oct=(1.-abs(oct.yx))*vec2(oct.x>=0.?1.:-1.,oct.y>=0.?1.:-1.);"
+" vec2 depth=fract(clamp((p.z+40.)/48.,.0001,.9999)*vec2(1.,255.));depth.x-=depth.y/255.;"
+" RESULT=vec4(oct*.5+.5,depth);return;}\n"
 " vec2 luv=vec2((p.x+.5)/41.,(22.-p.y+.5)/23.);\n"
 " vec3 baked=SAMPLE(lightMap,clamp(luv,vec2(.01),vec2(.99))).rgb;\n"
-" vec3 base=colDiffuse.rgb*vc.rgb; float rough=roughness; float contact=1.;\n"
-" if(substrate>.5 && substrate<2.5){\n"
+" vec3 base=colDiffuse.rgb*vc.rgb; float rough=roughness;\n"
+" if((substrate>.5 && substrate<2.5) || substrate>4.5){\n"
 "  vec3 q=localP*vec3(1.1,2.8,1.3);float bed=noise3(q*.34);float pores=noise3(q*7.);\n"
 "  float stratum=sin(localP.y*13.+noise3(localP*.8)*5.);\n"
 "  base*=.89+bed*.21+pores*.045+stratum*.018;\n"
@@ -78,10 +91,14 @@ static const char *FRAG = FHEADER
 "  N=normalize(N+(bump-N*dot(bump,N))*.12);\n"
 "  float damp=(1.-smoothstep(waterLevel-.8,waterLevel+.28,p.y))*.11;\n"
 "  base*=1.-damp;rough=clamp(rough-damp*.65+pores*.05,.35,.98);\n"
-"  contact=mix(.89,1.,smoothstep(-.38,-.07,p.z));\n"
-" } else if(substrate>2.5){\n"
+" } else if(substrate>2.5 && substrate<3.5){\n"
 "  float fibre=noise3(localP*vec3(.65,34.,8.));float knots=noise3(localP*vec3(2.,4.,3.));\n"
 "  base*=.87+fibre*.22+knots*.06;rough=.91;\n"
+" } else if(substrate>3.5 && substrate<4.5){\n"
+"  float tissue=noise3(localP*27.);float age=noise3(localP*6.);\n"
+"  base*=.89+tissue*.12+age*.13;rough=clamp(rough+tissue*.06,.6,.97);\n"
+"  float center=noise3(localP*34.);vec3 bump=vec3(noise3(localP*34.+vec3(.15,0,0))-center,noise3(localP*34.+vec3(0,.15,0))-center,0.);\n"
+"  N=normalize(N+(bump-N*dot(bump,N))*.16);\n"
 " }\n"
 " if(metalness>.25){\n"
 "  float age=noise3(localP*3.4)*.7+noise3(localP*12.)*.3;\n"
@@ -92,12 +109,27 @@ static const char *FRAG = FHEADER
 " float spec=pow(max(dot(N,H),0.),mix(92.,13.,rough))*(.035+metalness*.75);\n"
 " float grazing=pow(max(dot(N,normalize(vec3(.8,.25,.38))),0.),2.);\n"
 " vec3 light=vec3(.035,.055,.07)+baked*1.8;\n"
-" vec3 c=base*light*(.48+ndl*.55)*contact+base*vec3(.024,.035,.034)*grazing;\n"
+" vec3 c=base*light*(.48+ndl*.55)+base*vec3(.024,.035,.034)*grazing;\n"
 " c+=mix(vec3(.65,.75,.78),base,metalness)*spec*(.03+length(baked)*.8);\n"
 " c+=base*edge*.045+base*emission;\n"
-" float fog=1.-exp(-max(-p.z-5.,0.)*.072);\n"
+" float fog=substrate>4.5?1.-exp(-max(-p.z-1.,0.)*.15):1.-exp(-max(-p.z-5.,0.)*.072);\n"
 " c=mix(c,vec3(.075,.13,.145),fog);\n"
 " RESULT=vec4(c,colDiffuse.a);}\n";
+static const char *OCCLUSION_FRAG = FHEADER
+"IN vec2 fragTexCoord;uniform sampler2D texture0;uniform sampler2D geometry;\n"
+"float depthAt(vec4 g){return (g.b+g.a/255.)*48.-40.;}\n"
+"vec3 positionAt(vec2 uv,float z){return vec3(vec2(20.,11.)+(uv-.5)*vec2(40.,22.5)*(52.-z)/52.,z);}\n"
+"void main(){vec2 uv=fragTexCoord;vec3 color=SAMPLE(texture0,uv).rgb;vec4 g=SAMPLE(geometry,uv);float z=depthAt(g);"
+"if(z< -35.){RESULT=vec4(color,1.);return;}"
+"vec2 o=g.rg*2.-1.;vec3 N=vec3(o,1.-abs(o.x)-abs(o.y));"
+"if(N.z<0.)N.xy=(1.-abs(N.yx))*vec2(N.x>=0.?1.:-1.,N.y>=0.?1.:-1.);N=normalize(N);"
+"vec3 p=positionAt(uv,z);float occ=0.;"
+"for(int i=0;i<16;i++){float a=float(i)*2.399963;float r=.10+.038*float(i);"
+"vec2 offset=vec2(cos(a),sin(a))*r*52./(52.-z)/vec2(40.,22.5);"
+"vec2 sampleUV=clamp(uv+offset,vec2(.001),vec2(.999));float qz=depthAt(SAMPLE(geometry,sampleUV));"
+"vec3 v=positionAt(sampleUV,qz)-p;float len=length(v);"
+"occ+=max(0.,dot(N,v/max(len,.001))-.075)*(1.-smoothstep(.22,.95,len));}"
+"color*=1.-min(.42,occ*.105);RESULT=vec4(color,1.);}\n";
 static const char *POST = FHEADER
 "IN vec2 fragTexCoord; uniform sampler2D texture0; uniform float time;\n"
 "void main(){vec2 uv=fragTexCoord;vec3 c=SAMPLE(texture0,uv).rgb;\n"
@@ -184,11 +216,14 @@ static void LoadAsset(const FoundryAssetData *asset,Model *models){
 static void Init(void){
     surface=LoadShaderFromMemory(VERT,FRAG);finish=LoadShaderFromMemory(0,POST);
     waterShader=LoadShaderFromMemory(0,WATER_FRAG);
+    occlusionShader=LoadShaderFromMemory(0,OCCLUSION_FRAG);
     surface.locs[SHADER_LOC_MATRIX_MODEL]=GetShaderLocation(surface,"matModel");
     surface.locs[SHADER_LOC_MATRIX_NORMAL]=GetShaderLocation(surface,"matNormal");
     surface.locs[SHADER_LOC_MAP_EMISSION]=GetShaderLocation(surface,"lightMap");
     metalLoc=GetShaderLocation(surface,"metalness");roughLoc=GetShaderLocation(surface,"roughness");emissionLoc=GetShaderLocation(surface,"emission");cameraLoc=GetShaderLocation(surface,"eye");timeLoc=GetShaderLocation(finish,"time");
     substrateLoc=GetShaderLocation(surface,"substrate");waterLevelLoc=GetShaderLocation(surface,"waterLevel");
+    plantBendLoc=GetShaderLocation(surface,"plantBend");
+    geometryPassLoc=GetShaderLocation(surface,"geometryPass");
     cube=LoadModelFromMesh(RoundedMesh());orb=LoadModelFromMesh(GenMeshSphere(1,16,24));
     cylinder=LoadModelFromMesh(GenMeshCylinder(1,1,24));cone=LoadModelFromMesh(GenMeshCone(1,1,16));
     torus=LoadModelFromMesh(GenMeshTorus(.035f,1.f,12,64));leaf=LoadModelFromMesh(LeafMesh());
@@ -201,8 +236,12 @@ static void Init(void){
     LoadAsset(&FOUNDRY_BEAST_HEAD,beastHeadModels);LoadAsset(&FOUNDRY_BIRD_BODY,birdModels);
     LoadAsset(&FOUNDRY_CITY_FACE,faceModels);LoadAsset(&FOUNDRY_CITY_EYE,eyeModels);
     LoadAsset(&FOUNDRY_MURAL_ROCK,muralRockModels);LoadAsset(&FOUNDRY_MURAL_PIGMENT,muralPigmentModels);
+    LoadAsset(&FOUNDRY_VAULT_BUSH,bushModels);LoadAsset(&FOUNDRY_DROWNED_FRONDS,frondModels);
+    LoadAsset(&FOUNDRY_VAULT_SUPPORTS,supportModels[0]);LoadAsset(&FOUNDRY_DROWNED_SUPPORTS,supportModels[1]);
     target=LoadRenderTexture(DW,DH);SetTextureFilter(target.texture,TEXTURE_FILTER_BILINEAR);
     waterTarget=LoadRenderTexture(DW,DH);SetTextureFilter(waterTarget.texture,TEXTURE_FILTER_BILINEAR);
+    geometryTarget=LoadRenderTexture(DW/2,DH/2);SetTextureFilter(geometryTarget.texture,TEXTURE_FILTER_POINT);
+    occludedTarget=LoadRenderTexture(DW,DH);SetTextureFilter(occludedTarget.texture,TEXTURE_FILTER_BILINEAR);
     Image maskImage=GenImageColor(RW,RH,BLACK);waterMask=LoadTextureFromImage(maskImage);UnloadImage(maskImage);
     SetTextureFilter(waterMask,TEXTURE_FILTER_POINT);SetTextureWrap(waterMask,TEXTURE_WRAP_CLAMP);
     Image lightImage=GenImageColor(RW+1,RH+1,WHITE);depthLight=LoadTextureFromImage(lightImage);UnloadImage(lightImage);
@@ -223,6 +262,7 @@ static void Draw(Model *m,Vector3 pos,Vector3 scale,Vector3 axis,float angle,Col
     SetShaderValue(surface,metalLoc,&metal,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,roughLoc,&rough,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,emissionLoc,&glow,SHADER_UNIFORM_FLOAT);
     float family=metal>.25f||glow>.1f?0:substrate;
     SetShaderValue(surface,substrateLoc,&family,SHADER_UNIFORM_FLOAT);
+    SetShaderValue(surface,plantBendLoc,&plantBend,SHADER_UNIFORM_FLOAT);
     DrawModelEx(*m,pos,axis,angle,scale,color);
 }
 static void Box(float x,float y,float z,float w,float h,float d,Color c){Draw(&cube,(Vector3){x,y,z},(Vector3){w,h,d},(Vector3){0,0,1},0,c,0,.85f,0);}
@@ -245,16 +285,13 @@ static void AssetPose(const FoundryAssetData *asset,Model *models,Vector3 pos,fl
 }
 static void Asset(const FoundryAssetData *asset,Model *models,Vector3 pos,float scale){AssetPose(asset,models,pos,scale,(Vector3){0,1,0},0,0);}
 static void Foliage(float x,float y,float z,float size,int seed,float shake){
-    float previousSubstrate=substrate;substrate=0;
+    float previousSubstrate=substrate;substrate=4;
     float t=depthStill?0:frameNo*DT;
     float dx=(player.x+player.w*.5f)/TS-x;
-    float lean=(z==.15f&&fabsf(dx)<1.5f&&fabsf(Y(player.y+player.h)-y)<1.5f)?(dx>0?9.f:-9.f):0;
-    for(int i=0;i<9;i++){
-        float a=(i-4)*19.f+sinf(t*.65f+seed)*2+shake*sinf(t*15+i)*12+lean;
-        Color c=i%3==0?(Color){83,125,107,255}:(Color){42,82,73,255};
-        Draw(&leaf,(Vector3){x+(R(i,seed)-.5f)*size*.3f,y,z+(R(seed,i)-.5f)*.45f},(Vector3){size,size*(.55f+R(i+1,seed)),size},(Vector3){0,0,1},a,c,0,.88f,0);
-    }
-    substrate=previousSubstrate;
+    float lean=(z==.15f&&fabsf(dx)<1.5f&&fabsf(Y(player.y+player.h)-y)<1.5f)?(dx>0?-.075f:.075f):0;
+    plantBend=sinf(t*.65f+seed)*.016f+shake*sinf(t*15)*.09f+lean;
+    AssetPose(&FOUNDRY_VAULT_BUSH,bushModels,(Vector3){x,y,z},size,(Vector3){0,1,0},(R(seed,41)-.5f)*35,0);
+    plantBend=0;substrate=previousSubstrate;
 }
 static void Background(void){
     Texture2D matte=mattes[roomIdx].id?mattes[roomIdx]:mattes[0];
@@ -360,17 +397,23 @@ static void DrownedFronds(void){
     float t=depthStill?0:frameNo*DT,px=(player.x+player.w*.5f)/TS,py=Y(player.y+player.h*.5f);
     for(int i=0;i<7;i++){
         float x=roots[i][0],y=roots[i][1],near=Clamp(1-fabsf(px-x)/2,0,1)*Clamp(1-fabsf(py-y-1)/3,0,1);
-        float bend=(px>x?-1:1)*near*17+sinf(t*.55f+i)*3+RoomWaterHeight((int)x)*3;
-        for(int j=0;j<5;j++){
-            float length=.85f+R(i,j+123)*.9f;
-            Draw(&leaf,(Vector3){x+(j-2)*.065f,y,-.35f},(Vector3){.20f,length,.38f},(Vector3){0,0,1},(j-2)*13+bend,(Color){53,91,78,255},0,.92f,0);
-        }
+        float previousSubstrate=substrate;substrate=4;
+        plantBend=(px>x?-1:1)*near*.16f+sinf(t*.55f+i)*.025f+RoomWaterHeight((int)x)*.025f;
+        AssetPose(&FOUNDRY_DROWNED_FRONDS,frondModels,(Vector3){x,y,-.35f},1.4f,(Vector3){0,1,0},i*37,0);
+        plantBend=0;substrate=previousSubstrate;
     }
 }
 static int IsCity(int x,int y){return roomIdx==1||ZoneAt(x,y)==Z_CITY;}
 static void Terrain(void){
     substrate=1;
     Asset(roomIdx==0?&FOUNDRY_VAULT_TERRAIN:&FOUNDRY_DROWNED_TERRAIN,terrainModels[roomIdx],(Vector3){0,0,0},1);
+    const FoundryAssetData *supports=roomIdx==0?&FOUNDRY_VAULT_SUPPORTS:&FOUNDRY_DROWNED_SUPPORTS;
+    const unsigned char *families=roomIdx==0?FOUNDRY_VAULT_SUPPORTS_SUBSTRATES:FOUNDRY_DROWNED_SUPPORTS_SUBSTRATES;
+    for(int i=0;i<supports->mesh_count;i++){
+        const FoundryMeshData *m=&supports->meshes[i];substrate=families[i];
+        Color c={m->color[0],m->color[1],m->color[2],m->color[3]};
+        Draw(&supportModels[roomIdx][i],(Vector3){0,0,0},(Vector3){1,1,1},(Vector3){0,1,0},0,c,m->metallic,m->roughness,m->emission);
+    }
     substrate=0;
     for(int y=0;y<RH;y++)for(int x=0;x<RW;x++){
         int t=tiles[y][x],city=IsCity(x,y);float yy=22-y;
@@ -393,13 +436,8 @@ static void Terrain(void){
                 for(int i=0;i<3;i++)Ellipse(x+.32f+i*.15f,yy-.45f+sinf(i*2.f)*.13f,.3f,.04f,.12f,.02f,light,1.1f);
             }
         }else if(TileOneWay(t)){
-            substrate=city?1:3;
-            int grate=(roomIdx==0&&y==20&&x>=21&&x<=26)||(roomIdx==1&&y==1&&x>=20&&x<=25);
-            Color c=city?STONE:(Color){112,95,70,255};
-            Box(x+.5f,yy-.105f,-.48f,1.02f,.21f,1.1f,c);
-            Box(x+.5f,yy-.025f,.035f,1.02f,.05f,.17f,Shade(c,1.38f));
-            if(city){Box(x+.5f,yy-.25f,-.05f,.9f,.12f,.65f,Shade(c,.78f));for(int i=0;i<3;i++)Box(x+.17f+i*.33f,yy-.37f,-.06f,.13f,.16f,.45f,c);}
-            if(grate){for(int i=0;i<3;i++)MetalBox(x+.14f+i*.35f,yy+.025f,-.2f,.045f,.07f,1.3f,COPPER);}
+            // Blender-authored continuous shelves above retain the map's exact
+            // z0 landing lip. Brackets and receiving structure recede behind it.
         }else if(t==T_BUSH){substrate=0;Foliage(x+.5f,yy-1,.15f,1.1f,x+y,bushShake[y][x]/14.f);}
         else if(t==T_MOSS){
             for(int i=0;i<3;i++){float len=.5f+R(x+i,y);Rod((Vector3){x+.2f+i*.24f,yy,-.3f},(Vector3){x+.3f+i*.24f,yy-len,-.25f},.025f,(Color){56,92, 72,255},0);}
@@ -625,12 +663,31 @@ void DepthDraw(void){
     Color lightPixels[(RW+1)*(RH+1)];RoomDepthLightColors(lightPixels);UpdateTexture(depthLight,lightPixels);
     float eye[3]={camera.position.x,camera.position.y,camera.position.z};SetShaderValue(surface,cameraLoc,eye,SHADER_UNIFORM_VEC3);
     float waterLevel=roomIdx==1?15.f:-100.f;SetShaderValue(surface,waterLevelLoc,&waterLevel,SHADER_UNIFORM_FLOAT);
+    // The small geometry buffer contains actual visible world depth and normals.
+    // It excludes the matte, atmosphere and water; no game step occurs here.
+    float geometryPass=0;
+#if !defined(AWELL_DEPTH_NO_AO)
+    geometryPass=1;SetShaderValue(surface,geometryPassLoc,&geometryPass,SHADER_UNIFORM_FLOAT);
+    BeginTextureMode(geometryTarget);ClearBackground(BLANK);rlDisableColorBlend();
+    BeginMode3D(camera);
+        CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();ItemsMesh();PlayerMesh();
+    EndMode3D();rlEnableColorBlend();EndTextureMode();
+    geometryPass=0;
+#endif
+    SetShaderValue(surface,geometryPassLoc,&geometryPass,SHADER_UNIFORM_FLOAT);
     BeginTextureMode(target);ClearBackground((Color){10,24,30,255});
     BeginMode3D(camera);
         Background();CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();ItemsMesh();PlayerMesh();Atmosphere();Water();ResponseParticles();
     EndMode3D();
     EndTextureMode();
     Texture2D present=target.texture;
+#if !defined(AWELL_DEPTH_NO_AO)
+    BeginTextureMode(occludedTarget);ClearBackground(BLACK);BeginShaderMode(occlusionShader);
+    SetShaderValueTexture(occlusionShader,GetShaderLocation(occlusionShader,"geometry"),geometryTarget.texture);
+    DrawTexturePro(target.texture,(Rectangle){0,0,DW,-DH},(Rectangle){0,0,DW,DH},(Vector2){0,0},0,WHITE);
+    EndShaderMode();EndTextureMode();
+    present=occludedTarget.texture;
+#endif
     if(roomIdx==1){
         Color maskPixels[RW*RH];for(int y=0;y<RH;y++)for(int x=0;x<RW;x++)maskPixels[y*RW+x]=TileWater(tiles[y][x])?WHITE:BLACK;
         UpdateTexture(waterMask,maskPixels);
@@ -638,7 +695,7 @@ void DepthDraw(void){
         SetShaderValue(waterShader,GetShaderLocation(waterShader,"waterTime"),&waterTime,SHADER_UNIFORM_FLOAT);
         BeginTextureMode(waterTarget);ClearBackground(BLACK);BeginShaderMode(waterShader);
         SetShaderValueTexture(waterShader,GetShaderLocation(waterShader,"mask"),waterMask);
-        DrawTexturePro(target.texture,(Rectangle){0,0,DW,-DH},(Rectangle){0,0,DW,DH},(Vector2){0,0},0,WHITE);
+        DrawTexturePro(present,(Rectangle){0,0,DW,-DH},(Rectangle){0,0,DW,DH},(Vector2){0,0},0,WHITE);
         EndShaderMode();EndTextureMode();present=waterTarget.texture;
     }
     BeginDrawing();ClearBackground(BLACK);
@@ -663,11 +720,16 @@ void DepthUnload(void){
     for(int i=0;i<FOUNDRY_CITY_EYE.mesh_count;i++)UnloadModel(eyeModels[i]);
     for(int i=0;i<FOUNDRY_MURAL_ROCK.mesh_count;i++)UnloadModel(muralRockModels[i]);
     for(int i=0;i<FOUNDRY_MURAL_PIGMENT.mesh_count;i++)UnloadModel(muralPigmentModels[i]);
+    for(int i=0;i<FOUNDRY_VAULT_BUSH.mesh_count;i++)UnloadModel(bushModels[i]);
+    for(int i=0;i<FOUNDRY_DROWNED_FRONDS.mesh_count;i++)UnloadModel(frondModels[i]);
+    for(int i=0;i<FOUNDRY_VAULT_SUPPORTS.mesh_count;i++)UnloadModel(supportModels[0][i]);
+    for(int i=0;i<FOUNDRY_DROWNED_SUPPORTS.mesh_count;i++)UnloadModel(supportModels[1][i]);
     const FoundryAssetData *lifeAssets[]={&FOUNDRY_POT,&FOUNDRY_HUNTER_LANTERN,&FOUNDRY_PLAYER_SEED,&FOUNDRY_BEAST_BODY,&FOUNDRY_BEAST_HEAD,&FOUNDRY_BIRD_BODY};
     Model *lifeModels[]={potModels,lampModels,seedModels,beastBodyModels,beastHeadModels,birdModels};
     for(int a=0;a<6;a++)for(int i=0;i<lifeAssets[a]->mesh_count;i++)UnloadModel(lifeModels[a][i]);
     UnloadShader(surface);UnloadShader(finish);UnloadRenderTexture(target);ready=0;
     UnloadShader(waterShader);UnloadRenderTexture(waterTarget);UnloadTexture(waterMask);
+    UnloadShader(occlusionShader);UnloadRenderTexture(geometryTarget);UnloadRenderTexture(occludedTarget);
     UnloadTexture(depthLight);
     for(int i=0;i<2;i++)if(mattes[i].id)UnloadTexture(mattes[i]);
 }

@@ -1,6 +1,6 @@
 {
   "source": "src/room.c MAPS; city presentation follows root IsCity",
-  "room_source_sha256": "11a8fb7ff807d5eb303c9e878f0fd3b3cc46fe8bce7d7ff6234c2aeef00cfc89",
+  "room_source_sha256": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
   "mask_source": [
     [
       "########################################",
@@ -52,15 +52,68 @@
     ]
   ],
   "scope": "solid tiles only; one-way shelves, actors, plants, water, lights and props excluded",
+  "architecture_revision": "recessed drowned house openings; volumetric capitals and supported trim",
+  "door_recesses_xy": [
+    [
+      6.29,
+      7.73,
+      10.16,
+      12.76
+    ],
+    [
+      31.27,
+      32.71,
+      10.16,
+      12.76
+    ]
+  ],
+  "window_recesses_xy": [
+    [
+      4.18,
+      4.78,
+      7.14,
+      8.82
+    ],
+    [
+      6.33,
+      6.93,
+      7.14,
+      8.82
+    ],
+    [
+      31.38,
+      31.98,
+      7.14,
+      8.82
+    ],
+    [
+      33.62,
+      34.22,
+      7.14,
+      8.82
+    ]
+  ],
+  "recess_contract": "front mass and ashlar are removed inside wells; sealed rear retains full solid coverage; no collision changes",
+  "references": [
+    "public/art/references/drowned-quarter/14-drowned-doorway.png",
+    "public/art/references/drowned-quarter/20-carved-cornice.png",
+    "public/art/references/drowned-quarter/13-sunken-column.png",
+    "public/art/references/vault-mouth/16-city-column.png"
+  ],
+  "delivery_budget": {
+    "total_triangles": 100000,
+    "material_meshes_per_room": 12,
+    "front_z_max": 0
+  },
   "assets": {
     "vault-terrain": {
-      "triangles": 17076,
-      "material_meshes": 9,
-      "source_objects": 164,
+      "triangles": 27682,
+      "material_meshes": 11,
+      "source_objects": 181,
       "bounds_min": [
         0.0,
         0.0,
-        -2.799999952316284
+        -2.9600000381469727
       ],
       "bounds_max": [
         40.0,
@@ -78,17 +131,19 @@
         "Terrain | worn structural cornice",
         "Terrain | limestone tone 2",
         "Terrain | limestone tone 0",
-        "Terrain | limestone tone 1"
+        "Terrain | limestone tone 1",
+        "Terrain | repaired cast bronze",
+        "Terrain | patinated inset metal"
       ]
     },
     "drowned-terrain": {
-      "triangles": 23592,
-      "material_meshes": 5,
-      "source_objects": 482,
+      "triangles": 70634,
+      "material_meshes": 9,
+      "source_objects": 720,
       "bounds_min": [
         0.0,
         0.0,
-        -2.549999952316284
+        -2.9600000381469727
       ],
       "bounds_max": [
         40.0,
@@ -102,9 +157,13 @@
         "Terrain | worn structural cornice",
         "Terrain | limestone tone 1",
         "Terrain | limestone tone 2",
-        "Terrain | limestone tone 0"
+        "Terrain | limestone tone 0",
+        "Terrain | repaired cast bronze",
+        "Terrain | patinated inset metal",
+        "Terrain | unlit sealed interiors",
+        "Terrain | quiet oxidised sediment"
       ]
     }
   },
-  "total_triangles": 40668
+  "total_triangles": 98316
 }

@@ -1,0 +1,7 @@
+{
+  "observedUtc": "2026-09-20T20:37:44.8138110Z",
+  "logicalProcessors": 24,
+  "blenderWorkerThreads": 16,
+  "cpuPercent": 8.608856955945187,
+  "gpu": "NVIDIA GeForce RTX 5080, 1 %, 42, 36.26 W"
+}
