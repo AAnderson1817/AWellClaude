@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "scope": "Independent preservation of actual delivered C arrays outside the authorized x0..5,y13..16 patch; top y16 and rear z<\u22122.7 protected. Not visual acceptance.",
+  "baseline_commit": "15185be",
+  "baseline_sha256": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+  "current_sha256": "f02ea549bb00b7af1d476a1c65b4f75db5c68a36e71bda64c130092641c18228",
+  "checks": {
+    "drowned_all_parsed_arrays_and_metadata_exact": true,
+    "drowned_header_text_exact": true,
+    "vault_nonpatch_triangle_normal_material_multiset_exact": true,
+    "vault_material_slot_metadata_exact": true,
+    "vault_substrate_classifications_exact": true,
+    "vault_declared_size_exact": true
+  },
+  "unchanged_vault_triangles": 24422,
+  "baseline_patch_triangles": 699,
+  "candidate_patch_triangles": 8627,
+  "outside_removed_triangles": 0,
+  "outside_added_triangles": 0
+}

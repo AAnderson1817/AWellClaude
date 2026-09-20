@@ -1,0 +1,11 @@
+{
+  "scope": "Neutral actual saved terrain source and clean production GLB import. Read-only review; no source save.",
+  "source_blend_sha256": "b367242300101d509ecf0c37a7611a4e5406773cc6c99db9a3ab18d7927d6ac6",
+  "glb_sha256": "a094660e11b1022a82462e3e977a9aa7bef36bdd850a8d7b6acb18940051a52b",
+  "files": {
+    "source-scanned-patch-front.png": "4623b5079e61a7372e74d79bb753e68ceeece707f9b21b06910f0fa959a4ca5a",
+    "source-scanned-patch-grazing.png": "755a9fefc5a7372cd0b43761226eba8af23656a133a3b2c66727c38d3d6cf39d",
+    "reimport-scanned-patch-front.png": "0b5db5a06111061f7c358400262119d2e0ab757fc175cb6616ccc7a90b8aef5f",
+    "reimport-scanned-patch-grazing.png": "f8fff49454b018a1402223010022ae2fd5ac6bd509767c0f5a25643052202409"
+  }
+}

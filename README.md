@@ -17,7 +17,7 @@ receives an answer from the face; fish approach a floating lamp and scatter from
 body. These extend the existing Hold interaction without changing access or geometry.
 See [response implementation and limits](docs/city-response-implementation.md).
 
-The current increment brings the hunter into the camp. The hunter tends real cairn
+The inhabitant increment brings the hunter into the camp. The hunter tends real cairn
 stones, accepts nearby offerings and yields them immediately to the existing Hold
 interaction. A persistent fire changes the hunter's posture and wordless speech.
 Blender attire and fixed-length arms follow the same state in both presentations.
@@ -30,12 +30,16 @@ frames, Blender source previews and GLB links alongside the 60 reference images.
 The current craft revision adds unequal stone courses, broader rock fracture planes,
 a sculpted face, credited scanned stone and local illumination from existing lamps.
 Embedded maps accompany editable [Blender material sources](docs/materials.md).
+Revision 16 replaces one bounded rock formation above the Vault door with fitted
+scan geometry, preserving the original landing and every neighboring triangle.
+Editable source, provenance and matched game-camera evidence are in the
+[rock review](docs/scanned-rock-v16-review.md).
 The [whole-brief review](docs/artistic-review-v15.md) still requires substantial
 foreground and hero-asset refinement before the requested AAA target is met.
 
 **Status:** a playable presentation development branch. AAA visual quality and human
 immersion have not been certified. The scope is the existing Vault Mouth and Drowned
-Quarter; it is not a finished 25-room game. The current increment passes 21,160
+Quarter; it is not a finished 25-room game. The unchanged inhabitant implementation passes 21,160
 headless and 6,640 rendered baseline comparisons, 35 route checks, 36 escape checks,
 and six hunter scenarios through the actual game loop in both modes. Bounded browser
 checks cover both rooms; exact scope is recorded in [verification](docs/verification.md).

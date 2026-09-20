@@ -3,7 +3,7 @@
 This branch extends the existing two-room C/raylib game. It is a working 3D
 presentation and city response candidate, with original mechanics retained and
 native and web builds. The overall goal remains active. This status describes the
-inhabitant revision 15 after the architecture, materials and city response milestones.
+terrain revision 16 after the architecture, materials and city response milestones.
 
 ## Delivered
 
@@ -17,6 +17,10 @@ inhabitant revision 15 after the architecture, materials and city response miles
   actual C arrays are checked separately against the original landing edges.
 - Unequal masonry courses, broad rock fracture planes, a rebuilt volumetric carved
   face, seated column profiles and local illumination from existing light sources.
+- A bounded scan-derived rock formation above the Vault door, with the original
+  upper contact, neighboring geometry and entire Drowned package preserved exactly.
+  [Its local review and source/import checks](scanned-rock-v16-review.md) pass;
+  the broader foreground still requires substantial craft work.
 - Credited scanned city stone plus authored basalt and timber maps, embedded with
   mip filtering and separate endgrain treatment. Editable Blender sources and
   [material provenance and evidence](materials.md) accompany the delivery.
@@ -34,8 +38,9 @@ inhabitant revision 15 after the architecture, materials and city response miles
   comparisons, 35 route checks and 36 escape checks pass. Six full game-loop hunter
   scenarios compare all item and owner traces across 8,506 frames in both modes.
   Final native captures and a bounded two-room WebGL smoke check record the build.
-  Geometry/material audits and controlled light timings retain their v14 scope;
-  those environment assets are unchanged in this increment.
+  These gameplay reports retain their v15 scope; the gameplay sources are unchanged
+  in v16. The new terrain has separate array, import and contact audits. Earlier
+  controlled light timings retain their v14 scope; v16 has no throughput benchmark.
 - Two complete reference collections of 30 images each and a local art review gallery.
 
 ## Acceptance still open

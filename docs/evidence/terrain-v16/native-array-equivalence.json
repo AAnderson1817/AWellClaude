@@ -1,0 +1,8 @@
+{
+  "production_header_sha256": "f02ea549bb00b7af1d476a1c65b4f75db5c68a36e71bda64c130092641c18228",
+  "captured_candidate_header_sha256": "ed91c622389e84bd489da60e4eee2e9e903a1babd55614631b19cec5a38a6a64",
+  "exact_parsed_arrays_and_materials_equal": {
+    "FOUNDRY_VAULT_TERRAIN": true,
+    "FOUNDRY_DROWNED_TERRAIN": true
+  }
+}

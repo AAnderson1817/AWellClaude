@@ -1,0 +1,35 @@
+{
+  "asset": "Rock Face 01",
+  "author": "Dario Barresi",
+  "source": "https://polyhaven.com/a/rock_face_01",
+  "license": "CC0",
+  "license_url": "https://polyhaven.com/license",
+  "api_credit": "Powered by Poly Haven",
+  "downloadedUtc": "2026-09-20T22:29:44.754900+00:00",
+  "files": {
+    "rock_face_01_1k.blend": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/blend/1k/rock_face_01/rock_face_01_1k.blend",
+      "bytes": 980558,
+      "md5": "894b4120b679867e7dc1561cbf8140e2",
+      "sha256": "e6de5faaad702bc3be9930049851f91d444edb230adaba93b3272a753f1b8e92"
+    },
+    "textures/rock_face_01_nor_gl_1k.exr": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/rock_face_01/rock_face_01_nor_gl_1k.exr",
+      "bytes": 2166418,
+      "md5": "43f1fe72543d392e1b93ba30fb93ca25",
+      "sha256": "d34488b8d29d95e8f15f84b9bc4bb8fbdc5b0c8acaa7a2d8a924cc7169e8fc3e"
+    },
+    "textures/rock_face_01_rough_1k.exr": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/rock_face_01/rock_face_01_rough_1k.exr",
+      "bytes": 379887,
+      "md5": "a7c404efd5ffcd787d58f5d220d9c0fc",
+      "sha256": "b976a89e9b6913c69f3bdce6a36c6e64a5071c41278c63837339391a8ab7376d"
+    },
+    "textures/rock_face_01_diff_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_face_01/rock_face_01_diff_1k.jpg",
+      "bytes": 853749,
+      "md5": "98ee9f024a6383d7e6cab44ed41e1f15",
+      "sha256": "41bd26ed2db1332b1ebb4b1326fd8af4d21f0f0eb57b8ea385033115c722cfdb"
+    }
+  }
+}

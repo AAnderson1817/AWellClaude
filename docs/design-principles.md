@@ -3,7 +3,7 @@
 This is a presentation branch of **AAnderson1817/AWellClaude**, based on commit
 `99de7856bedfa059439da1b89435f54c98bddaf7`. Its inherited game has two rooms: the Vault
 Mouth and the Drowned Quarter. The branch preserves that game while developing
-its 3D art direction and implementing the authored city responses. It is not a
+its 3D art direction and implementing the authored city and hunter responses. It is not a
 replacement JavaScript game or a completed AAA release.
 
 The governing project documents are [DESIGN-LAW](../claude/DESIGN-LAW.md),
@@ -44,23 +44,25 @@ Source: [Nintendo, Animal Well tips from the developer, 2024](https://www.ninten
 | Project requirement | Concrete implementation contract | Evidence or remaining limit |
 |---|---|---|
 | L1: density before expansion | Keep the two authored rooms; 25 remains the eventual ceiling. | Original room maps are compared directly with the baseline. No invented third environment or replacement world. |
-| L2: mechanics precede puzzles | Add no resonance locks, collectible quests or authored combinations merely to decorate the new theme. | Original movement/items remain unchanged; city responses extend the existing Hold toy according to the inherited response tables. New observed surprises require actual play records; none are fabricated here. |
-| L3–4: nonviolent toys without redundant verbs | Preserve Hold, one hand, the floating lamp and sinking stones. Leave the second verb undecided. | Item source is unchanged; pickup, set-down, weighted movement and reset appear in the trace comparison. |
+| L2: mechanics precede puzzles | Add no resonance locks, collectible quests or authored combinations merely to decorate the new theme. | Original movement and item operations are preserved around explicit ownership hooks; city and hunter responses extend the existing Hold toy according to the inherited response tables. New observed surprises require actual play records; none are fabricated here. |
+| L3–4: nonviolent toys without redundant verbs | Preserve Hold, one hand, the floating lamp and sinking stones. Leave the second verb undecided. | Original pickup/set-down and falling code is retained; only hunter-owned stones skip falling. New real cairn items deliberately extend Hold selection near the camp; the differential records this change. |
 | L5: no teaching text | No tutorial overlays, dial labels, quest text or lore captions inside the game. | Developer documents and optional debug surface tags remain outside normal play. Human wordless-teaching acceptance is still open. |
-| L6: plausible actions receive a response | Preserve ropes, roots, chain lamps, plants, birds, beast, pots, door glint and campfire; implement the authored mural, windows, face and fish responses. | Detached snapshots preserve original reactions. New response tests exercise light/dark recovery, sinking-stone acknowledgment, floating-lamp gathering and body scatter. Readability and spontaneous discovery still require players. |
+| L6: plausible actions receive a response | Preserve ropes, roots, chain lamps, plants, birds, beast, pots, door glint and campfire; implement the authored mural, windows, face, fish and hunter responses. | Detached snapshots preserve original reactions. New response tests exercise light/dark recovery, sinking-stone acknowledgment, floating-lamp gathering, body scatter, real cairn stone transfer and hunter reaction timing. Readability and spontaneous discovery still require players. |
 | L7: default-open traversal | Keep platforms, shaft, water, bulbs and movement tuning. | 35 route checks pass, including both shaft directions and failed-exit recovery. No new item gates. |
 | L8: invisible deeper layers | Add no completion meter, visible checklist or promised secret count. | The inherited slice has no finished ending or accepted Layer 2 hook. This branch does not claim those acceptance tests are complete. |
 | L9: indifference and no combat | Preserve the animals' behavior and the player's inability to attack them. | Original life step code is unchanged. Tone requires observation of players. |
 | L10: no screenshake or body squash | Use layered scenery, light, material and existing procedural movement for depth. | Disney-inspired layering means staged visual planes, not a new reassuring body-animation vocabulary. |
 | L11: one room, one locked frame | Show the original 40 × 22 tile stage in one fixed side view. Depth stays behind or in front of the interactive plane. | No following or scrolling camera; a GPU playthrough must confirm seam and edge readability. |
-| L12: a second understanding | Preserve lamp/stone physics and add the lamp's concealment of the mural, windows' withdrawal, and the face's acknowledgment of a sinking stone. | These are functional second readings of Hold, without an announced checklist. Whether a player discovers them or experiences a revelation is an open human test. |
+| L12: a second understanding | Preserve lamp/stone physics and add the lamp's concealment of the mural, windows' withdrawal, the face's acknowledgment of a sinking stone, and the hunter's care of stones the player can freely take or return. | These are functional second readings of Hold, without an announced checklist. Whether a player discovers them or experiences a revelation is an open human test. |
 | D5–7: start, persistent fire, frozen geometry | Keep the start at the sealed door, fire persistence until reset, and the approved traversal geometry. | Static source comparisons plus baseline traces and route/escape sweeps. |
 
 The project has already been tuned for quietness: fewer birds, sparse drips, longer
 animal pauses, quiet ambience. A larger renderer is not permission to multiply event
 rates, add constant spark showers, or add a continuous musical lead. The existing
 audio and effects behavior is preserved. Sparse city responses add a quiet murmur
-and one low sinking-stone note, reported separately from the inherited sound events.
+and one low sinking-stone note. The hunter adds sparse wordless phrases, with taking
+and placement acknowledged on the action tick. All additions are reported separately
+from inherited sound events.
 Their full-mix comfort and clarity have not received human listening acceptance.
 
 ## Metallurgy, astronomy and faith within the existing premise
@@ -87,15 +89,25 @@ material evidence while keeping that existing distinction readable.
 
 ## Simulation / presentation boundary
 
-`player.c` and `items.c` are byte-equivalent to the baseline apart from line-ending
-normalization. Original `audio.c` code remains equivalent after removing only the
-marked appended city synthesis block, which consumes no inherited randomness. The
-two new sounds are intentional extensions, not historical-baseline events. Authored
-map and prop rows are identical. `life.c`
-and `props.c` gain only bounded snapshot getters; their existing update and drawing
-functions keep their behavior. Snapshot enums moved to `aw.h` retain their order.
-`fx.c` also gains a bounded copy getter; the preservation check removes exactly that
-accessor and verifies every original effects line remains unchanged.
+`player.c` remains byte-equivalent to the baseline after line-ending normalization.
+The source checker preserves every original `items.c` line after removing only its
+explicit inhabitant include, pinned-item falling guard and stone presentation hook.
+Original Hold selection, held-item placement and reset homes remain intact. The
+four appended cairn stones are intentional new world state: a pickup near the cairn
+can now select an item where the historical game had decoration. This difference
+is retained in the full-item test rather than filtered out.
+
+`audio.c` retains its inherited implementation before marked city and hunter append
+blocks. These use independent random streams and counters. Authored map and prop
+rows remain identical. Original `life.c`, `props.c` and `fx.c` behavior is preserved
+around named detached view getters, moved enum declarations and the explicit guard
+that hides the obsolete decorative cairn while real items are present.
+
+`inhabitants.c` owns the hunter state, four real seed stones and temporary ownership
+of accepted offerings. It never writes player state, input or `heldItem`. Original
+pickup has priority; reconciliation releases ownership immediately. Reset restores
+only the same seed IDs after the original item reset. The hunter's shared fixed-arm
+pose helper and phrase envelope are presentation data, not extra world objects.
 
 `city.c` owns its fixed-step response state and independent random stream. It reads
 the body, items and persistent fire without changing them. Both presentations use
@@ -114,6 +126,7 @@ Snapshot coordinates are original room pixels, **y down**, excluding `ROOM_Y`:
 | `FxViews` | Active event particles copied from the existing fixed pool, including splash, landing dust, door grit, sparks and pot shards. Ambient motes are separate. |
 | `CityWindowViews`, `CityMuralView` | Window light/delay/crossing state and mural visibility driven by the lamp and fire. |
 | `CityFaceView`, `CityFishViews` | Seven-second eye pulse, two-second stone acknowledgment, and eight water-constrained fish positions/scatter/gathering state. |
+| `InhabitantsHunterView` | Rigid body pose, real carried item, cairn count, gaze/hand targets, speech envelope and action state; voice polling is separate from view reads. |
 
 Getters copy into caller-owned buffers. They do not return writable pointers into
 simulation arrays, advance timers, consume random numbers or change gameplay. Empty
@@ -129,14 +142,17 @@ from the Git blobs at `99de785`, using the same compiler and I/O stubs.
 
 | Check | Result | What it establishes |
 |---|---|---|
-| `tools/check-preservation.py --build-baseline`, current city increment | 15 scenarios, **21,160 compared frames**, exact trace equality under both `--flat` and `--depth` flags | Fixed-step movement, items, water, room seams, reset, inherited sound events and life counters retain baseline behavior. City sound counts are recorded separately and agree between modes. |
-| `tools/check-preservation.py --render`, current city increment | 15 scenarios, **6,640 compared frames**, exact original trace equality with actual rendering | Original native drawing, current flat drawing and current 3D drawing produce the same reported inherited states/events. Idle cases are shortened to 180 frames for the GPU pass. |
-| Static baseline contracts in the same tool | Passed | Movement/items/fx and authored geometry/prop placements are preserved; original audio remains equivalent after excluding the explicitly marked city append. |
+| `tools/check-preservation.py --build-baseline`, current hunter increment | 15 scenarios, **21,160 compared frames**, exact trace equality under both `--flat` and `--depth` flags | Fixed-step movement, items, water, room seams, reset, inherited sound events and life counters retain baseline behavior. City and hunter sound counts are recorded separately and agree between modes. |
+| `tools/check-preservation.py --render`, current hunter increment | 15 scenarios, **6,640 compared frames**, exact original trace equality with actual rendering | Original native drawing, current flat drawing and current 3D drawing produce the same reported inherited states/events. Idle cases are shortened to 180 frames for the GPU pass. |
+| Static baseline contracts in the same tool | Passed | Original movement/item operations/effects and authored maps are preserved around the named extension hooks; original audio remains equivalent before the marked city and hunter appends. |
 | `tools/route.py` using `AWELL_GAME=build/game-probe.exe` | **35 / 35** | 19 upper-room climb checks, 13 water/shaft checks, 3 reset checks. Search finds real executable input sequences, rather than inferring reachability from drawing. |
 | `tools/escape.py` with the same executable | **36 / 36 surfaces return home** | A wander bot actually reaches home from each standable run. This is evidence of escape paths, not proof of every imaginable player state. |
 | `tools/tests/input_hash.c`, UndefinedBehaviorSanitizer | Passed | Input edges survive frames with no simulation tick, taps/holds remain distinct, catch-up ticks do not duplicate a press, and the hash avoids signed-overflow UB. |
 | `tools/tests/presentation_snapshots.c`, UndefinedBehaviorSanitizer | **3,600 frames passed** | Repeated view reads are stable, outputs are detached, bounds/null handling work, and live body/item/tile/fire state is unchanged by reads. |
 | `tools/tests/city_responses.c`, UndefinedBehaviorSanitizer | Passed | Four window response contracts; mural recovery and actual fire coupling; real sinking-stone acknowledgment; floating-lamp gathering, disconnected-basin exclusion, body scatter, 6,000 shoal bounds steps and city snapshot ownership. |
+| `tools/tests/test_hunter_integration.py` | **8,506 headless comparison frames** across six CLI scenarios | Complete actual-item and ownership traces agree in both modes; intended old-world cairn pickup difference is explicit. |
+| `tools/tests/hunter_responses.c`, UBSan | **28,748 conservation steps**, 14,116 voice and 3,276 arm poses | Pickup priority, real stone return/tending, room/reset lifecycle, six-stone exhaustion, action-correlated speech and reachable fixed limbs. |
+| `tools/tests/hunter_audio.c`, UBSan | **26,293 pitch-scaled timeline samples** | Synthesized PCM, lifecycle, logical mouth timing and original audio isolation; not listening acceptance. |
 | `tools/tests/test_tools.py` | **5 / 5** | Reachability tools report failures/crashes/empty traces correctly and honor an explicit probe executable. |
 
 The machine-readable trace report is generated at `build/preservation-report.json`.
@@ -149,9 +165,11 @@ python tools/check-preservation.py --render --baseline build/game-baseline.exe -
 ```
 
 That command compares the original native renderer with actual flat and depth drawing.
-A full native pass for the city response increment completed on 2026-09-20 and is
-recorded in [city response checks](evidence/city-responses/checks/summary.json), including
-[rendered preservation](evidence/city-responses/checks/render-preservation-report.json).
+A full headless and native preservation pass for the hunter increment completed on
+2026-09-20 and is recorded in [final checks](evidence/hunter/final-headless/summary.json)
+and [rendered preservation](evidence/hunter/render-preservation.json). The authored
+hunter interaction comparisons are headless; selected actual native pose captures
+are separate [evidence](evidence/hunter/native-v15/manifest.json).
 The older `evidence/current` directory is retained as the depth-v10 milestone record;
 its directory name does not make it current evidence for later edits. A headless pass alone
 must never be reported as validation of GPU rendering. Both

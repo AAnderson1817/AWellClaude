@@ -1,0 +1,1 @@
+CAPTURE_ONLY room=0 frames=120 fps_cap=60

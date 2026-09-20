@@ -1,22 +1,22 @@
 {
   "source_reopened": true,
   "source_room_hash": "905ffec8cfad6cbbbc078d75553470caa145042e5fa58e3d6c96930227439f35",
-  "source_sha256": "483f228be4a0904a6d5444aa9ddc76fb96126a795605a07d60aed6a57b02103a",
+  "source_sha256": "b367242300101d509ecf0c37a7611a4e5406773cc6c99db9a3ab18d7927d6ac6",
   "source_collections": {
     "TERRAIN | Drowned Quarter": 690,
-    "TERRAIN | Vault Mouth": 179
+    "TERRAIN | Vault Mouth": 182
   },
-  "delivery_cleanup": "Quantized evaluated copies weld/dissolve bevel slivers before both C and GLB. Editable source retains modifiers.",
+  "delivery_cleanup": "Original architecture retains v14 evaluated cleanup. The scanned patch uses fitted geometry normals, exact protected contacts, and the same final arrays for C and GLB. Editable source retains original vendor/crop and procedural modifiers.",
   "assets": {
     "vault-terrain": {
-      "triangles": 25121,
-      "vertices": 31211,
+      "triangles": 33049,
+      "vertices": 51958,
       "degenerate_triangles": 0,
       "invalid_normals": 0,
       "projected_mask_samples": 7920,
       "mask_mismatches": 0,
-      "sha256": "c008a87a5f7626ecad03ab905a7dfabbd0e9b553420471b0c6c88a29337d63f9",
-      "bytes": 908064,
+      "sha256": "a094660e11b1022a82462e3e977a9aa7bef36bdd850a8d7b6acb18940051a52b",
+      "bytes": 1453568,
       "external_dependencies": []
     },
     "drowned-terrain": {

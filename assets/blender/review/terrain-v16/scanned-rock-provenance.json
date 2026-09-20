@@ -1,0 +1,47 @@
+{
+  "source": "Rock Face01 by Dario Barresi / Poly Haven / CC0",
+  "source_url": "https://polyhaven.com/a/rock_face_01",
+  "license_url": "https://polyhaven.com/license",
+  "vendor_blend_sha256": "e6de5faaad702bc3be9930049851f91d444edb230adaba93b3272a753f1b8e92",
+  "source_triangles": 20174,
+  "cropped_front_triangles": 8210,
+  "uniform_scale": 1,
+  "rigid_quaternion_wxyz": [
+    0.9444789886474609,
+    0.3275698721408844,
+    0,
+    0.025640230625867844
+  ],
+  "translation_blender": [
+    2.5,
+    0.59,
+    10.6
+  ],
+  "deformation": {
+    "world_y_region": [
+      15.15,
+      16
+    ],
+    "scan_transition_end": 15.87,
+    "maximum_depth_shift": 0.9744979590177536,
+    "mean_affected_depth_shift": 0.37246849682717414,
+    "affected_vertices": 2359,
+    "lower_2_15_tiles_unchanged": true
+  },
+  "closure_polygon_vertices": {
+    "left": 173,
+    "right": 132,
+    "bottom": 110
+  },
+  "source_normals": "Recomputed from actual fitted planes; area weighted within50degrees. Open front explicitly faces Blender -Y / game +Z.",
+  "assembly": "Scanned front, simple concave side/bottom returns and exact contact wedge seat into retained production rear/top; not a collision mesh or a claimed single welded manifold.",
+  "runtime_materials": "Existing basalt substrate2/palette/PBR maps; vendor textures are portable source reference only.",
+  "removed_old_triangles": 699,
+  "added_triangles": 8627,
+  "removed_editable_source_polygons": 358,
+  "baseline_header_sha256": "0db5134539ae6e4c0d5540b61e7c143f8a3d8adf7adb7676e90a7a974036b76d",
+  "final_header_sha256": "f02ea549bb00b7af1d476a1c65b4f75db5c68a36e71bda64c130092641c18228",
+  "drowned_header_block_byte_identical": true,
+  "protected_top_rear_retained": true,
+  "lod_reduction": false
+}

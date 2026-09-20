@@ -1,6 +1,21 @@
 # Verification
 
-The current inhabitant revision 15 integrates the hunter into the delivered game.
+Revision 16 changes only a bounded Vault terrain patch. The
+[delivery record](evidence/terrain-v16/delivery-manifest.json) pins its editable
+source, generated arrays, GLB and matched native frame. All 24,422 nonpatch Vault
+triangles and the entire Drowned terrain package are unchanged. Independent checks
+pass 1,300 Vault landing probes and 56,320 mask samples; both complete-room GLBs
+reimport with valid normals and zero mismatches in 7,920 mask probes each.
+The [local artistic review](scanned-rock-v16-review.md) accepts the primary-form
+improvement while retaining **rework** for the whole brief. Native and web builds
+pass; the [current browser smoke record](evidence/terrain-v16/web-smoke.json)
+records the bounded visual checks. No v16 throughput or perceptual audio claim is made.
+
+## Preserved inhabitant evidence
+
+Inhabitant revision 15 integrated the hunter into the delivered game. Its gameplay,
+renderer and audio sources remain unchanged in v16, so the following reports retain
+their original scope and hashes.
 The [final headless suite](evidence/hunter/final-headless/summary.json) passes input,
 snapshot and response checks with UndefinedBehaviorSanitizer, **21,160 original-state
 comparisons across 15 scenarios**, **35 route checks** and **36 escape checks**.
@@ -45,7 +60,8 @@ immersion.
 
 ## Earlier environment evidence retained
 
-The environment asset arrays are unchanged from craft revision 14. Its
+Except for the bounded Vault terrain patch described above, environment asset
+arrays are unchanged from craft revision 14. Its
 [actual-array architecture audit](evidence/craft-v14/final-architecture.json), including
 19 adversarial mutations, and [embedded-material checks](evidence/craft-v14/runtime-material-package.json)
 retain that scope. Editable Blender terrain, face and scanned-material sources have

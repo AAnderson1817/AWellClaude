@@ -1,10 +1,10 @@
 """Terrain-only presentation meshes derived from the existing immutable tile masks.
 Blender Z-up authoring; C/GLB X-right,Y-up,+Z-front. No collision data is written.
 """
-import bpy, bmesh, math, re, json, hashlib, sys
+import bpy, bmesh, math, re, json, hashlib, sys, importlib.util
 from pathlib import Path
 from mathutils import Vector
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'assets'/'blender';REVIEW=OUT/'review'/'terrain-v14';MODELS=ROOT/'public'/'models'
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'assets'/'blender';REVIEW=OUT/'review'/'terrain-v16';MODELS=ROOT/'public'/'models'
 REVIEW.mkdir(parents=True,exist_ok=True)
 HEADER=ROOT/'src'/'generated'/'terrain_assets.h'
 text=(ROOT/'src'/'room.c').read_text();mapblock=text.split('static const char *MAPS')[1].split('u8  tiles')[0]
@@ -833,6 +833,9 @@ for room,col in enumerate(collections):
 lines.append('#endif')
 manifest['total_triangles']=total;assert total<100000,total
 HEADER.write_text('\n'.join(lines)+'\n')
+spec=importlib.util.spec_from_file_location('blender_scanned_rock',ROOT/'scripts/blender_scanned_rock.py')
+scanned_rock=importlib.util.module_from_spec(spec);spec.loader.exec_module(scanned_rock)
+scanned_rock.apply(ROOT,scene,collections[0],rock,HEADER,OUT,MODELS,REVIEW,manifest)
 (OUT/'terrain-manifest.json').write_text(json.dumps(manifest,indent=2))
 
 # Neutral stage is excluded from geometry export. Render complete-room and detail views.
@@ -846,12 +849,15 @@ light('Terrain broad key',(-3,-14,31),18000,(.84,.96,1),22)
 light('Terrain green reflected fill',(38,-8,15),10000,(.62,.89,.76),18)
 light('Terrain grazing top',(22,4,27),14000,(.92,.90,.78),12)
 cd=bpy.data.cameras.new('Terrain review');cam=bpy.data.objects.new('Terrain review',cd);stage.objects.link(cam);scene.camera=cam;cd.type='ORTHO';cd.ortho_scale=41
-scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.render.threads_mode='FIXED';scene.render.threads=16
+scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.render.threads_mode='FIXED';scene.render.threads=8
 scene.cycles.samples=20;scene.cycles.use_denoising=True;scene.render.image_settings.file_format='PNG'
 scene.render.resolution_x=1440;scene.render.resolution_y=810;scene.render.resolution_percentage=100
 cam.location=(20,-48,14);cam.rotation_euler=(Vector((20,0,11))-cam.location).to_track_quat('-Z','Y').to_euler()
 for c in collections:c.hide_render=c!=collections[0];c.hide_viewport=c!=collections[0]
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'terrain.blend'))
+if '--skip-render' in sys.argv:
+    print('TERRAIN_COMPLETE '+json.dumps(manifest))
+    raise SystemExit(0)
 for room,col in enumerate(collections):
     for c in collections:c.hide_render=c!=col;c.hide_viewport=c!=col
     slug='vault-terrain' if room==0 else 'drowned-terrain'

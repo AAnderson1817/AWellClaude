@@ -19,3 +19,11 @@ the resulting maps. The earlier procedural city-stone images and
 `assets/blender/material-library.blend` remain available as their original source
 and a historical comparison. The new scan does not change ownership or attribution
 of the project's modeled geometry or its generated art-direction references.
+
+The bounded rock formation above the Vault door uses **Rock Face 01**, scanned by
+**Dario Barresi** and distributed by [Poly Haven](https://polyhaven.com/a/rock_face_01)
+under CC0. The fitted geometry retains the existing basalt material in the game.
+The original Blender source, portable texture dependencies, URLs and hashes are
+preserved in [the vendor package](../assets/vendor/polyhaven/rock-face-01/README.md).
+[The adaptation record](scanned-rock-v16-review.md) documents the crop, local depth
+adjustment beneath the protected landing, and unchanged neighboring geometry.
