@@ -1,0 +1,50 @@
+{
+  "checkedUtc": "2026-09-20T20:16:47.3430089Z",
+  "candidate": "depth-v11 city responses with corrected arch panes",
+  "browser": "Codex in-app Chromium via CUA",
+  "observations": [
+    "Vault Mouth displays layered3D geometry, corrected arched window and current mural rock.",
+    "F2 switches to original pixel presentation and back.",
+    "Eight Right key presses visibly move the player.",
+    "Drowned Quarter displays face, fish, fronds, readable water contact, and upper window panes contained above their sills.",
+    "No captured warning/error console entries in either room.",
+    "Gallery runtime images refreshed to depth-v11; 60 reference images retained."
+  ],
+  "limits": [
+    "No full browser traversal or automated WebGL parity suite.",
+    "No auditory listening acceptance or cold-player immersion study.",
+    "Browser screenshots were viewed live in the task; native captures are archived separately."
+  ],
+  "files": [
+    {
+      "path": "build/game.js",
+      "bytes": 8602213,
+      "sha256": "9b5b853b35df237c0afbd86fda86cc22c293801a6252a6f2d42dbf3a1691c542"
+    },
+    {
+      "path": "build/play.html",
+      "bytes": 8603362,
+      "sha256": "25e27cd4038ce85139bce9e95dc2e63d65d51c45c7187ecf36eff3d074e19a35"
+    },
+    {
+      "path": "src/depth.c",
+      "bytes": 41076,
+      "sha256": "147b8f5d4f64bd2f2c36d284bb164667f9eaf3ef8d4bae878aa21cc58ead49b7"
+    },
+    {
+      "path": "src/city.c",
+      "bytes": 11533,
+      "sha256": "c1b90498863fc98ef24c8aee7b316103e3805cc70df2c7600d27365ec8763d2e"
+    },
+    {
+      "path": "src/generated/city_assets.h",
+      "bytes": 1874123,
+      "sha256": "a085eb559af3cdaa5bbe18fb487d150329f7f3992582b4bea966028c94abb16c"
+    },
+    {
+      "path": "src/generated/mural_assets.h",
+      "bytes": 3049942,
+      "sha256": "2f3d710c658bee7fc9a70cf0f3936d654cbafd7a48ab0db656b292b5cb09ec78"
+    }
+  ]
+}

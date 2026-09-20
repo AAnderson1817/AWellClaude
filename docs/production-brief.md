@@ -17,7 +17,7 @@ Blue basalt supports bronze mechanisms. Copper oxidation follows moisture. Amber
 - At least 30 distinct generated reference images, not crops counted as separate concepts, archived with prompts and captions.
 - Preserve the existing traversal and discovery loop with reusable non-combat objects, readable cause and effect, reversible experimentation, and wordless affordances. Do not design new puzzle gates ahead of discovered toy interactions.
 - Character and landing-surface readability at 1280 × 720 and 1920 × 1080. Background art must not impersonate colliders.
-- Quiet visual regions between accents and an optional still-atmosphere mode. No on-screen teaching text, counters, camera shake or body squash. Existing carefully reduced audio event rates remain unchanged.
+- Quiet visual regions between accents and an optional still-atmosphere mode. No on-screen teaching text, counters, camera shake or body squash. The original audio palette and event rates are preserved; sparse city murmurs and a sinking-stone hum extend that soundscape. Their full-mix listening acceptance remains open.
 - Editable Blender hero assets with supported GLB materials, verified exported scale, documented budgets and independent visual review.
 - Automated deterministic simulation tests and actual rendered native playthrough evidence; verify the existing web target separately when available. Automated checks do not establish immersion or artistic quality; these require human observation and playtests.
 

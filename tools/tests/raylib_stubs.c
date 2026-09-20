@@ -23,6 +23,10 @@ void BeginShaderMode(Shader s) {}
 void EndShaderMode(void) {}
 void BeginTextureMode(RenderTexture2D t) {}
 void EndTextureMode(void) {}
+void DrawCircle(int x,int y,float radius,Color c) {}
+void DrawCircleLines(int x,int y,float radius,Color c) {}
+void DrawLine(int x,int y,int x2,int y2,Color c) {}
+void DrawPixel(int x,int y,Color c) {}
 void ClearBackground(Color c) {}
 int GetScreenHeight(void) { return 720; }
 int GetScreenWidth(void) { return 1280; }

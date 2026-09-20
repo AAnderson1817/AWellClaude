@@ -1,0 +1,2 @@
+CAPTURE shoal-capital frame=900 exported=1 windowLight=1.0000 pulse=0.3245 answer=0.0000 answerFrames=0 responses=0 fishMeanY=84.4480 gathering=0
+CITY SFX city-murmur=0 city-hum=0

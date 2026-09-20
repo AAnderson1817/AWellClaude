@@ -1,8 +1,9 @@
 # Production status
 
 This branch extends the existing two-room C/raylib game. It is a working 3D
-presentation candidate, with original mechanics retained and an immediately playable
-native and web build. The overall goal remains active.
+presentation and city response candidate, with original mechanics retained and
+native and web builds. The overall goal remains active. This status describes the
+city response increment after the earlier depth-v10 milestone.
 
 ## Delivered
 
@@ -11,22 +12,33 @@ native and web build. The overall goal remains active.
 - Embedded modeled door, astronomical instrument, terrain, pot, lantern and creature
   parts, with editable Blender sources and clean GLB reimport verification.
 - Existing responsive props, wildlife, bulbs, lamp/stone behavior, water and reset
-  presented in 3D; original renderer available with F2.
-- Independent visual review, response captures, native baseline comparisons, route and
-  escape searches, sanitizer checks, and live browser rendering checks.
-- Two separately documented reference collections and a local art review gallery.
+  presented in 3D; flat presentation available with F2.
+- Authored mural concealment/recovery, four reactive windows, seven-second face eye
+  pulse with a two-second sinking-stone answer, and eight fish that scatter from the
+  body and gather beneath a reachable floating lamp. Both modes consume the same
+  response state, with quiet city murmurs and a low note extending original audio.
+- Current sanitizer response tests, 21,160 headless and 6,640 native-rendered baseline
+  frame comparisons, 35 route checks and 36 escape surfaces passing. Controlled
+  native city captures document before/after response states. Earlier depth-v10
+  visual and browser reviews remain dated evidence, not automatic acceptance of
+  this increment.
+- Two complete reference collections of 30 images each and a local art review gallery.
 
 ## Acceptance still open
 
-The [independent review](artistic-review.md) does **not** accept the current scene as
-AAA quality. Its most consequential findings are the detail/material gap between
-playable surfaces and the distant matte, limited evidence of cultural practice, and
-the Drowned Quarter's missing defining inhabitants and response-table content.
+The [current whole-brief review](artistic-review-v11.md) returns **rework**. The
+playable surfaces, structural supports and inhabited architecture remain below the
+governing references. The new face, fish, windows and mural have observed responses,
+connecting material culture with behavior, but do not settle the broader quality
+target. Source-asset technical verification and the repaired window-pane bounds
+are separate from artistic acceptance.
 
-The inherited slice has no completed ending or full deeper discovery structure. Its
-unimplemented face, native, fish, hunter and mural must receive their intended
-responses before they can count as completed game content. Adding a decorative image
-is insufficient. This branch does not invent new gates or verbs to conceal that gap.
+The slice still has no completed ending or full deeper discovery structure. The
+hunter and native, face-mouth bubbles, drowned facade openings, remaining response-table
+dressing and final sound pass remain unfinished. Implemented responses are described
+in [city-response-implementation.md](city-response-implementation.md); automated and
+controlled visual fixtures do not establish spontaneous discovery or immersion.
+No new gates or player verbs conceal the remaining gaps.
 
 Further production should refine the playable materials and supports from the
 reference collection, implement the existing response tables through actual observed

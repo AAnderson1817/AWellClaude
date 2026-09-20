@@ -70,8 +70,16 @@ def build_baseline(output, render=False):
 def contract_checks():
     # These are the signed-off gameplay modules. A future intentional mechanics
     # change should update the contract explicitly instead of silently blessing it.
-    for path in ("src/player.c", "src/items.c", "src/audio.c"):
+    for path in ("src/player.c", "src/items.c"):
         assert (ROOT / path).read_bytes().replace(b"\r\n", b"\n") == original(path).replace(b"\r\n", b"\n"), path
+    audio = (ROOT / "src/audio.c").read_text()
+    city_audio = re.search(r"    // BEGIN CITY RESPONSE SOUNDS\n(.*?)    // END CITY RESPONSE SOUNDS\n", audio, re.S)
+    assert city_audio and not re.search(r"\b(?:Noise|Rnd|AudioRnd)\s*\(", city_audio.group(1)), "City synthesis must not consume the inherited random stream"
+    # Permit only the marked appended synthesis block. All original synthesis,
+    # runtime audio code and random-stream calls remain byte-for-byte identical.
+    audio, removed = re.subn(r"    // BEGIN CITY RESPONSE SOUNDS\n.*?    // END CITY RESPONSE SOUNDS\n", "", audio, count=1, flags=re.S)
+    assert removed == 1, "Expected one appended city audio block"
+    assert audio == original("src/audio.c").decode().replace("\r\n", "\n"), "Original audio behavior changed"
     # Permit exactly the detached presentation accessor in fx.c, preserving every
     # original effect update/draw line and the random-stream behavior verbatim.
     effects = (ROOT / "src/fx.c").read_text()
@@ -112,7 +120,9 @@ def trace(executable, args, render, mode):
     output = command([executable, *options], text=True, startupinfo=startup)
     lines = [line for line in output.splitlines() if line.startswith(("f=", "LIFE ", "SFX "))]
     assert any(line.startswith("f=") for line in lines), f"No simulation trace from {executable}"
-    return lines
+    city = re.findall(r"^CITY SFX city-murmur=(\d+) city-hum=(\d+)$", output, re.M)
+    assert len(city) <= 1, "Duplicate city sound report"
+    return lines, ({"city-murmur": int(city[0][0]), "city-hum": int(city[0][1])} if city else None)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -133,19 +143,24 @@ def main():
         # of expensive idle frames. Headless checks retain the full calm-time sample.
         if args.render:
             options = [re.sub(r"-:(3600|600)", "-:180", part) for part in options]
-        expected = trace(args.baseline.resolve(), options, args.render, None)
+        expected, baseline_city = trace(args.baseline.resolve(), options, args.render, None)
+        assert baseline_city is None, "Historical baseline unexpectedly contains city responses"
+        city_counts = {}
         for mode in ("--flat", "--depth"):
-            actual = trace(args.candidate.resolve(), options, args.render, mode)
+            actual, city_counts[mode[2:]] = trace(args.candidate.resolve(), options, args.render, mode)
+            assert city_counts[mode[2:]] is not None, "Candidate did not report its separate city sounds"
             assert len(actual) == len(expected), f"{name}/{mode}: trace length changed"
             for index, (before, after) in enumerate(zip(expected, actual)):
                 if before != after:
                     raise AssertionError(f"{name}/{mode}, trace line {index}:\nBASE {before}\nNEW  {after}")
         digest = hashlib.sha256("\n".join(expected).encode()).hexdigest()
         frames = sum(line.startswith("f=") for line in expected)
-        results.append({"case": name, "frames": frames, "sha256": digest, "modes": ["flat", "depth"]})
+        assert city_counts["flat"] == city_counts["depth"], "City sound events depend on presentation mode"
+        results.append({"case": name, "frames": frames, "sha256": digest, "modes": ["flat", "depth"], "city_sound_counts": city_counts})
         print(f"PASS {name}: {frames} original frames match both presentation modes")
     report = {"baseline_git_ref": BASELINE_REF, "rendered": args.render,
-              "unchanged_contract": ["movement", "items", "fx behavior", "life behavior", "props behavior", "audio", "room geometry", "prop placements"],
+              "unchanged_contract": ["movement", "items", "fx behavior", "life behavior", "props behavior", "original audio", "room geometry", "prop placements"],
+              "intentional_extension": "City responses add separately reported murmurs and hums; original dbgLastSfx retains its inherited gameplay-event meaning. No original trace fields are filtered.",
               "cases": results, "compared_frames": 2 * sum(r["frames"] for r in results)}
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, indent=2) + "\n")

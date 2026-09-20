@@ -1,0 +1,16 @@
+PASS quiet-vault: 3603 original frames match both presentation modes
+PASS quiet-water: 3603 original frames match both presentation modes
+PASS run-jump-release: 174 original frames match both presentation modes
+PASS hold-lamp: 233 original frames match both presentation modes
+PASS bulb-normal: 183 original frames match both presentation modes
+PASS bulb-timed: 199 original frames match both presentation modes
+PASS shaft-down: 323 original frames match both presentation modes
+PASS shaft-up: 103 original frames match both presentation modes
+PASS failed-seam-exit: 95 original frames match both presentation modes
+PASS water-to-island: 255 original frames match both presentation modes
+PASS stone-dive-and-reset: 366 original frames match both presentation modes
+PASS abort-reset: 108 original frames match both presentation modes
+PASS camp-lamp-fire: 603 original frames match both presentation modes
+PASS door-glint: 303 original frames match both presentation modes
+PASS animal-and-pot: 429 original frames match both presentation modes
+PASS 15 cases / 21160 compared frames; C:\Users\Derpd\OneDrive\Documents\ChatGPT\AnimalWell\docs\evidence\city-responses\headless-suite\preservation-report.json

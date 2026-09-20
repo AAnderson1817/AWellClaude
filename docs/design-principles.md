@@ -2,8 +2,9 @@
 
 This is a presentation branch of **AAnderson1817/AWellClaude**, based on commit
 `99de7856bedfa059439da1b89435f54c98bddaf7`. Its inherited game has two rooms: the Vault
-Mouth and the Drowned Quarter. The branch must preserve that game while developing
-its 3D art direction. It is not a replacement JavaScript game or a completed AAA release.
+Mouth and the Drowned Quarter. The branch preserves that game while developing
+its 3D art direction and implementing the authored city responses. It is not a
+replacement JavaScript game or a completed AAA release.
 
 The governing project documents are [DESIGN-LAW](../claude/DESIGN-LAW.md),
 [PREMISE](../claude/PREMISE.md), and the actual source. The dated project-state file
@@ -43,22 +44,24 @@ Source: [Nintendo, Animal Well tips from the developer, 2024](https://www.ninten
 | Project requirement | Concrete implementation contract | Evidence or remaining limit |
 |---|---|---|
 | L1: density before expansion | Keep the two authored rooms; 25 remains the eventual ceiling. | Original room maps are compared directly with the baseline. No invented third environment or replacement world. |
-| L2: mechanics precede puzzles | Add no resonance locks, collectible quests or authored combinations merely to decorate the new theme. | Original simulation modules remain unchanged. New observed surprises require actual play records; none are fabricated here. |
+| L2: mechanics precede puzzles | Add no resonance locks, collectible quests or authored combinations merely to decorate the new theme. | Original movement/items remain unchanged; city responses extend the existing Hold toy according to the inherited response tables. New observed surprises require actual play records; none are fabricated here. |
 | L3–4: nonviolent toys without redundant verbs | Preserve Hold, one hand, the floating lamp and sinking stones. Leave the second verb undecided. | Item source is unchanged; pickup, set-down, weighted movement and reset appear in the trace comparison. |
 | L5: no teaching text | No tutorial overlays, dial labels, quest text or lore captions inside the game. | Developer documents and optional debug surface tags remain outside normal play. Human wordless-teaching acceptance is still open. |
-| L6: plausible actions receive a response | Preserve ropes, roots, chain lamps, plants, birds, beast, pots, door glint and the campfire. | 3D receives detached snapshots of the existing simulation; it must not replace these reactions with unrelated loops. |
+| L6: plausible actions receive a response | Preserve ropes, roots, chain lamps, plants, birds, beast, pots, door glint and campfire; implement the authored mural, windows, face and fish responses. | Detached snapshots preserve original reactions. New response tests exercise light/dark recovery, sinking-stone acknowledgment, floating-lamp gathering and body scatter. Readability and spontaneous discovery still require players. |
 | L7: default-open traversal | Keep platforms, shaft, water, bulbs and movement tuning. | 35 route checks pass, including both shaft directions and failed-exit recovery. No new item gates. |
 | L8: invisible deeper layers | Add no completion meter, visible checklist or promised secret count. | The inherited slice has no finished ending or accepted Layer 2 hook. This branch does not claim those acceptance tests are complete. |
 | L9: indifference and no combat | Preserve the animals' behavior and the player's inability to attack them. | Original life step code is unchanged. Tone requires observation of players. |
 | L10: no screenshake or body squash | Use layered scenery, light, material and existing procedural movement for depth. | Disney-inspired layering means staged visual planes, not a new reassuring body-animation vocabulary. |
 | L11: one room, one locked frame | Show the original 40 × 22 tile stage in one fixed side view. Depth stays behind or in front of the interactive plane. | No following or scrolling camera; a GPU playthrough must confirm seam and edge readability. |
-| L12: a second understanding | Preserve the lamp's ordinary physical role and its fire/door responses, and the stone's buoyancy consequence. | Do not announce a checklist of interactions. Whether the player experiences a revelation is an open human test. |
+| L12: a second understanding | Preserve lamp/stone physics and add the lamp's concealment of the mural, windows' withdrawal, and the face's acknowledgment of a sinking stone. | These are functional second readings of Hold, without an announced checklist. Whether a player discovers them or experiences a revelation is an open human test. |
 | D5–7: start, persistent fire, frozen geometry | Keep the start at the sealed door, fire persistence until reset, and the approved traversal geometry. | Static source comparisons plus baseline traces and route/escape sweeps. |
 
 The project has already been tuned for quietness: fewer birds, sparse drips, longer
 animal pauses, quiet ambience. A larger renderer is not permission to multiply event
 rates, add constant spark showers, or add a continuous musical lead. The existing
-audio and effects behavior is preserved.
+audio and effects behavior is preserved. Sparse city responses add a quiet murmur
+and one low sinking-stone note, reported separately from the inherited sound events.
+Their full-mix comfort and clarity have not received human listening acceptance.
 
 ## Metallurgy, astronomy and faith within the existing premise
 
@@ -84,12 +87,21 @@ material evidence while keeping that existing distinction readable.
 
 ## Simulation / presentation boundary
 
-`player.c`, `items.c` and `audio.c` are byte-equivalent to the baseline apart
-from line-ending normalization. Authored map and prop rows are identical. `life.c`
+`player.c` and `items.c` are byte-equivalent to the baseline apart from line-ending
+normalization. Original `audio.c` code remains equivalent after removing only the
+marked appended city synthesis block, which consumes no inherited randomness. The
+two new sounds are intentional extensions, not historical-baseline events. Authored
+map and prop rows are identical. `life.c`
 and `props.c` gain only bounded snapshot getters; their existing update and drawing
 functions keep their behavior. Snapshot enums moved to `aw.h` retain their order.
 `fx.c` also gains a bounded copy getter; the preservation check removes exactly that
 accessor and verifies every original effects line remains unchanged.
+
+`city.c` owns its fixed-step response state and independent random stream. It reads
+the body, items and persistent fire without changing them. Both presentations use
+the same city state. Room 1 is now consistently zoned as city in both renderers;
+its fixture light is green-white while the hunter's moving lamp remains warm.
+The face-coordinate ambiguity and resolution are recorded as D8 in the premise.
 
 Snapshot coordinates are original room pixels, **y down**, excluding `ROOM_Y`:
 
@@ -100,11 +112,14 @@ Snapshot coordinates are original room pixels, **y down**, excluding `ROOM_Y`:
 | `LifePlantViews` | Base, sway/lean, active pod/mouth/perk, and exact derived positions of all three pods. |
 | `PropsViews` | Original kind, tile anchor, extent, state/timer, pot location, pendulum/banner response and room fire state. |
 | `FxViews` | Active event particles copied from the existing fixed pool, including splash, landing dust, door grit, sparks and pot shards. Ambient motes are separate. |
+| `CityWindowViews`, `CityMuralView` | Window light/delay/crossing state and mural visibility driven by the lamp and fire. |
+| `CityFaceView`, `CityFishViews` | Seven-second eye pulse, two-second stone acknowledgment, and eight water-constrained fish positions/scatter/gathering state. |
 
 Getters copy into caller-owned buffers. They do not return writable pointers into
 simulation arrays, advance timers, consume random numbers or change gameplay. Empty
-or invalid buffers return zero. Original pixel drawing remains available for direct
-comparison. The 3D renderer owns its GPU resources and consumes these snapshots.
+or invalid buffers return zero. The flat presentation remains available for direct
+comparison and includes city responses. The independently compiled Git source is
+the historical baseline. The 3D renderer owns its GPU resources and consumes snapshots.
 
 ## Automated evidence
 
@@ -114,13 +129,14 @@ from the Git blobs at `99de785`, using the same compiler and I/O stubs.
 
 | Check | Result | What it establishes |
 |---|---|---|
-| `tools/check-preservation.py --build-baseline` | 15 scenarios, **21,160 compared frames**, exact trace equality under both `--flat` and `--depth` flags | Fixed-step movement, item state, water, room seams, reset, sound events and reported life counters retain baseline behavior when drawing is disabled. |
-| `tools/check-preservation.py --render`, native depth-v10 build | 15 scenarios, **6,640 compared frames**, exact trace equality with actual rendering | Original native drawing, current flat drawing and current 3D drawing produce the same reported simulation states and events. Idle cases are shortened to 180 frames for the GPU pass. |
-| Static baseline contracts in the same tool | Passed | Signed-off movement/items/audio/fx source and authored geometry/prop placements are preserved. |
+| `tools/check-preservation.py --build-baseline`, current city increment | 15 scenarios, **21,160 compared frames**, exact trace equality under both `--flat` and `--depth` flags | Fixed-step movement, items, water, room seams, reset, inherited sound events and life counters retain baseline behavior. City sound counts are recorded separately and agree between modes. |
+| `tools/check-preservation.py --render`, current city increment | 15 scenarios, **6,640 compared frames**, exact original trace equality with actual rendering | Original native drawing, current flat drawing and current 3D drawing produce the same reported inherited states/events. Idle cases are shortened to 180 frames for the GPU pass. |
+| Static baseline contracts in the same tool | Passed | Movement/items/fx and authored geometry/prop placements are preserved; original audio remains equivalent after excluding the explicitly marked city append. |
 | `tools/route.py` using `AWELL_GAME=build/game-probe.exe` | **35 / 35** | 19 upper-room climb checks, 13 water/shaft checks, 3 reset checks. Search finds real executable input sequences, rather than inferring reachability from drawing. |
 | `tools/escape.py` with the same executable | **36 / 36 surfaces return home** | A wander bot actually reaches home from each standable run. This is evidence of escape paths, not proof of every imaginable player state. |
 | `tools/tests/input_hash.c`, UndefinedBehaviorSanitizer | Passed | Input edges survive frames with no simulation tick, taps/holds remain distinct, catch-up ticks do not duplicate a press, and the hash avoids signed-overflow UB. |
 | `tools/tests/presentation_snapshots.c`, UndefinedBehaviorSanitizer | **3,600 frames passed** | Repeated view reads are stable, outputs are detached, bounds/null handling work, and live body/item/tile/fire state is unchanged by reads. |
+| `tools/tests/city_responses.c`, UndefinedBehaviorSanitizer | Passed | Four window response contracts; mural recovery and actual fire coupling; real sinking-stone acknowledgment; floating-lamp gathering, disconnected-basin exclusion, body scatter, 6,000 shoal bounds steps and city snapshot ownership. |
 | `tools/tests/test_tools.py` | **5 / 5** | Reachability tools report failures/crashes/empty traces correctly and honor an explicit probe executable. |
 
 The machine-readable trace report is generated at `build/preservation-report.json`.
@@ -133,9 +149,11 @@ python tools/check-preservation.py --render --baseline build/game-baseline.exe -
 ```
 
 That command compares the original native renderer with actual flat and depth drawing.
-A full native pass was completed again for the depth-v10 build and recorded in
-`docs/evidence/current/render-preservation-report.json`; later renderer revisions should be checked
-again when they change state-reading or response rendering. A headless pass alone
+A full native pass for the city response increment completed on 2026-09-20 and is
+recorded in [city response checks](evidence/city-responses/checks/summary.json), including
+[rendered preservation](evidence/city-responses/checks/render-preservation-report.json).
+The older `evidence/current` directory is retained as the depth-v10 milestone record;
+its directory name does not make it current evidence for later edits. A headless pass alone
 must never be reported as validation of GPU rendering. Both
 renderers must execute the same `LightStep`, because an existing lighting effect also
 consumes the props random stream. Skipping it would subtly alter subsequent responses.
@@ -147,22 +165,25 @@ fixed-step parity and correct input latching; it does **not** establish full sim
 invariance at arbitrary rendering rates. Changing that would be a separate mechanics
 and timing decision, outside this presentation branch.
 
-The web target also compiles with Emscripten 6.0.8. Live CUA browser observations show
-both rooms rendering, F2 switching modes, basic keyboard movement, and empty shader/
-browser warning/error logs. Five wrapper tests pass. This limited browser coverage is
-documented separately in [verification.md](verification.md); it is not a full browser
-playthrough or perceptual audio validation.
+The city increment also compiles with Emscripten 6.0.8. Earlier depth-v10 CUA browser
+observations showed both rooms, F2 switching, movement and empty warning/error logs.
+Current and historical browser coverage are distinguished in
+[verification.md](verification.md); compilation is not browser execution, and neither
+constitutes a full browser playthrough or perceptual audio validation.
 
 ## Human acceptance still required
 
-An independent visual comparison of the depth-v5 Vault Mouth screenshot, original
+An earlier independent visual comparison of the depth-v5 Vault Mouth screenshot, original
 pixel screenshot and governing reference identified material gaps: ambient lighting
 flattened the original warm/cool pools; raw-rock silhouettes still exposed a coarse
 tile grid; dressed masonry repeated smooth rounded blocks; the central decorative
 orrery could appear interactive; and the door's clean bronze material did not yet
 match the weathered architecture. These are concrete art-direction findings, not
-failures of the deterministic simulation checks. They require new rendered review
-after correction. The first native render pass does not constitute AAA visual acceptance.
+failures of the deterministic simulation checks. The subsequent
+[v9/v10 review](artistic-review.md) records repairs and remaining material/production
+gaps at that milestone. It predates the city response increment and is not a new
+judgment of the face, mural, windows or fish. Their controlled captures and tests
+establish implementation evidence; they do not constitute AAA visual acceptance.
 
 Automated traces cannot establish immersion, artistic cohesion, comfortable sensory
 load, wordless understanding or AAA production quality. Keep those claims open until

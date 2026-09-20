@@ -1,4 +1,4 @@
-# The Vault and the City Under It — 3D presentation branch
+# The Vault and the City Under It — 3D presentation and city responses
 
 This is the existing [AAnderson1817/AWellClaude](https://github.com/AAnderson1817/AWellClaude)
 C/raylib game with a developing 3D presentation. Branch `codex/celestial-foundry` starts
@@ -9,13 +9,22 @@ The original two rooms, movement, lamp and stones, water, bulbs, wildlife, respo
 props and reset remain the game. A locked side view stages actual 3D geometry,
 atmospheric backgrounds and foreground framing around the same collision plane.
 Metallurgy, astronomy and faith inform the existing vault/city setting. The original
-pixel renderer remains available for comparison.
+flat renderer remains available for comparison and now presents the same city responses.
+
+The current increment implements the authored mural, reactive windows, drowned face
+and eight-fish shoal. Light conceals the mural and douses windows; a sinking stone
+receives an answer from the face; fish approach a floating lamp and scatter from the
+body. These extend the existing Hold interaction without changing access or geometry.
+See [response implementation and limits](docs/city-response-implementation.md).
 
 **Status:** a playable presentation development branch. AAA visual quality and human
 immersion have not been certified. The scope is the existing Vault Mouth and Drowned
-Quarter; it is not a finished 25-room game. Native Windows behavior is verified.
-The web build and live WebGL checks in both rooms pass; a full browser playthrough,
-perceptual audio review and Linux validation remain open.
+Quarter; it is not a finished 25-room game. The city increment passes native Windows
+preservation and response tests and compiles for the web. Earlier depth-v10 browser
+checks are retained as historical evidence; current browser coverage is recorded
+separately in [verification](docs/verification.md). The hunter, native, remaining
+response-table content, full browser playthrough, perceptual audio review and Linux
+validation remain open.
 
 ## Windows
 
@@ -86,7 +95,7 @@ project's wordless interface.
 | Up arrow/W or held jump, in water | Swim upward |
 | X | Pick up or set down the lamp or a stone; one object at a time |
 | Hold R | Close your eyes and reset; release early to cancel |
-| F2 | Switch between the 3D and original flat renderer |
+| F2 | Switch between the 3D and flat renderer |
 | F4 | Toggle optional ambient drift in 3D; gameplay remains live |
 | L, in flat mode | Toggle development surface labels |
 
@@ -126,6 +135,7 @@ count requirement; runtime AAA quality and human immersion remain open.
 
 * [Existing design law](claude/DESIGN-LAW.md) and [premise](claude/PREMISE.md).
 * [Principles, primary-source research and preservation audit](docs/design-principles.md).
+* [Current production status](docs/production-status.md) and [city response evidence](docs/city-response-implementation.md).
 * [Production brief](docs/production-brief.md), [asset contract](docs/asset-contract.md)
   and [asset acceptance](docs/asset-acceptance.md).
 * Environment references live under `public/art/references`; editable assets and

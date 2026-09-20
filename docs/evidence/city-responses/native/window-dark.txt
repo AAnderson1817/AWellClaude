@@ -1,0 +1,2 @@
+CAPTURE window-dark frame=150 exported=1 windowLight=0.0000 mural=1.0000
+CITY SFX city-murmur=0 city-hum=0

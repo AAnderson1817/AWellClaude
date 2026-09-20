@@ -42,8 +42,8 @@ function Invoke-Checked {
 }
 
 & "$PSScriptRoot/build-win.ps1" -Headless
-$sources = @('src/player.c','src/room.c','src/fx.c','src/render.c','src/audio.c','src/life.c','src/items.c','src/props.c')
-foreach ($testName in @('input_hash','presentation_snapshots')) {
+$sources = @('src/player.c','src/room.c','src/fx.c','src/render.c','src/audio.c','src/life.c','src/items.c','src/props.c','src/city.c')
+foreach ($testName in @('input_hash','presentation_snapshots','city_responses')) {
     & $zig cc -std=c99 -O1 -g -DAWELL_HEADLESS -fsanitize=undefined -fno-sanitize-recover=all -I $include "tools/tests/$testName.c" tools/tests/raylib_stubs.c $sources -o "build/$testName.exe"
     if ($LASTEXITCODE -ne 0) { throw "Compilation failed: $testName" }
     Invoke-Checked -Executable "./build/$testName.exe" -CommandArgs @() -LogName "$testName.txt"
@@ -72,6 +72,8 @@ $summary = [ordered]@{
     routeChecks = 35
     escapeSurfaces = 36
     snapshotFrames = 3600
+    cityResponseTests = 'four windows, mural/fire coupling, face sinking-stone acknowledgment, eight-fish shoal, detached snapshots'
+    citySoundExtensions = @('city-murmur','city-hum')
     pythonToolTests = 5
     status = 'passed'
 }

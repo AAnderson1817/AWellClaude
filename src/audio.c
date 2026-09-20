@@ -308,6 +308,26 @@ static void Synth(void) {
         ambPcm[r] = Commit(n, 1.0f); ambLen[r] = n;
         if (ready && ambPcm[r]) amb[r] = MakeSound(ambPcm[r], n);
     }
+    // BEGIN CITY RESPONSE SOUNDS
+    // Deliberately no Noise/Rnd calls: adding the city does not perturb the
+    // original sound palette, ambience, or runtime audio random stream.
+    n=(int)(SR*.64f); Clear(n);
+    for(int i=0;i<n;i++) {
+        float t=(float)i/SR;
+        float syllable=expf(-powf((t-.16f)/.085f,2))+ .65f*expf(-powf((t-.40f)/.12f,2));
+        work[i]=syllable*(.50f*sinf(2*PI_F*132*t)+.14f*sinf(2*PI_F*264*t)+.07f*sinf(2*PI_F*396*t));
+    }
+    Reverb(n,.30f,.76f,.45f);
+    Register(SFX_CITY_MURMUR,"city-murmur",n,.8f,.20f,1);
+    n=SR*2; Clear(n);
+    for(int i=0;i<n;i++) {
+        float t=(float)i/SR;
+        float envelope=(1-expf(-t/.10f))*expf(-t/.62f)*fminf(1,(2-t)/.22f);
+        work[i]=envelope*(.65f*sinf(2*PI_F*73.4162f*t)+.16f*sinf(2*PI_F*146.8324f*t));
+    }
+    Reverb(n,.26f,.79f,.52f);
+    Register(SFX_CITY_HUM,"city-hum",n,.8f,.30f,1);
+    // END CITY RESPONSE SOUNDS
 }
 
 // ---------------------------------------------------------------- under the surface

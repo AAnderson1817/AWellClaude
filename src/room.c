@@ -1,8 +1,9 @@
-// room.c -- the one room: its tiles, its light, and how it is drawn.
+// room.c -- the two rooms: their tiles, light, and flat presentation.
 //
 // The map is authored as text right here and read once at startup. It is level
 // data: nothing writes to it while the game runs, and nothing streams from disk.
 #include "aw.h"
+#include "city.h"
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -75,15 +76,15 @@ u8  tiles[RH][RW];
 u8  roomTiles[ROOM_COUNT][RH][RW];
 int  roomIdx;
 
-// The city, as rectangles of tiles; everything else is the vault. Room 0: the balcony and
-// its mass with the right block above it, and the column, the street and the grate. Room 1
-// is dressed in the next build and stays raw until then.
+// Vault Mouth city zones are authored rectangles around its balcony, column and
+// street. The Drowned Quarter is wholly city-built, including its submerged lamps.
 typedef struct { i16 x0, y0, x1, y1; } ZRect;
 static const ZRect CITY[ROOM_COUNT][4] = {
     { { 26, 5, 39, 12 }, { 18, 13, 39, 21 }, { -1, 0, 0, 0 } },
     { { -1, 0, 0, 0 } },
 };
 int ZoneAt(int tx, int ty) {
+    if (roomIdx == 1) return Z_CITY;   // the drowned room is built city, including its submerged lamps
     for (int i = 0; i < 4 && CITY[roomIdx][i].x0 >= 0; i++) {
         const ZRect *r = &CITY[roomIdx][i];
         if (tx >= r->x0 && tx <= r->x1 && ty >= r->y0 && ty <= r->y1) return Z_CITY;
@@ -144,9 +145,9 @@ float RoomWaterHeight(int column) {
     return column >= 0 && column < RW ? surfH[column] : 0.0f;
 }
 
-// The Drowned Quarter's art brief makes the whole room city-built. Its original
-// pixel presentation is still raw rock, so only this read-only presentation copy
-// recolors the STATIC bake green-white. Moving hunter light remains warm.
+// The depth tone pass retains normalization of static warm emitters in the
+// wholly city-built Drowned Quarter. With all-city zoning and no bulbs there,
+// lstatW is currently zero. The dynamic hunter lamp and body aura stay warm.
 void RoomDepthLightColors(Color *out) {
     if (!out) return;
     for (int j = 0; j <= RH; j++) for (int i = 0; i <= RW; i++) {
@@ -319,6 +320,7 @@ void LightStep(void) {
     LifeLights();
     ItemsLight();
     PropsLight();
+    CityLight();
     // A bulb that has just been landed on throws light for a moment; more, and further,
     // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
@@ -426,6 +428,7 @@ void RoomEnter(int idx) {
     ParseRoom(idx, tiles);          // sets the bulbs for this room too
     FindSurfaces();
     PropsInit();
+    CityInit();
     LightBake();
     memset(surfH, 0, sizeof surfH);
     memset(surfV, 0, sizeof surfV);
@@ -697,6 +700,7 @@ void RoomDraw(void) {
                               (Color){ 30, 29, 44, 255 });
         }
     PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone
+    CityDrawBack();
 
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {

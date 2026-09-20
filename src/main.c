@@ -3,6 +3,7 @@
 // fixed-step gameplay retains the original static state.
 #include "aw.h"
 #include "depth.h"
+#include "city.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -201,6 +202,7 @@ static void Sim(void) {
     FxStep();
     LifeStep();
     PropsStep();
+    CityStep();
     if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
         && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
@@ -249,6 +251,7 @@ static void Frame(void) {
                 LightDraw();
                 LifeDrawEyes();
                 ItemsDrawCore();
+                CityDrawGlow();
                 ResetDrawLids();
                 PlayerDrawEyes();      // over the lids: your own eyes close on their own, last
                 DebugLabelsDraw();
@@ -353,7 +356,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose() && !shotsDone && !PlanExhausted()
            && !(maxFrames && frameNo >= maxFrames)) Frame();
 #endif
-    if (dbgTrace) LifePrintStats();
+    if (dbgTrace) { LifePrintStats(); CityPrintStats(); }
     if (wanderSeed) {
         // Every surface a body could rest on, per room, and whether this bot ever did.
         for (int r = 0; r < ROOM_COUNT; r++) {

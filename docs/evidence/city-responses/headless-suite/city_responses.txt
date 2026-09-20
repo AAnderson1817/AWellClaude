@@ -1,0 +1,12 @@
+WINDOW room=0 index=0 returnFrames=530
+WINDOW room=1 index=0 returnFrames=428
+WINDOW room=1 index=1 returnFrames=428
+WINDOW room=1 index=2 returnFrames=428
+PASS windows: all four lamp responses, 5–10s return, renewed wait, crossings and quiet proximity voice
+PASS mural: light conceals, darkness restores over 2s, persistent fire changes what can be seen
+FACE firstAnswerFrame=32 stoneY=102.660 stoneVy=0.700 remaining=120
+PASS face: exact 7s pulse, actual sinking-stone note, 2s answer, no resting/held retrigger
+SHOAL initialMeanY=80.800 floatingLampMeanY=66.880 lampY=52.420
+PASS shoal: eight water-constrained fish, actual floating-lamp gathering, held-lamp exclusion, body scatter, 6000-frame bounds
+PASS ownership: detached bounded snapshots; city updates preserve body, items, geometry and original sound counts
+PASS authored build-2 responses (native and human listening acceptance remain separate)

@@ -55,3 +55,5 @@ its place. The reset puts it out, because the reset is everything as it began.
 **D7 — Geometry is frozen through the redesign.** Platforms, the shaft, the water and
 the bulbs are played and signed off; `tools/route.py` and `tools/escape.py` guard them.
 Dressing that needs a one-tile change is allowed if both stay green.
+
+**D8 — The carved face's eyes sit in its brow.** ROOMS gives face bounds at rows 16–20 but calls floor seams at row 21 its eyes. The build keeps both the frozen floor and the existing seam: the face's visible eyes are at (23.5,17.5) and (26.5,17.5), inside those bounds; the old floor seam reads as spill from the same green-white source. A released sinking stone within three tiles of the carving receives a two-second brightening and one low note. No access or collision changes.

@@ -1,0 +1,36 @@
+{
+  "source_reopened": true,
+  "blender_version": "5.2.0 LTS",
+  "assets": {
+    "mural-rock": {
+      "triangles": 10720,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        6.483896255493164,
+        4.033309668302536,
+        0.7112704366445541
+      ],
+      "sha256": "48d572ad7a4f44ee17f0179062d58623fa6f9b5a421ee47e4f67a96db652958f",
+      "bytes": 227464,
+      "checks": "pass",
+      "intentional_open_surfaces": false
+    },
+    "mural-pigment": {
+      "triangles": 12544,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "dimensions": [
+        5.440106153488159,
+        3.301019586622715,
+        0.3376558795571327
+      ],
+      "sha256": "b4d193e992eef706fa55978e4ab63634b6c29d037c1fb98b2aa8c20f339f9dfd",
+      "bytes": 980832,
+      "checks": "pass",
+      "intentional_open_surfaces": true
+    }
+  },
+  "source_sha256": "44337e579439243020ef520f14359b356aab0eafa2fad1f6f3476f15fe97f48d",
+  "artistic_status": "awaiting inspection of source/reimport images and runtime integration"
+}

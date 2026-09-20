@@ -2,12 +2,15 @@
 // in the existing tile/physics state. Nothing in this file is read by a game rule.
 #include "aw.h"
 #include "depth.h"
+#include "city.h"
 #include "raymath.h"
 #include "rlgl.h"
 #include "generated/environment_mattes.h"
 #include "generated/foundry_assets.h"
 #include "generated/terrain_assets.h"
 #include "generated/life_assets.h"
+#include "generated/city_assets.h"
+#include "generated/mural_assets.h"
 #include <math.h>
 #include <string.h>
 
@@ -19,13 +22,17 @@ static Camera3D camera;
 static RenderTexture2D target,waterTarget;
 static Shader surface, finish,waterShader;
 static Texture2D waterMask;
-static Model cube, orb, cylinder, cone, torus, leaf;
+static Model cube, orb, cylinder, cone, torus, leaf, archPane;
 static Texture2D mattes[2];
 static Texture2D depthLight;
 static Model doorModels[8],orreryModels[8];
 static Model terrainModels[ROOM_COUNT][12];
+static Model faceModels[12],eyeModels[4];
+static Model muralRockModels[8],muralPigmentModels[8];
 static Model potModels[8],lampModels[8],seedModels[8],beastBodyModels[8],beastHeadModels[8],birdModels[8];
-static int metalLoc, roughLoc, emissionLoc, cameraLoc, timeLoc;
+static int metalLoc, roughLoc, emissionLoc, cameraLoc, timeLoc, substrateLoc, waterLevelLoc;
+// Surface identity is explicit: living forms do not inherit masonry noise.
+static float substrate;
 static const Color BASALT = {60,72,82,255};
 static const Color STONE = {95,108,112,255};
 static const Color BRONZE = {139,114,73,255};
@@ -43,13 +50,13 @@ static const Color WARM = {255,172,82,255};
 static const char *VERT = VHEADER
 "IN vec3 vertexPosition; IN vec3 vertexNormal; IN vec2 vertexTexCoord; IN vec4 vertexColor;\n"
 "uniform mat4 mvp; uniform mat4 matModel; uniform mat4 matNormal;\n"
-"OUT vec3 p; OUT vec3 n; OUT vec2 uv; OUT vec4 vc;\n"
-"void main(){ p=(matModel*vec4(vertexPosition,1.)).xyz; n=normalize((matNormal*vec4(vertexNormal,0.)).xyz);"
+"OUT vec3 p; OUT vec3 localP; OUT vec3 n; OUT vec2 uv; OUT vec4 vc;\n"
+"void main(){ localP=vertexPosition; p=(matModel*vec4(vertexPosition,1.)).xyz; n=normalize((matNormal*vec4(vertexNormal,0.)).xyz);"
 "uv=vertexTexCoord;vc=vertexColor;gl_Position=mvp*vec4(vertexPosition,1.);}\n";
 static const char *FRAG = FHEADER
-"IN vec3 p; IN vec3 n; IN vec2 uv; IN vec4 vc;\n"
+"IN vec3 p; IN vec3 localP; IN vec3 n; IN vec2 uv; IN vec4 vc;\n"
 "uniform vec4 colDiffuse; uniform sampler2D lightMap; uniform vec3 eye;\n"
-"uniform float metalness; uniform float roughness; uniform float emission;\n"
+"uniform float metalness; uniform float roughness; uniform float emission; uniform float substrate; uniform float waterLevel;\n"
 "float hash(vec3 v){return fract(sin(dot(v,vec3(12.9898,78.233,32.21)))*43758.5453);}\n"
 "float noise3(vec3 v){vec3 i=floor(v),f=fract(v);f=f*f*(3.-2.*f);\n"
 " float a=mix(hash(i),hash(i+vec3(1,0,0)),f.x),b=mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x);\n"
@@ -59,16 +66,34 @@ static const char *FRAG = FHEADER
 " vec3 N=normalize(n); vec3 V=normalize(eye-p); vec3 L=normalize(vec3(-.45,.8,.6));vec3 H=normalize(L+V);\n"
 " vec2 luv=vec2((p.x+.5)/41.,(22.-p.y+.5)/23.);\n"
 " vec3 baked=SAMPLE(lightMap,clamp(luv,vec2(.01),vec2(.99))).rgb;\n"
+" vec3 base=colDiffuse.rgb*vc.rgb; float rough=roughness; float contact=1.;\n"
+" if(substrate>.5 && substrate<2.5){\n"
+"  vec3 q=localP*vec3(1.1,2.8,1.3);float bed=noise3(q*.34);float pores=noise3(q*7.);\n"
+"  float stratum=sin(localP.y*13.+noise3(localP*.8)*5.);\n"
+"  base*=.89+bed*.21+pores*.045+stratum*.018;\n"
+"  base=mix(base,base*vec3(1.10,1.04,.89),smoothstep(.48,.78,bed)*.45);\n"
+"  float mineral=smoothstep(.68,.83,noise3(localP*vec3(2.4,12.,3.)));\n"
+"  base=mix(base,base*vec3(.68,.88,.77),mineral*.16);\n"
+"  float center=noise3(q);vec3 bump=vec3(noise3(q+vec3(.11,0,0))-center,noise3(q+vec3(0,.11,0))-center,noise3(q+vec3(0,0,.11))-center);\n"
+"  N=normalize(N+(bump-N*dot(bump,N))*.12);\n"
+"  float damp=(1.-smoothstep(waterLevel-.8,waterLevel+.28,p.y))*.11;\n"
+"  base*=1.-damp;rough=clamp(rough-damp*.65+pores*.05,.35,.98);\n"
+"  contact=mix(.89,1.,smoothstep(-.38,-.07,p.z));\n"
+" } else if(substrate>2.5){\n"
+"  float fibre=noise3(localP*vec3(.65,34.,8.));float knots=noise3(localP*vec3(2.,4.,3.));\n"
+"  base*=.87+fibre*.22+knots*.06;rough=.91;\n"
+" }\n"
+" if(metalness>.25){\n"
+"  float age=noise3(localP*3.4)*.7+noise3(localP*12.)*.3;\n"
+"  float oxidation=smoothstep(.49,.73,age)*metalness;\n"
+"  base=mix(base,base*vec3(.40,.82,.68),oxidation*.53);rough=mix(rough,.78,oxidation*.65);\n"
+" }\n"
 " float ndl=max(dot(N,L),0.); float edge=pow(1.-max(dot(N,V),0.),3.);\n"
-" float grain=hash(floor(p*23.))*.035+sin(p.x*6.1+p.y*8.4)*.019;\n"
-" vec3 base=colDiffuse.rgb*vc.rgb*(1.+grain);\n"
-" float age=noise3(p*3.4)*.7+noise3(p*12.)*.3;\n"
-" float oxidation=smoothstep(.46,.69,age)*metalness*.42;\n"
-" base=mix(base,base*vec3(.43,.81,.71),oxidation);\n"
-" base*=.94+age*.12;\n"
-" float spec=pow(max(dot(N,H),0.),mix(92.,13.,roughness))*(.035+metalness*.75);\n"
+" float spec=pow(max(dot(N,H),0.),mix(92.,13.,rough))*(.035+metalness*.75);\n"
+" float grazing=pow(max(dot(N,normalize(vec3(.8,.25,.38))),0.),2.);\n"
 " vec3 light=vec3(.035,.055,.07)+baked*1.8;\n"
-" vec3 c=base*light*(.48+ndl*.55)+mix(vec3(.65,.75,.78),base,metalness)*spec*(.03+length(baked)*.8);\n"
+" vec3 c=base*light*(.48+ndl*.55)*contact+base*vec3(.024,.035,.034)*grazing;\n"
+" c+=mix(vec3(.65,.75,.78),base,metalness)*spec*(.03+length(baked)*.8);\n"
 " c+=base*edge*.045+base*emission;\n"
 " float fog=1.-exp(-max(-p.z-5.,0.)*.072);\n"
 " c=mix(c,vec3(.075,.13,.145),fog);\n"
@@ -129,6 +154,21 @@ static Mesh LeafMesh(void){
     for(int i=0;i<24;i++){Vector3 p=points[idx[i]];m.vertices[i*3]=p.x;m.vertices[i*3+1]=p.y;m.vertices[i*3+2]=p.z;m.normals[i*3]=0;m.normals[i*3+1]=.15f;m.normals[i*3+2]=i<12?1:-1;m.texcoords[i*2]=p.x+.5f;m.texcoords[i*2+1]=p.y;}
     UploadMesh(&m,false);return m;
 }
+static Mesh ArchPaneMesh(void){
+    // Upper semicircle only. A full ellipse leaks below short window sills.
+    Mesh m={0};const int segments=32;
+    m.vertexCount=segments*3;m.triangleCount=segments;
+    m.vertices=MemAlloc(m.vertexCount*3*sizeof(float));m.normals=MemAlloc(m.vertexCount*3*sizeof(float));
+    m.texcoords=MemAlloc(m.vertexCount*2*sizeof(float));
+    for(int i=0;i<segments;i++)for(int j=0;j<3;j++){
+        int k=i*3+j;float a=(i+j-1)*PI_F/segments;
+        float x=j?cosf(a):0,y=j?sinf(a):0;
+        m.vertices[k*3]=x;m.vertices[k*3+1]=y;m.vertices[k*3+2]=0;
+        m.normals[k*3]=0;m.normals[k*3+1]=0;m.normals[k*3+2]=1;
+        m.texcoords[k*2]=x*.5f+.5f;m.texcoords[k*2+1]=y;
+    }
+    UploadMesh(&m,false);return m;
+}
 static void Setup(Model *m){m->materials[0].shader=surface;}
 static void LoadAsset(const FoundryAssetData *asset,Model *models){
     for(int i=0;i<asset->mesh_count;i++){
@@ -148,15 +188,19 @@ static void Init(void){
     surface.locs[SHADER_LOC_MATRIX_NORMAL]=GetShaderLocation(surface,"matNormal");
     surface.locs[SHADER_LOC_MAP_EMISSION]=GetShaderLocation(surface,"lightMap");
     metalLoc=GetShaderLocation(surface,"metalness");roughLoc=GetShaderLocation(surface,"roughness");emissionLoc=GetShaderLocation(surface,"emission");cameraLoc=GetShaderLocation(surface,"eye");timeLoc=GetShaderLocation(finish,"time");
+    substrateLoc=GetShaderLocation(surface,"substrate");waterLevelLoc=GetShaderLocation(surface,"waterLevel");
     cube=LoadModelFromMesh(RoundedMesh());orb=LoadModelFromMesh(GenMeshSphere(1,16,24));
     cylinder=LoadModelFromMesh(GenMeshCylinder(1,1,24));cone=LoadModelFromMesh(GenMeshCone(1,1,16));
     torus=LoadModelFromMesh(GenMeshTorus(.035f,1.f,12,64));leaf=LoadModelFromMesh(LeafMesh());
+    archPane=LoadModelFromMesh(ArchPaneMesh());Setup(&archPane);
     Setup(&cube);Setup(&orb);Setup(&cylinder);Setup(&cone);Setup(&torus);Setup(&leaf);
     LoadAsset(&FOUNDRY_VAULT_DOOR,doorModels);LoadAsset(&FOUNDRY_ORRERY,orreryModels);
     LoadAsset(&FOUNDRY_VAULT_TERRAIN,terrainModels[0]);LoadAsset(&FOUNDRY_DROWNED_TERRAIN,terrainModels[1]);
     LoadAsset(&FOUNDRY_POT,potModels);LoadAsset(&FOUNDRY_HUNTER_LANTERN,lampModels);
     LoadAsset(&FOUNDRY_PLAYER_SEED,seedModels);LoadAsset(&FOUNDRY_BEAST_BODY,beastBodyModels);
     LoadAsset(&FOUNDRY_BEAST_HEAD,beastHeadModels);LoadAsset(&FOUNDRY_BIRD_BODY,birdModels);
+    LoadAsset(&FOUNDRY_CITY_FACE,faceModels);LoadAsset(&FOUNDRY_CITY_EYE,eyeModels);
+    LoadAsset(&FOUNDRY_MURAL_ROCK,muralRockModels);LoadAsset(&FOUNDRY_MURAL_PIGMENT,muralPigmentModels);
     target=LoadRenderTexture(DW,DH);SetTextureFilter(target.texture,TEXTURE_FILTER_BILINEAR);
     waterTarget=LoadRenderTexture(DW,DH);SetTextureFilter(waterTarget.texture,TEXTURE_FILTER_BILINEAR);
     Image maskImage=GenImageColor(RW,RH,BLACK);waterMask=LoadTextureFromImage(maskImage);UnloadImage(maskImage);
@@ -177,6 +221,8 @@ static void Init(void){
 static void Draw(Model *m,Vector3 pos,Vector3 scale,Vector3 axis,float angle,Color color,float metal,float rough,float glow){
     m->materials[0].maps[MATERIAL_MAP_EMISSION].texture=depthLight;
     SetShaderValue(surface,metalLoc,&metal,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,roughLoc,&rough,SHADER_UNIFORM_FLOAT);SetShaderValue(surface,emissionLoc,&glow,SHADER_UNIFORM_FLOAT);
+    float family=metal>.25f||glow>.1f?0:substrate;
+    SetShaderValue(surface,substrateLoc,&family,SHADER_UNIFORM_FLOAT);
     DrawModelEx(*m,pos,axis,angle,scale,color);
 }
 static void Box(float x,float y,float z,float w,float h,float d,Color c){Draw(&cube,(Vector3){x,y,z},(Vector3){w,h,d},(Vector3){0,0,1},0,c,0,.85f,0);}
@@ -199,6 +245,7 @@ static void AssetPose(const FoundryAssetData *asset,Model *models,Vector3 pos,fl
 }
 static void Asset(const FoundryAssetData *asset,Model *models,Vector3 pos,float scale){AssetPose(asset,models,pos,scale,(Vector3){0,1,0},0,0);}
 static void Foliage(float x,float y,float z,float size,int seed,float shake){
+    float previousSubstrate=substrate;substrate=0;
     float t=depthStill?0:frameNo*DT;
     float dx=(player.x+player.w*.5f)/TS-x;
     float lean=(z==.15f&&fabsf(dx)<1.5f&&fabsf(Y(player.y+player.h)-y)<1.5f)?(dx>0?9.f:-9.f):0;
@@ -207,6 +254,7 @@ static void Foliage(float x,float y,float z,float size,int seed,float shake){
         Color c=i%3==0?(Color){83,125,107,255}:(Color){42,82,73,255};
         Draw(&leaf,(Vector3){x+(R(i,seed)-.5f)*size*.3f,y,z+(R(seed,i)-.5f)*.45f},(Vector3){size,size*(.55f+R(i+1,seed)),size},(Vector3){0,0,1},a,c,0,.88f,0);
     }
+    substrate=previousSubstrate;
 }
 static void Background(void){
     Texture2D matte=mattes[roomIdx].id?mattes[roomIdx]:mattes[0];
@@ -223,12 +271,111 @@ static void Background(void){
         Ellipse(x,y,-18,.025f,.025f,.025f,Shade(COOL,.65f),.4f);
     }
 }
+static void CityBackMeshes(void){
+    CityFace face;
+    if(CityFaceView(&face)){
+        substrate=1;
+        Asset(&FOUNDRY_CITY_FACE,faceModels,(Vector3){25,1,-1.8f},1);
+        substrate=0;
+        for(int i=0;i<2;i++){
+            float glow=face.pulse*.6f+face.acknowledgment*.8f;
+            for(int j=0;j<FOUNDRY_CITY_EYE.mesh_count;j++){
+                const FoundryMeshData *m=&FOUNDRY_CITY_EYE.meshes[j];
+                Color color=Shade(COOL,.55f+face.pulse*.6f+face.acknowledgment*.25f);
+                Draw(&eyeModels[j],(Vector3){face.eyeX[i]/TS,Y(face.eyeY),-1.635f},(Vector3){1,1,1},(Vector3){0,1,0},0,color,m->metallic,m->roughness,glow);
+            }
+        }
+    }
+    CityWindow windows[CITY_WINDOW_MAX];int count=CityWindowViews(windows,CITY_WINDOW_MAX);
+    for(int i=0;i<count;i++){
+        CityWindow *v=&windows[i];float x=v->x/TS,y=Y(v->y),w=v->w/TS,h=v->h/TS,z=-1.65f;
+        float cx=x+w*.5f,r=w*.43f,archY=y-r-.1f;
+        substrate=1;
+        // Voussoirs and deep jambs embed the grille in masonry; their narrow,
+        // dark threshold is visually distinct from a lit gameplay landing.
+        for(int j=0;j<12;j++){
+            float a=j*PI_F/12,b=(j+1)*PI_F/12;
+            Rod((Vector3){cx+cosf(a)*r,archY+sinf(a)*r,z},(Vector3){cx+cosf(b)*r,archY+sinf(b)*r,z},.12f,Shade(STONE,.60f+R(j,i)*.09f),0);
+        }
+        for(int side=-1;side<=1;side+=2){
+            Box(cx+side*r,(archY+y-h)*.5f,z,.22f,archY-y+h,.48f,Shade(STONE,.62f));
+        }
+        substrate=0;
+        Color glass=Shade(COOL,.035f+v->light*.24f);
+        Draw(&archPane,(Vector3){cx,archY,z-.19f},(Vector3){r-.11f,r-.11f,1},(Vector3){0,0,1},0,glass,0,.8f,v->light*.09f);
+        Box(cx,(archY+y-h)*.5f,z-.19f,(r-.11f)*2,archY-y+h,.10f,glass);
+        // Broad shade across the lower panes makes the interior read as space.
+        for(int j=0;j<4;j++){
+            float yy=y-h+(j+.5f)*(h-r)/4;
+            Box(cx,yy,z-.125f,(r-.12f)*2,(h-r)/4+.01f,.035f,Shade(glass,.6f+j*.1f));
+        }
+        if(v->crossing && v->light>.02f){
+            float f=v->facing>0?v->silhouette:1-v->silhouette;
+            // The rigid figure crosses inside the aperture's inscribed region;
+            // it never changes body size to squeeze underneath the arch.
+            float rise=r-.38f,span=fmaxf(.10f,sqrtf(fmaxf(0,(r-.11f)*(r-.11f)-rise*rise))-.20f);
+            float sx=cx+(f*2-1)*span;
+            Ellipse(sx,y-.70f,z-.05f,.17f,.22f,.025f,(Color){9,21,25,255},0);
+            Ellipse(sx,y-h*.62f,z-.05f,.18f,h*.31f,.025f,(Color){9,21,25,255},0);
+        }
+        for(float gx=-r+.20f;gx<r-.15f;gx+=.42f){
+            float top=archY+sqrtf(fmaxf(0,(r-.10f)*(r-.10f)-gx*gx));
+            MetalBox(cx+gx,(top+y-h+.04f)*.5f,z+.08f,.035f,top-y+h-.04f,.065f,Shade(COPPER,.51f));
+        }
+        MetalBox(cx,y-h*.66f,z+.09f,w-.29f,.033f,.075f,Shade(COPPER,.51f));
+        substrate=1;
+        Box(cx,y-h+.015f,z-.04f,w-.06f,.05f,.13f,Shade(STONE,.52f));
+        substrate=0;
+    }
+    CityMural m;
+    if(CityMuralView(&m)){
+        Vector3 anchor={9,2.3f,-1.3f};
+        substrate=2;
+        Asset(&FOUNDRY_MURAL_ROCK,muralRockModels,anchor,1);
+        substrate=0;
+        if(m.visibility>.004f){
+            rlDisableDepthMask();
+            for(int i=0;i<FOUNDRY_MURAL_PIGMENT.mesh_count;i++){
+                const FoundryMeshData *p=&FOUNDRY_MURAL_PIGMENT.meshes[i];
+                Color c=Shade((Color){p->color[0],p->color[1],p->color[2],(u8)(m.visibility*255)},.72f);
+                Draw(&muralPigmentModels[i],anchor,(Vector3){1,1,1},(Vector3){0,1,0},0,c,0,p->roughness,p->emission*.7f);
+            }
+            rlEnableDepthMask();
+        }
+    }
+}
+static void CityFishMeshes(void){
+    CityFish fish[CITY_FISH_COUNT];int count=CityFishViews(fish,CITY_FISH_COUNT);
+    for(int i=0;i<count;i++){
+        CityFish *f=&fish[i];float x=f->x/TS,y=Y(f->y),d=f->facing;
+        float tail=sinf(frameNo*.13f+i*2.3f)*.016f;
+        Ellipse(x,y,.08f,.12f,.035f,.035f,(Color){109,168,146,255},.13f);
+        Draw(&leaf,(Vector3){x-d*.13f,y+tail,.08f},(Vector3){.09f,.13f,.10f},(Vector3){0,0,1},d*90,(Color){75,122,111,255},0,.75f,0);
+        Ellipse(x+d*.07f,y+.012f,.11f,.017f,.018f,.012f,COOL,.18f);
+    }
+}
+static void DrownedFronds(void){
+    if(roomIdx!=1)return;
+    static const float roots[][2]={{11.4f,1},{13.7f,1},{16.4f,1},{21.6f,1},{26.8f,1},{8.8f,7},{29.3f,6}};
+    float t=depthStill?0:frameNo*DT,px=(player.x+player.w*.5f)/TS,py=Y(player.y+player.h*.5f);
+    for(int i=0;i<7;i++){
+        float x=roots[i][0],y=roots[i][1],near=Clamp(1-fabsf(px-x)/2,0,1)*Clamp(1-fabsf(py-y-1)/3,0,1);
+        float bend=(px>x?-1:1)*near*17+sinf(t*.55f+i)*3+RoomWaterHeight((int)x)*3;
+        for(int j=0;j<5;j++){
+            float length=.85f+R(i,j+123)*.9f;
+            Draw(&leaf,(Vector3){x+(j-2)*.065f,y,-.35f},(Vector3){.20f,length,.38f},(Vector3){0,0,1},(j-2)*13+bend,(Color){53,91,78,255},0,.92f,0);
+        }
+    }
+}
 static int IsCity(int x,int y){return roomIdx==1||ZoneAt(x,y)==Z_CITY;}
 static void Terrain(void){
+    substrate=1;
     Asset(roomIdx==0?&FOUNDRY_VAULT_TERRAIN:&FOUNDRY_DROWNED_TERRAIN,terrainModels[roomIdx],(Vector3){0,0,0},1);
+    substrate=0;
     for(int y=0;y<RH;y++)for(int x=0;x<RW;x++){
         int t=tiles[y][x],city=IsCity(x,y);float yy=22-y;
         if(TileSolid(t)){
+            substrate=city?1:2;
             Color c=city?STONE:BASALT;c=Shade(c,.78f+R(x,y)*.28f);
 
 
@@ -246,16 +393,18 @@ static void Terrain(void){
                 for(int i=0;i<3;i++)Ellipse(x+.32f+i*.15f,yy-.45f+sinf(i*2.f)*.13f,.3f,.04f,.12f,.02f,light,1.1f);
             }
         }else if(TileOneWay(t)){
+            substrate=city?1:3;
             int grate=(roomIdx==0&&y==20&&x>=21&&x<=26)||(roomIdx==1&&y==1&&x>=20&&x<=25);
             Color c=city?STONE:(Color){112,95,70,255};
             Box(x+.5f,yy-.105f,-.48f,1.02f,.21f,1.1f,c);
             Box(x+.5f,yy-.025f,.035f,1.02f,.05f,.17f,Shade(c,1.38f));
             if(city){Box(x+.5f,yy-.25f,-.05f,.9f,.12f,.65f,Shade(c,.78f));for(int i=0;i<3;i++)Box(x+.17f+i*.33f,yy-.37f,-.06f,.13f,.16f,.45f,c);}
             if(grate){for(int i=0;i<3;i++)MetalBox(x+.14f+i*.35f,yy+.025f,-.2f,.045f,.07f,1.3f,COPPER);}
-        }else if(t==T_BUSH){Foliage(x+.5f,yy-1,.15f,1.1f,x+y,bushShake[y][x]/14.f);}
+        }else if(t==T_BUSH){substrate=0;Foliage(x+.5f,yy-1,.15f,1.1f,x+y,bushShake[y][x]/14.f);}
         else if(t==T_MOSS){
             for(int i=0;i<3;i++){float len=.5f+R(x+i,y);Rod((Vector3){x+.2f+i*.24f,yy,-.3f},(Vector3){x+.3f+i*.24f,yy-len,-.25f},.025f,(Color){56,92, 72,255},0);}
         }
+        substrate=0;
     }
 }
 
@@ -475,9 +624,10 @@ void DepthDraw(void){
     if(!ready)Init();
     Color lightPixels[(RW+1)*(RH+1)];RoomDepthLightColors(lightPixels);UpdateTexture(depthLight,lightPixels);
     float eye[3]={camera.position.x,camera.position.y,camera.position.z};SetShaderValue(surface,cameraLoc,eye,SHADER_UNIFORM_VEC3);
+    float waterLevel=roomIdx==1?15.f:-100.f;SetShaderValue(surface,waterLevelLoc,&waterLevel,SHADER_UNIFORM_FLOAT);
     BeginTextureMode(target);ClearBackground((Color){10,24,30,255});
     BeginMode3D(camera);
-        Background();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();ItemsMesh();PlayerMesh();Atmosphere();Water();ResponseParticles();
+        Background();CityBackMeshes();PropMeshes(1);Terrain();PropMeshes(0);BulbMeshes();LifeMeshes();DrownedFronds();CityFishMeshes();ItemsMesh();PlayerMesh();Atmosphere();Water();ResponseParticles();
     EndMode3D();
     EndTextureMode();
     Texture2D present=target.texture;
@@ -504,10 +654,15 @@ void DepthUnload(void){
     // The shared shader and light texture are borrowed. UnloadModel only disposes
     // mesh/material arrays; shared shaders and presentation textures are owned here.
     UnloadModel(cube);UnloadModel(orb);UnloadModel(cylinder);UnloadModel(cone);UnloadModel(torus);UnloadModel(leaf);
+    UnloadModel(archPane);
     for(int i=0;i<FOUNDRY_VAULT_DOOR.mesh_count;i++)UnloadModel(doorModels[i]);
     for(int i=0;i<FOUNDRY_ORRERY.mesh_count;i++)UnloadModel(orreryModels[i]);
     for(int i=0;i<FOUNDRY_VAULT_TERRAIN.mesh_count;i++)UnloadModel(terrainModels[0][i]);
     for(int i=0;i<FOUNDRY_DROWNED_TERRAIN.mesh_count;i++)UnloadModel(terrainModels[1][i]);
+    for(int i=0;i<FOUNDRY_CITY_FACE.mesh_count;i++)UnloadModel(faceModels[i]);
+    for(int i=0;i<FOUNDRY_CITY_EYE.mesh_count;i++)UnloadModel(eyeModels[i]);
+    for(int i=0;i<FOUNDRY_MURAL_ROCK.mesh_count;i++)UnloadModel(muralRockModels[i]);
+    for(int i=0;i<FOUNDRY_MURAL_PIGMENT.mesh_count;i++)UnloadModel(muralPigmentModels[i]);
     const FoundryAssetData *lifeAssets[]={&FOUNDRY_POT,&FOUNDRY_HUNTER_LANTERN,&FOUNDRY_PLAYER_SEED,&FOUNDRY_BEAST_BODY,&FOUNDRY_BEAST_HEAD,&FOUNDRY_BIRD_BODY};
     Model *lifeModels[]={potModels,lampModels,seedModels,beastBodyModels,beastHeadModels,birdModels};
     for(int a=0;a<6;a++)for(int i=0;i<lifeAssets[a]->mesh_count;i++)UnloadModel(lifeModels[a][i]);

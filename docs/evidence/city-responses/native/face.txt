@@ -1,0 +1,4 @@
+CAPTURE face-before frame=20 exported=1 windowLight=1.0000 pulse=0.3029 answer=0.0000 answerFrames=0 responses=0 fishMeanY=81.0216 gathering=0
+CAPTURE face-answer frame=48 exported=1 windowLight=1.0000 pulse=0.3161 answer=1.0000 answerFrames=104 responses=1 fishMeanY=81.8492 gathering=0
+CAPTURE face-after frame=180 exported=1 windowLight=1.0000 pulse=0.4236 answer=0.0000 answerFrames=0 responses=1 fishMeanY=85.3540 gathering=0
+CITY SFX city-murmur=0 city-hum=1

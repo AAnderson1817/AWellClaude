@@ -1,0 +1,59 @@
+{
+  "source_reopened": true,
+  "blender_version": "5.2.0 LTS",
+  "assets": {
+    "city-face": {
+      "triangles": 38594,
+      "vertices": 20600,
+      "mesh_objects": 1,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "nonfinite_values": 0,
+      "dimensions_xyz": [
+        7.47706413269043,
+        4.949999904260039,
+        1.3962326049804688
+      ],
+      "material_names": [
+        "City face | pale submerged limestone.001",
+        "City face | sheltered mineral tide.001",
+        "City face | incised shadow.001",
+        "City face | old cast bronze.001",
+        "City face | seated bronze verdigris.001"
+      ],
+      "sha256": "49277a46aeee84bf231f8aa9665e5542dab4e330ec78e55c4e3601d61085adbd",
+      "bytes": 896040,
+      "dimension_check": "pass",
+      "triangle_count_check": "pass",
+      "scoped_export_check": "pass"
+    },
+    "city-eye": {
+      "triangles": 880,
+      "vertices": 442,
+      "mesh_objects": 1,
+      "degenerate_triangles": 0,
+      "invalid_normals": 0,
+      "nonfinite_values": 0,
+      "dimensions_xyz": [
+        0.4259999990463257,
+        0.4259999990463257,
+        0.20399999618530273
+      ],
+      "material_names": [
+        "City eye | opaque green-white opal.003"
+      ],
+      "sha256": "80edc62f27f53ea729d78c7ae9a8a806d5b452c351e61e6217d0eaac3d018a48",
+      "bytes": 20848,
+      "dimension_check": "pass",
+      "triangle_count_check": "pass",
+      "scoped_export_check": "pass"
+    }
+  },
+  "source_file_sha256": "c98b5ae5ff2b49b97d1f3334dbcf717053d799daa5a7867c55e627744735fdeb",
+  "source_collections": [
+    "ASSET | city-face",
+    "ASSET | city-eye",
+    "PRESENTATION | excluded from export"
+  ],
+  "scope": "geometry, dimensions, materials and clean package import; artistic judgment separate"
+}

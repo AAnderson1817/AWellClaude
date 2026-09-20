@@ -1,0 +1,89 @@
+{
+  "blender_version": "5.2.0 LTS",
+  "profile": "conventional real-time static relief",
+  "runtime_axes": "X right,Y up,Z front",
+  "runtime_anchor": [
+    25,
+    1,
+    -1.8
+  ],
+  "eye_centers_local": [
+    [
+      -1.5,
+      3.5,
+      0.165
+    ],
+    [
+      1.5,
+      3.5,
+      0.165
+    ]
+  ],
+  "mouth_local": [
+    0,
+    1.37,
+    0.14503562475910856
+  ],
+  "governing_reference": "public/art/references/drowned-quarter/03-drowned-face-v2.png",
+  "interpretation": "original broad, quiet mask; rounded temple silhouette and eclipse repairs translate the reference into fixed-view carved relief",
+  "source": "assets/blender/city-face.blend",
+  "budget": {
+    "triangles_max": 43000,
+    "material_groups_max": 7,
+    "textures": 0
+  },
+  "assets": {
+    "city-face": {
+      "symbol": "FOUNDRY_CITY_FACE",
+      "triangles": 38594,
+      "material_meshes": 5,
+      "bounds_min": [
+        -3.738532066345215,
+        0.02500000037252903,
+        -0.25999999046325684
+      ],
+      "bounds_max": [
+        3.738532066345215,
+        4.974999904632568,
+        1.136232614517212
+      ],
+      "dimensions": [
+        7.47706413269043,
+        4.949999904260039,
+        1.3962326049804688
+      ],
+      "pivot": "base center; add world(25,1,-1.8)",
+      "materials": [
+        "City face | pale submerged limestone",
+        "City face | sheltered mineral tide",
+        "City face | incised shadow",
+        "City face | old cast bronze",
+        "City face | seated bronze verdigris"
+      ]
+    },
+    "city-eye": {
+      "symbol": "FOUNDRY_CITY_EYE",
+      "triangles": 880,
+      "material_meshes": 1,
+      "bounds_min": [
+        -0.21299999952316284,
+        -0.21299999952316284,
+        -0.10199999809265137
+      ],
+      "bounds_max": [
+        0.21299999952316284,
+        0.21299999952316284,
+        0.10199999809265137
+      ],
+      "dimensions": [
+        0.4259999990463257,
+        0.4259999990463257,
+        0.20399999618530273
+      ],
+      "pivot": "lens center; place local \u00b11.5,3.5,.165",
+      "materials": [
+        "City eye | opaque green-white opal"
+      ]
+    }
+  }
+}

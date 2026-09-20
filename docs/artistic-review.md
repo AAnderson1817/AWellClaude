@@ -1,5 +1,9 @@
 # Independent artistic and affordance review
 
+This is the historical depth-v10 review. The city-response increment and its
+current captures are assessed in [the v11 review](artistic-review-v11.md).
+The observations below are preserved as the record of the earlier candidate.
+
 Reviewed 2026-09-20. The reviewer did not edit the renderer or models. This is an independent agent assessment, not user approval or a human playtest.
 
 **Current judgment: v10 is a clearer, more coherent 3D presentation of the existing two-room slice than v9. It does not yet fulfill the whole AAA reinterpretation brief.** The concrete v9 response regressions listed below have been repaired in the reviewed source. Water contact and depth separation visibly improve in the supplied v10 frames. Remaining artistic, production, and experiential requirements stay open; passing simulation tests and delivering models cannot settle them.
