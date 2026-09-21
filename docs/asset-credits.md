@@ -27,3 +27,10 @@ The original Blender source, portable texture dependencies, URLs and hashes are
 preserved in [the vendor package](../assets/vendor/polyhaven/rock-face-01/README.md).
 [The adaptation record](scanned-rock-v16-review.md) documents the crop, local depth
 adjustment beneath the protected landing, and unchanged neighboring geometry.
+
+The in-progress carved-face anatomy study uses **Head - Planar** by **Paul
+Kotelevets**, from Blender's **Human Base Meshes 1.4.1**, under CC0. The selected
+editable source, embedded author/license metadata, upstream hashes and exact
+geometry comparison are preserved in [the Blender vendor package](../assets/vendor/blender/head-planar-1.4.1/README.md).
+This anatomical source is not yet part of the production face. The adapted carving
+must pass its separate artistic and runtime checks before promotion.

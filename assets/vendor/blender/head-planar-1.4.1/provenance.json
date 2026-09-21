@@ -1,0 +1,23 @@
+{
+  "upstream_catalog": "https://www.blender.org/download/demo-files/",
+  "upstream_archive_url": "https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip",
+  "upstream_archive_sha256": "811f43accbb31a88266d932f8f5563b2d13586fca0ba2693aad1f5fe582b3515",
+  "upstream_blend_sha256": "3c121505651140ceb4d69fd1d8923f7788ffadd81672f5be14845a5f2c75c137",
+  "selected_object": "Head - Planar",
+  "author": "Paul Kotelevets",
+  "license": "CC0",
+  "selection_method": "Blender library write of the unmodified selected object and its dependencies; no geometry, modifiers or source material edits",
+  "blender_version": "5.2.0 LTS",
+  "base_vertices": 318,
+  "base_polygons": 316,
+  "modifiers": [
+    {
+      "name": "Multires",
+      "type": "MULTIRES",
+      "levels": 5,
+      "total_levels": 5
+    }
+  ],
+  "asset_sha256": "fffff1a9818c17f6bd61fd0bc09b9921df33111bb0526c3b628a3764bf092bb9",
+  "asset_bytes": 4174217
+}

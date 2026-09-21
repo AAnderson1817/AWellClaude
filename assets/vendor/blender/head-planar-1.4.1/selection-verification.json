@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "blender_version": "5.2.0 LTS",
+  "script_sha256": "39f38bd3f63aba248221ab47a5f641fdbb0723c652674799da6e4da15e72406c",
+  "selected_asset_sha256": "fffff1a9818c17f6bd61fd0bc09b9921df33111bb0526c3b628a3764bf092bb9",
+  "records": [
+    {
+      "source": "upstream",
+      "vertices": 80898,
+      "triangles": 161792,
+      "evaluated_level": 4,
+      "geometry_sha256": "b40e4d1a4f15dd952ad24712858c0237ec0a54f7c80fd3cc0c55826c4b6a9d7d"
+    },
+    {
+      "source": "selected",
+      "vertices": 80898,
+      "triangles": 161792,
+      "evaluated_level": 4,
+      "geometry_sha256": "b40e4d1a4f15dd952ad24712858c0237ec0a54f7c80fd3cc0c55826c4b6a9d7d"
+    }
+  ]
+}
