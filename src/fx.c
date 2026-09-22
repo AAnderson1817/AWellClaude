@@ -16,11 +16,11 @@ static float Rnd(void) {
 
 // Motes live for the whole session and are not part of the pool: the air is always
 // moving, and it should not compete for slots with anything the player caused.
-#define MOTE_N 34
+#define MOTE_N 200            // over six screens: about as dense as the one room was
 static struct { f32 x, y, ph, sp; } motes[MOTE_N];
 
 // Where water can come from: stone with open air beneath it.
-#define DRIP_N 64
+#define DRIP_N 240
 static struct { i32 x, y; } drips[DRIP_N];
 static int dripCount;
 
@@ -92,8 +92,8 @@ void FxStep(void) {
                 if (TileWater(t)) WaterDisturb(p->x, 0.10f);
                 if (TileSolid(t) || TileOneWay(t) || TileWater(t) || p->y > RH * TS) {
                     // A plink from where it fell. Into water it is lower and softer.
-                    Sfx(SFX_DRIP, TileWater(t) ? 0.45f : 0.6f + 0.3f * AudioRnd(),
-                        (TileWater(t) ? 0.62f : 0.9f) + AudioRnd() * 0.18f, p->x / (float)GW);
+                    SfxAt(SFX_DRIP, TileWater(t) ? 0.45f : 0.6f + 0.3f * AudioRnd(),
+                        (TileWater(t) ? 0.62f : 0.9f) + AudioRnd() * 0.18f, p->x, p->y);
                     // It lands, and what it does when it lands is all it ever does.
                     for (int k = 0; k < 3; k++)
                         FxSpawn(FX_SPLASH, p->x, p->y, (Rnd() - 0.5f) * 1.4f,
@@ -125,6 +125,7 @@ void FxStep(void) {
 
 void FxDraw(void) {
     for (int i = 0; i < MOTE_N; i++) {
+        if (motes[i].x < camX - 2 || motes[i].x > camX + GW + 2 || motes[i].y < camY - 4 || motes[i].y > camY + GH) continue;
         // Motes are barely there. In the dark the light pass removes them entirely,
         // and they only appear where something is lighting the air.
         int x = (int)motes[i].x, y = ROOM_Y + (int)motes[i].y;

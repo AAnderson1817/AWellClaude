@@ -149,6 +149,7 @@ static void BeginAgain(void) {
     PropsReset();
     RoomEnter(0);
     PlayerInit(RoomStartTx() * TS + 1.0f, (RoomStartTy() + 1) * TS - 11.0f);
+    CameraInit();
     dbgResets++;
 }
 
@@ -188,6 +189,7 @@ static void Sim(void) {
     InputPoll();
     ResetStep();
     PlayerStep();
+    CameraStep();
     ItemsStep();
     in.jumpPressed = 0;
     in.actPressed = 0;
@@ -248,6 +250,8 @@ static void Frame(void) {
             RenderLayer(RL_EMIS);      // what gives its own light
                 LifeDrawEyes();
                 ItemsDrawCore();
+                BackdropDrawEmis();
+                PropsDrawEmis();
             RenderLayer(RL_BACK);      // the far city
                 CityDraw();
             RenderComposite();
@@ -255,21 +259,24 @@ static void Frame(void) {
             LightDraw();
             LifeDrawEyes();
             ItemsDrawCore();
+            WorldEnd();
         }
             ResetDrawLids();
-            PlayerDrawEyes();      // over the lids: your own eyes close on their own, last
-            DebugLabelsDraw();
+            WorldBegin();
+                PlayerDrawEyes();  // over the lids: your own eyes close on their own, last
+                DebugLabelsDraw();
+            WorldEnd();
         RenderPresent();
     }
 
     if (dbgTrace)
-        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s hold=%d lamp=%d/%.0f,%.0f stone=%d/%.0f,%.0f fade=%.2f\n",
+        printf("f=%4ld x=%7.2f y=%7.2f vx=%6.3f vy=%6.3f ground=%d air=%d coy=%d buf=%d room=%d wet=%d sfx=%s hold=%d lamp=%d/%.0f,%.0f stone=%d/%.0f,%.0f fade=%.2f cam=%.0f,%.0f\n",
                frameNo, player.x, player.y, player.vx, player.vy,
                player.onGround, player.airFrames, player.coyote, player.jumpBuf,
                roomIdx, player.submerged, dbgLastSfx, PlayerHolds(),
                items[0].room, items[0].x, items[0].y,
                itemCount > 1 ? items[1].room : -1, itemCount > 1 ? items[1].x : 0.0f, itemCount > 1 ? items[1].y : 0.0f,
-               resetFade);
+               resetFade, camX, camY);
 
     for (int i = 0; i < shotCount; i++)
         if (shotFrames[i] == (int)frameNo) {
@@ -287,7 +294,7 @@ static void Frame(void) {
 
 int main(int argc, char **argv) {
     int winScale = 4, atx = -1, aty = -1, startRoom = 0;
-    int lampRoom = 0, lampTx = 1, lampTy = 14;     // at your feet, at the foot of the door
+    int lampRoom = 0, lampTx = 9, lampTy = 13;     // at your feet, at the foot of the door
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");
@@ -349,6 +356,7 @@ int main(int argc, char **argv) {
     int tx = (atx >= 0) ? atx : RoomStartTx();
     int ty = (aty >= 0) ? aty : RoomStartTy();
     PlayerInit(tx * TS + 1.0f, (ty + 1) * TS - 11.0f);
+    CameraInit();
     homeX = RoomStartTx() * TS + 1.0f; homeY = (RoomStartTy() + 1) * TS - 11.0f;
     
 

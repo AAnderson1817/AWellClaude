@@ -60,15 +60,21 @@ static int RectHitsSolid(float x, float y, int w, int h) {
 // are entering, so every shelf in the room is silently passable from above. That
 // bug survived four phases of the previous build and was found by a person playing
 // it, not by any tool here. It gets its own comment for that reason.
+static int wasGround;           // on the ground at the start of this step
 static int LedgeBlocks(float oldBottom, float newY, int w, int h) {
     float newBottom = newY + h;
     int ty0 = (int)floorf(oldBottom / TS), ty1 = (int)floorf(newBottom / TS);
     int tx0 = (int)floorf(player.x / TS), tx1 = (int)floorf((player.x + w - 1) / TS);
-    for (int ty = ty0; ty <= ty1; ty++)
+    // Resting on stone leaves the feet up to a pixel past the tile top (the body is the rows
+    // y .. y+h-1). Walked off stone onto a shelf level with it, the feet start that fraction
+    // below the shelf's top edge and so never cross it: you fell through a floor that was
+    // there. A body that was on the ground gets the pixel.
+    float tol = wasGround ? 0.999f : 0.001f;
+    for (int ty = ty0 - 1; ty <= ty1; ty++)
         for (int tx = tx0; tx <= tx1; tx++) {
             if (!TileOneWay(TileGet(tx, ty))) continue;
             float top = ty * (float)TS;
-            if (oldBottom <= top + 0.001f && newBottom > top) return 1;
+            if (oldBottom <= top + tol && newBottom > top) return 1;
         }
     return 0;
 }
@@ -174,6 +180,7 @@ void PlayerStep(void) {
     // frame everything after the body -- the birds, the props -- reads 7. Decremented at
     // the end, nothing downstream ever saw the landing at all.
     if (player.landImpact > 0) player.landImpact--;
+    wasGround = player.onGround;
     player.onGround = 0;
     if (RectHitsSolid(player.x, player.y + 1, player.w, player.h) ||
         (!in.down && LedgeBlocks(player.y + player.h, player.y + 1, player.w, player.h)))
@@ -289,14 +296,11 @@ void PlayerStep(void) {
     MoveX(player.vx);
     MoveY(player.vy);
 
-    // The side walls are sealed. Top and bottom are sealed only where no room lies.
+    // The room is sealed on every side.
     if (player.x < 0) { player.x = 0; player.vx = 0; }
     if (player.x + player.w > RW * TS) { player.x = RW * TS - player.w; player.vx = 0; }
-    if (roomIdx == 0 && player.y < 0) { player.y = 0; player.vy = 0; }
-    if (roomIdx == ROOM_COUNT - 1 && player.y + player.h > RH * TS) {
-        player.y = RH * TS - player.h; player.vy = 0;
-    }
-    RoomTransition();
+    if (player.y < 0) { player.y = 0; player.vy = 0; }
+    if (player.y + player.h > RH * TS) { player.y = RH * TS - player.h; player.vy = 0; }
 
     // ---- procedural pass. Lag only: nothing here squashes and nothing stretches.
     {

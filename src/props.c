@@ -15,62 +15,13 @@
 // 'R' a root, likewise   'B' bedroll (2 wide)   'F' the cold fire   'K' a pack and a dead lamp
 // 'C' the cairn   'X' bones   'P' a pot   'N' a banner on a wall face (hangs 3)
 // 'U' a balustrade over a wall tile   'A' a capital (3 wide)   'a' a base (3 wide)   'G' grate bars
-static const char *PROPS[ROOM_COUNT][RH] = {
-    { // 0: the vault mouth
-        "........................................",
-        "........L................RRR......L.....",
-        ".........RR.................c...........",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        ".........R..............................",
-        "........................................",
-        ".D......................................",
-        ".......r.....................X..........",
-        "........................................",
-        "........................................",
-        "..................A...........UP......P.",
-        "........................................",
-        "....r....................P....N.........",
-        "........................................",
-        "........................................",
-        "........................................",
-        ".............B.CFKa.....................",
-        ".....................GGGGGG.............",
-        "........................................",
-    },
-    { // 1: below -- dressed in the next build
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-        "........................................",
-    },
-};
+// The grid itself is ROOM_PROPS, in antechamber.c, beside the map it dresses.
 
 enum { PR_NONE = 0, PR_DOOR, PR_LINTEL, PR_ROPE, PR_CHAINLAMP, PR_ROOT, PR_BEDROLL, PR_FIRE,
        PR_PACK, PR_CAIRN, PR_BONES, PR_POT, PR_BANNER, PR_BALUSTRADE, PR_CAPITAL, PR_BASE, PR_GRATE };
 enum { POT_REST = 0, POT_FALLING, POT_GONE };
 
-#define PROP_MAX 96
+#define PROP_MAX 400
 typedef struct {
     u8  kind; i16 tx, ty; u8 len;      // len: tiles a hanging thing hangs, or a width
     f32 a, av;                         // a pendulum's angle and its rate; a banner's amplitude
@@ -102,9 +53,9 @@ static int Open(int tx, int ty) {
     u8 t = TileGet(tx, ty);
     return !TileSolid(t) && !TileOneWay(t);
 }
-static int HangLength(int tx, int ty) {
+static int HangLength(int tx, int ty, int most) {
     int n = 0;
-    while (n < 6 && ty + n < RH && Open(tx, ty + n)) n++;
+    while (n < most && ty + n < RH && Open(tx, ty + n)) n++;
     return n < 1 ? 1 : n;
 }
 
@@ -112,14 +63,14 @@ void PropsInit(void) {
     propCount = 0; age = 0;
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW && propCount < PROP_MAX; x++) {
-            char c = PROPS[roomIdx][y][x];
+            char c = ROOM_PROPS[y][x];
             int kind = PR_NONE, len = 1;
             switch (c) {
                 case 'D': kind = PR_DOOR; break;
                 case 'L': kind = PR_LINTEL; len = 4; break;
-                case 'r': kind = PR_ROPE;      len = HangLength(x, y); break;
-                case 'c': kind = PR_CHAINLAMP; len = HangLength(x, y); break;
-                case 'R': kind = PR_ROOT;      len = HangLength(x, y); break;
+                case 'r': kind = PR_ROPE;      len = HangLength(x, y, 16); break;   // ropes go all the way down
+                case 'c': kind = PR_CHAINLAMP; len = HangLength(x, y, 8); break;
+                case 'R': kind = PR_ROOT;      len = HangLength(x, y, 6); break;
                 case 'B': kind = PR_BEDROLL; len = 2; break;
                 case 'F': kind = PR_FIRE; break;
                 case 'K': kind = PR_PACK; break;
@@ -160,7 +111,7 @@ static void Swing(Prop *p, f32 gain, int sfx) {
     if (over && fabsf(player.vx) + fabsf(player.vy) > 0.25f) {
         p->av += player.vx * gain + (player.vy > 0 ? 0.0f : player.vy * gain * 0.3f);
         if (p->timer <= 0 && fabsf(player.vx) > 0.35f && sfx >= 0) {
-            Sfx(sfx, 0.5f + fabsf(player.vx) * 0.3f, 0.9f + Rnd() * 0.2f, ax / GW);
+            SfxAt(sfx, 0.5f + fabsf(player.vx) * 0.3f, 0.9f + Rnd() * 0.2f, ax, ay);
             p->timer = 22 + (int)(Rnd() * 8);
         }
     }
@@ -190,7 +141,7 @@ void PropsStep(void) {
             if (Landed() && fabsf(PCX() - cx) < 4 * TS && player.y + player.h > foot - 12) {
                 Dust(px + 2, px + 30, py, 4);
                 AirPuff(px + 16, py + 4, 0.4f, 10.0f, 0.0f);
-                Sfx(SFX_GRIT, 0.5f, 1.0f + Rnd() * 0.1f, cx / GW);
+                SfxAt(SFX_GRIT, 0.5f, 1.0f + Rnd() * 0.1f, cx, py);
             }
             // Your lamp near: a glint runs once around the spiral, then not again until you leave.
             f32 d = lamp ? hypotf(lx - (px + DOOR_HUB_X), ly - (py + DOOR_HUB_Y)) : 1e9f;
@@ -201,7 +152,7 @@ void PropsStep(void) {
         case PR_LINTEL:
             if (Landed() && PCX() > px - 2 * TS && PCX() < px + (p->len + 2) * TS && player.y > py && player.y < py + 12 * TS) {
                 Dust(px, px + p->len * TS, py + TS, 3 + (int)(player.vy * 1.5f));
-                Sfx(SFX_GRIT, 0.35f, 1.1f + Rnd() * 0.1f, (px + p->len * 4) / GW);
+                SfxAt(SFX_GRIT, 0.35f, 1.1f + Rnd() * 0.1f, px + p->len * 4, py);
             }
             break;
         case PR_ROPE:      Swing(p, 0.028f, SFX_CREAK); break;
@@ -210,7 +161,7 @@ void PropsStep(void) {
         case PR_BEDROLL: {
             int on = player.onGround && player.x + player.w > px && player.x < px + p->len * TS
                   && fabsf(player.y + player.h - (py + TS)) < 2.0f;
-            if (on && !p->state) Sfx(SFX_RUSTLE, 0.35f, 0.75f + Rnd() * 0.1f, (px + 8) / GW);
+            if (on && !p->state) SfxAt(SFX_RUSTLE, 0.35f, 0.75f + Rnd() * 0.1f, px + 8, py);
             p->state = (u8)on;
         } break;
         case PR_FIRE: {
@@ -220,7 +171,7 @@ void PropsStep(void) {
                 p->timer = near ? p->timer + 1 : 0;
                 if (p->timer >= 120) {
                     fireLit[roomIdx] = 1; p->timer = 0;
-                    Sfx(SFX_CATCH, 0.8f, 1.0f, cx / GW);
+                    SfxAt(SFX_CATCH, 0.8f, 1.0f, cx, cy);
                     FxBurst(FX_SPARK, cx, cy - 2, 9, 0.9f, 1.2f);
                 }
             } else {
@@ -228,13 +179,13 @@ void PropsStep(void) {
                 AirPush(cx, cy - 5.0f, 0.0f, -0.22f, 4.0f);              // heat rises, and takes smoke with it
                 AirPush(cx, cy - 20.0f, 0.10f * sinf(frameNo * 0.013f), 0.0f, 8.0f);   // and leans in a draft that comes and goes
                 if ((frameNo % 2) == 0) AirPuff(cx, cy - 6.0f, 0.22f, 3.0f, 1.0f);
-                if (--p->timer <= 0) { Sfx(SFX_CRACKLE, 0.2f + Rnd() * 0.12f, 0.9f + Rnd() * 0.3f, cx / GW); p->timer = 180 + (int)((Rnd() + 0.5f) * 360); }
+                if (--p->timer <= 0) { SfxAt(SFX_CRACKLE, 0.2f + Rnd() * 0.12f, 0.9f + Rnd() * 0.3f, cx, cy); p->timer = 180 + (int)((Rnd() + 0.5f) * 360); }
                 if ((frameNo % 7) == 0 && Rnd() > 0.1f) FxBurst(FX_SPARK, cx + Rnd() * 3, cy - 3, 1, 0.3f, 0.7f);
             }
         } break;
         case PR_BONES:
             if (Landed() && fabsf(PCX() - (px + 4)) < 3 * TS && fabsf(player.y + player.h - (py + TS)) < 4) {
-                p->timer = 20; Sfx(SFX_RATTLE, 0.5f, 0.95f + Rnd() * 0.1f, px / GW);
+                p->timer = 20; SfxAt(SFX_RATTLE, 0.5f, 0.95f + Rnd() * 0.1f, px, py);
             }
             if (p->timer > 0) p->timer--;
             break;
@@ -245,7 +196,7 @@ void PropsStep(void) {
                          || (fabsf(PCX() - cx) < 6 && fabsf(player.y + player.h - (py + TS)) < 4 && fabsf(player.vx) > 0.4f && p->timer <= 0);
                 if (knock) {
                     p->timer = 26; p->n++;
-                    Sfx(SFX_POT, 0.55f, 0.95f + Rnd() * 0.15f, cx / GW);
+                    SfxAt(SFX_POT, 0.55f, 0.95f + Rnd() * 0.15f, cx, py);
                     int edgeL = Open(p->tx - 1, p->ty + 1), edgeR = Open(p->tx + 1, p->ty + 1);
                     if (p->n >= 2 && (edgeL || edgeR)) {
                         p->state = POT_FALLING; p->vy = 0;
@@ -262,7 +213,7 @@ void PropsStep(void) {
                     FxBurst(FX_SHARD, p->x + 2.5f, p->y + 5.0f, 9, 1.1f, 0.9f);
                     AirPuff(p->x + 2.5f, p->y + 3.0f, 0.5f, 6.0f, 0.0f);
                     FxBurst(FX_DUST, p->x + 2.5f, p->y + 5.0f, 4, 0.7f, 0.2f);
-                    Sfx(SFX_SHATTER, 0.7f, 0.95f + Rnd() * 0.1f, p->x / GW);
+                    SfxAt(SFX_SHATTER, 0.7f, 0.95f + Rnd() * 0.1f, p->x, p->y);
                 } else if (p->y > RH * TS + 8) p->state = POT_GONE;
             }
             break;
@@ -273,7 +224,7 @@ void PropsStep(void) {
                 excite = fabsf(player.vx) * 1.6f + (player.onGround ? 0 : fabsf(player.vy) * 0.6f);
             if (beast && fabsf(bx - cx) < 10 && fabsf(by - py) < 20) excite = fmaxf(excite, 0.5f);
             if (excite > p->a) {
-                if (p->a < 0.25f && excite > 0.8f) Sfx(SFX_FLAP, 0.35f, 0.9f + Rnd() * 0.2f, cx / GW);
+                if (p->a < 0.25f && excite > 0.8f) SfxAt(SFX_FLAP, 0.35f, 0.9f + Rnd() * 0.2f, cx, py);
                 p->a = fminf(excite, 2.2f);
             }
             p->a *= 0.965f;
@@ -297,8 +248,8 @@ void PropsLight(void) {
             LightAddPoint(p->tx * TS + 4.0f, p->ty * TS + 3.0f, 6.8f, 0.75f * f);
         } else if (p->kind == PR_CHAINLAMP) {
             f32 L = p->len * (f32)TS - 3.0f;
-            f32 gx = p->tx * TS + 4.0f + sinf(p->a) * L, gy = p->ty * TS + cosf(p->a) * L;
-            LightAddPointCool(gx, gy, 6.2f, 0.72f + 0.05f * sinf(frameNo * 0.11f + p->phase));
+            f32 gx = p->tx * TS + 4.0f + sinf(p->a) * (L - 3), gy = p->ty * TS + cosf(p->a) * (L - 3);
+            LightAddPointCool(gx, gy, 8.5f, 0.85f + 0.05f * sinf(frameNo * 0.11f + p->phase));
         }
     }
 }
@@ -351,6 +302,20 @@ void PropsDrawBack(void) {
     }
 }
 
+// What gives its own light: the glass of the chain lamps.
+void PropsDrawEmis(void) {
+    for (int i = 0; i < propCount; i++) {
+        Prop *p = &props[i];
+        if (p->kind != PR_CHAINLAMP) continue;
+        f32 L = p->len * (f32)TS, ax = p->tx * TS + 4.0f, ay = (f32)(ROOM_Y + p->ty * TS);
+        int gx = (int)(ax + sinf(p->a) * (L - 6)) - 3, gy = (int)(ay + cosf(p->a) * (L - 6)) - 3;
+        DrawRectangle(gx + 1, gy + 2, 5, 7, PAL[PL_CITY]);
+        DrawRectangle(gx + 2, gy + 3, 3, 5, PAL[PL_CITYH]);
+        DrawRectangle(gx + 3, gy + 2 + (int)((frameNo / 11) % 7), 1, 1, PAL[PL_CYAN]);   // a spark in it, rising
+        DrawRectangle(gx + 3, gy + 2, 1, 7, PAL[PL_STONE]);                              // the cage's middle bar
+    }
+}
+
 void PropsDrawFront(void) {
     for (int i = 0; i < propCount; i++) {
         Prop *p = &props[i];
@@ -373,12 +338,19 @@ void PropsDrawFront(void) {
                     if (((h >> ((k * 5) & 31)) & 7) == 0) DrawRectangle(x + (((h >> k) & 1) ? 1 : -1), (int)(ay + k), 1, 1, PAL[PL_COOLM]);
                 }
             } else {
-                for (int k = 0; k < (int)L - 4; k += 2) DrawRectangle((int)(ax + s * k), (int)(ay + c * k), 1, 1, PAL[PL_STONE]);
-                int gx = (int)(ax + s * (L - 3)) - 2, gy = (int)(ay + c * (L - 3)) - 2;
-                DrawRectangle(gx, gy, 4, 1, PAL[PL_STONE]);
-                DrawRectangle(gx, gy + 1, 4, 3, PAL[PL_CITY]);
-                DrawRectangle(gx + 1 + ((frameNo / 9) & 1), gy + 2, 1, 1, PAL[PL_CITYH]);
-                DrawRectangle(gx, gy + 4, 4, 1, PAL[PL_STONE]);
+                // links, alternately edge-on and face-on; the lamp's iron cap, cage and foot. The
+                // glass is drawn with what gives its own light (PropsDrawEmis).
+                for (int k = 0; k < (int)L - 7; k += 2) {
+                    int lx = (int)(ax + s * k), ly = (int)(ay + c * k);
+                    DrawRectangle(lx, ly, 1, 2, PAL[PL_STONE]);
+                    if ((k & 2) == 0) DrawRectangle(lx - 1, ly, 1, 1, PAL[PL_DARK]);
+                }
+                int gx = (int)(ax + s * (L - 6)) - 3, gy = (int)(ay + c * (L - 6)) - 3;
+                DrawRectangle(gx + 1, gy, 5, 1, PAL[PL_STONEL]);
+                DrawRectangle(gx, gy + 1, 7, 1, PAL[PL_STONE]);
+                DrawRectangle(gx, gy + 2, 1, 7, PAL[PL_STONE]); DrawRectangle(gx + 6, gy + 2, 1, 7, PAL[PL_STONE]);
+                DrawRectangle(gx, gy + 9, 7, 1, PAL[PL_STONE]);
+                DrawRectangle(gx + 2, gy + 10, 3, 1, PAL[PL_DARK]);
             }
         } break;
         case PR_FIRE: {

@@ -17,6 +17,8 @@ void DrawRectangle(int x,int y,int w,int h,Color c) {}
 void DrawTexturePro(Texture2D t,Rectangle a,Rectangle b,Vector2 o,float r,Color c) {}
 void BeginBlendMode(int m) {}
 void EndBlendMode(void) {}
+void BeginMode2D(Camera2D c) { (void)c; }
+void EndMode2D(void) {}
 void BeginDrawing(void) {}
 void EndDrawing(void) {}
 void BeginShaderMode(Shader s) {}
@@ -37,6 +39,8 @@ Image GenImageColor(int w,int h,Color c) { return (Image){0}; }
 Texture2D LoadTextureFromImage(Image i) { return (Texture2D){0}; }
 Image LoadImageFromScreen(void) { return (Image){0}; }
 void UnloadImage(Image i) {}
+Image LoadImageFromMemory(const char *t, const unsigned char *d, int n) { (void)t; (void)d; (void)n; return (Image){0}; }
+void DrawTexture(Texture2D t, int x, int y, Color c) { (void)t; (void)x; (void)y; (void)c; }
 bool ExportImage(Image i,const char *p) { return false; }
 void InitAudioDevice(void) {}
 void CloseAudioDevice(void) {}

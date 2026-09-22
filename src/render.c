@@ -56,14 +56,16 @@ const Color PAL[PL_COUNT] = {
 // rim light on every edge that faces a light; and here, one palette.
 static RenderTexture2D albedoRT, emisRT, backRT;
 static Shader comp;
-static int cBack, cEmis, cBake, cLP, cLC, cLN, cPal, cAmb, cBands, cDebug, cLab, cUW, cPalN;
+static int cBack, cEmis, cBake, cLP, cLC, cLN, cPal, cAmb, cBands, cDebug, cLab, cUW, cPalN, cCam, cWorld;
 int dbgAlbedo = 0;
 
 static const char *COMP_BODY =
 "uniform sampler2D texture0;\n"     // albedo: alpha 0 where the wall is broken
 "uniform sampler2D uBack;\n"        // the far city
 "uniform sampler2D uEmis;\n"        // what gives its own light
-"uniform sampler2D uBake;\n"        // 41x23: r warm/2, g cool/2, b water; a = tile code at texel (tx,ty)
+"uniform sampler2D uBake;\n"        // (RW+1)x(RH+1): r warm/2, g cool/2, b water; a = tile code at texel (tx,ty)
+"uniform vec2 uCam;\n"              // room px at the view's top-left, whole pixels
+"uniform vec2 uWorld;\n"            // the room, in tiles
 "uniform vec4 uLP[16];\n"           // x, y (room px), radius px, peak
 "uniform vec4 uLC[16];\n"           // x: 1 = the city's light
 "uniform int uLN;\n"
@@ -75,12 +77,16 @@ static const char *COMP_BODY =
 "uniform float uBands;\n"
 "uniform float uDebug;\n"                                   // 1: show the art under flat light
 "vec2 uvOf(vec2 p) { return vec2((p.x + 0.5) / 320.0, 1.0 - (p.y + 0.5) / 180.0); }\n"
+"vec2 roomOf(vec2 p) { return p - vec2(0.0, 2.0) + uCam + 0.5; }\n"   // frame px to room px
+"vec2 bakeUV(vec2 rp) { return (rp / 8.0 + 0.5) / (uWorld + 1.0); }\n"
 "float code(vec2 t) {\n"
-"  if (t.x < 0.0 || t.x > 39.0 || t.y < 0.0 || t.y > 21.0) return 1.0;\n"
-"  return TEX(uBake, (t + 0.5) / vec2(41.0, 23.0)).a;\n"
+"  if (t.x < 0.0 || t.x > uWorld.x - 1.0 || t.y < 0.0 || t.y > uWorld.y - 1.0) return 1.0;\n"
+"  return TEX(uBake, (t + 0.5) / (uWorld + 1.0)).a;\n"
 "}\n"
 "float maskAt(vec2 p) {\n"                                   // stone and shelves as drawn: alpha 253
-"  if (p.x < 0.0 || p.x > 319.0 || p.y < 2.0 || p.y > 177.0) return 1.0;\n"   // past the room: stone
+"  vec2 rp = roomOf(p);\n"
+"  if (rp.x < 0.0 || rp.y < 0.0 || rp.x > uWorld.x * 8.0 || rp.y > uWorld.y * 8.0) return 1.0;\n"   // past the room: stone
+"  if (p.x < 0.0 || p.x > 319.0 || p.y < 0.0 || p.y > 179.0) return code(floor(rp / 8.0)) > 0.4 ? 1.0 : 0.0;\n"   // past the frame: the tile
 "  float a = TEX(texture0, uvOf(p)).a;\n"
 "  return (a > 0.5 && a < 0.994) ? 1.0 : 0.0;\n"
 "}\n"
@@ -110,7 +116,7 @@ static const char *COMP_BODY =
 "}\n"
 "void main() {\n"
 "  vec2 p = floor(vec2(gl_FragCoord.x, 180.0 - gl_FragCoord.y));\n"
-"  vec2 rp = p - vec2(0.0, 2.0) + 0.5;\n"
+"  vec2 rp = roomOf(p);\n"
 "  vec2 uv = uvOf(p);\n"
 "  vec4 em = TEX(uEmis, uv);\n"
 "  if (em.a > 0.5) { OUT(nearest(em.rgb, false)); return; }\n"
@@ -138,13 +144,13 @@ static const char *COMP_BODY =
 "    if (edge > 0.0) n = normalize(n);\n"
 "    if (edge > 0.0 && code(floor(rp / 8.0)) < 0.75 && n.y > -0.5) edge = 0.0;\n"   // a shelf catches light on its top only
 "  }\n"
-"  vec4 bk = TEX(uBake, (rp / 8.0 + 0.5) / vec2(41.0, 23.0));\n"
+"  vec4 bk = TEX(uBake, bakeUV(rp));\n"
 "  float w = bk.r * 2.0, c = bk.g * 2.0, rw = 0.0, rc = 0.0;\n"
 "  if (edge > 0.0) {\n"
-"    vec4 bo = TEX(uBake, ((rp + n * 6.0) / 8.0 + 0.5) / vec2(41.0, 23.0));\n"
+"    vec4 bo = TEX(uBake, bakeUV(rp + n * 6.0));\n"
 "    rw = bo.r * 2.0 * edge; rc = bo.g * 2.0 * edge;\n"
 "    vec2 q = p + n * 2.0;\n"
-"    if (q.x >= 0.0 && q.x <= 319.0 && q.y >= 2.0 && q.y <= 177.0 && code(floor(rp / 8.0)) > 0.75 && TEX(texture0, uvOf(q)).a < 0.5) rc += 0.42 * edge;\n"  // stone against the far city: backlit
+"    if (q.x >= 0.0 && q.x <= 319.0 && q.y >= 0.0 && q.y <= 179.0 && code(floor(rp / 8.0)) > 0.75 && TEX(texture0, uvOf(q)).a < 0.5) rc += 0.42 * edge;\n"  // stone against the far city: backlit
 "  }\n"
 "  vec2 own = floor(rp / 8.0);\n"
 "  for (int i = 0; i < 16; i++) {\n"
@@ -172,16 +178,17 @@ static const char *COMP_BODY =
 "  float Rq = floor(Rl * uBands + 0.5 + th * 0.7) / uBands;\n"
 "  vec3 lit = alb.rgb * (uAmb + Iq * tint * 1.65) + rt * Rq * 0.8;\n"
 "  lit *= mix(vec3(1.0), vec3(0.55, 0.85, 1.05), bk.b);\n"   // under the water, cold
+"  if (alb.a >= 0.998) lit = max(lit, alb.rgb * 0.30);\n"   // the far wall and the backdrop too, fainter
 "  if (solid > 0.5) {\n"                                     // the dark keeps faint shapes:
-"    vec3 fl = uPal[1];\n"                                    // unlit stone one step above black,
+"    vec3 fl = max(uPal[1], alb.rgb * 0.34);\n"              // unlit stone one step above black, its texture a step above that,
 "    if (edge >= 1.0 && n.y < -0.5) fl = uPal[2];\n"          // and a dim line on every standable top,
 "    lit = max(lit, fl);\n"                                   // so the climb reads without a light
 "  }\n"
 "  if (tc > 0.1 && tc < 0.25) {\n"                            // water: one blue ramp, never a hue per band
 "    float L = dot(lit, vec3(0.30, 0.59, 0.11)) + th * 0.03;\n"
 "    vec3 o = uPal[18];\n"
-"    if (L > 0.065) o = uPal[15];\n"
-"    if (L > 0.24) o = uPal[16];\n"
+"    if (L > 0.085) o = uPal[15];\n"
+"    if (L > 0.42) o = uPal[16];\n"
 "    if (al > 0.5) o = L > 0.10 ? uPal[16] : uPal[15];\n"     // the surface line: always a shape, bright when lit
 "    OUT(o); return;\n"
 "  }\n"
@@ -331,7 +338,7 @@ void RenderInit(void) {
     albedoRT = LoadRenderTexture(GW, GH);
     emisRT   = LoadRenderTexture(GW, GH);
     backRT   = LoadRenderTexture(GW, GH);
-    static char src[12000];
+    static char src[16000];
     snprintf(src, sizeof src, "%s%s", COMP_HEAD, COMP_BODY);
     comp = LoadShaderFromMemory(0, src);
     cBack = GetShaderLocation(comp, "uBack");  cEmis = GetShaderLocation(comp, "uEmis");
@@ -341,25 +348,31 @@ void RenderInit(void) {
     cBands = GetShaderLocation(comp, "uBands");
     cDebug = GetShaderLocation(comp, "uDebug");
     cLab = GetShaderLocation(comp, "uLab"); cUW = GetShaderLocation(comp, "uUW"); cPalN = GetShaderLocation(comp, "uPalN");
+    cCam = GetShaderLocation(comp, "uCam"); cWorld = GetShaderLocation(comp, "uWorld");
 }
 
+// Opens the frame drawing in room coordinates, through the camera.
 void RenderBegin(void) {
-    if (LOOK_NEW) { BeginTextureMode(albedoRT); ClearBackground(BLANK); return; }
+    if (LOOK_NEW) { BeginTextureMode(albedoRT); ClearBackground(BLANK); WorldBegin(); return; }
     BeginTextureMode(screenRT);
     ClearBackground(palVoid);
+    WorldBegin();
 }
 
-// Change which layer is being drawn: RL_EMIS for things that give their own light, RL_BACK
-// for the far city.
+// Change which layer is being drawn: RL_EMIS for things that give their own light (in room
+// coordinates), RL_BACK for the far city (in frame coordinates: it keeps its own parallax).
 void RenderLayer(int which) {
+    WorldEnd();
     EndTextureMode();
     BeginTextureMode(which == RL_EMIS ? emisRT : backRT);
     ClearBackground(BLANK);
+    if (which == RL_EMIS) WorldBegin();
 }
 
 // Put the layers together into the frame. Leaves the frame open for what is drawn over the
 // light: your eyes, your lids, the debug tags.
 void RenderComposite(void) {
+    WorldEnd();
     EndTextureMode();
     BeginTextureMode(screenRT);
     ClearBackground(BLACK);
@@ -401,6 +414,9 @@ void RenderComposite(void) {
         SetShaderValue(comp, cBands, &bands, SHADER_UNIFORM_FLOAT);
         float dbg = (float)dbgAlbedo;
         SetShaderValue(comp, cDebug, &dbg, SHADER_UNIFORM_FLOAT);
+        float cam[2] = { roundf(camX), roundf(camY) }, world[2] = { (float)RW, (float)RH };
+        SetShaderValue(comp, cCam, cam, SHADER_UNIFORM_VEC2);
+        SetShaderValue(comp, cWorld, world, SHADER_UNIFORM_VEC2);
         DrawTexturePro(albedoRT.texture, (Rectangle){ 0, 0, (float)GW, -(float)GH },
                        (Rectangle){ 0, 0, (float)GW, (float)GH }, (Vector2){ 0, 0 }, 0.0f, WHITE);
     EndShaderMode();

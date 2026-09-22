@@ -24,8 +24,10 @@ typedef float    f32;
 #define GW 320              // internal render target
 #define GH 180
 #define TS 8                // tile size
-#define RW 40               // 40 * 8 = 320
-#define RH 22               // 22 * 8 = 176
+#define SW 40               // the screen, in tiles: 40 * 8 = 320
+#define SH 22               //                       22 * 8 = 176
+#define RW 120              // the room, in tiles: three screens wide
+#define RH 44               //                     and two tall
 #define ROOM_Y 2            // the room sits in the 180px frame with a 2px band
 #define DT (1.0f / 60.0f)
 
@@ -57,29 +59,45 @@ static inline int TileOneWay(u8 t) { return (tileFlags[t] & TF_ONEWAY) != 0; }
 static inline int TileWater(u8 t)  { return (tileFlags[t] & TF_WATER)  != 0; }
 
 // ---------------------------------------------------------------- the rooms
-// Two rooms, stacked: the chamber and the flooded one under it. Level data is authored
-// as text in room.c and read once at startup; nothing streams from disk, and nothing
-// writes to it at runtime. `tiles` holds the room you are in.
-#define ROOM_COUNT 2
-extern u8  tiles[RH][RW];                  // the room you are in
+// One room, the antechamber: six screens of it, three across and two down. Level data is
+// authored as text in antechamber.c and read once at startup; nothing streams from disk,
+// and nothing writes to it at runtime. ROOM_COUNT stays as a name so the things that
+// belong to a room (items, the fire) still say which; there is one.
+#define ROOM_COUNT 1
+extern u8  tiles[RH][RW];                  // the room
 extern u8  roomTiles[ROOM_COUNT][RH][RW];  // every room, parsed once
 extern int roomIdx;
+extern const char *const ROOM_MAP[RH];     // antechamber.c: the tiles
+extern const char *const ROOM_PROPS[RH];   //                the dressing
+typedef struct { i16 x0, y0, x1, y1; } ZRect;
+extern const ZRect ROOM_CITY[];            //                where the stone is theirs; ends at x0 < 0
+// The backdrop's big pieces, in tiles: drawn behind everything, and only the tiles marked
+// carved in the map ('X', 'x') stand under them for you to stand on.
+enum { F_NONE = 0, F_COLOSSUS, F_WINDOW, F_GRILLE, F_NICHE, F_PILLAR, F_CORNICE };
+typedef struct { u8 kind; i16 x, y, w, h, a; } Feature;
+extern const Feature ROOM_FEATURES[];      //                ends at F_NONE
+// What a tile is drawn as, beyond its kind: carved (the backdrop draws it, the room does
+// not) and dead (a seam the city has drunk: black, and gives no light).
+enum { TD_CARVED = 1, TD_DEAD = 2 };
+extern u8 tileDeco[RH][RW];
 
-// Past the side walls is stone. Past the top or bottom is THE NEXT ROOM'S TILES, not
-// open air: a body straddling the seam collides with what is really there. Without
-// this, a shelf just inside the next room did not exist until the room switched, and
-// by then you were below it -- which is what "I fell straight through A1" was.
+// Past the edges is stone.
 static inline u8 TileGet(int tx, int ty) {
-    if (tx < 0 || tx >= RW) return T_ROCK;
-    if (ty < 0)   return (roomIdx > 0 && ty >= -RH) ? roomTiles[roomIdx - 1][ty + RH][tx] : T_ROCK;
-    if (ty >= RH) return (roomIdx < ROOM_COUNT - 1 && ty < 2 * RH) ? roomTiles[roomIdx + 1][ty - RH][tx] : T_ROCK;
+    if (tx < 0 || tx >= RW || ty < 0 || ty >= RH) return T_ROCK;
     return tiles[ty][tx];
 }
 u8 TileAtPx(float px, float py);
 
 void RoomLoad(void);
 void RoomEnter(int idx);
-int  RoomTransition(void);  // stepped off the top or bottom: change room, keep motion
+// The camera. The room is larger than the screen; the view is one screen-sized part of it,
+// and when you cross into the next part the view slides there. Each view is still a
+// composed screen: the camera never chases you (the spirit of L11, in a room bigger than one).
+extern f32 camX, camY;      // room px of the view's top-left
+void CameraInit(void);      // snap to wherever you are
+void CameraStep(void);
+void WorldBegin(void);      // draw in room coordinates through the camera
+void WorldEnd(void);
 void RoomDraw(void);
 void WaterStep(void);       // the surface, a 1D wave
 void WaterDisturb(float px, float strength);
@@ -109,6 +127,7 @@ void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak);   // the city's colour 
 extern int airOff;          // headless runs: off
 void AirInit(void);         // per room, after the tiles
 void AirStep(void);
+void RoomDrafts(void);      // antechamber.c: the room's own slow drafts, pushed into the air each step
 void AirDraw(void);
 void AirPush(f32 px, f32 py, f32 vx, f32 vy, f32 radius);         // px per frame
 void AirPuff(f32 px, f32 py, f32 amount, f32 radius, f32 warm);   // warm: 1 smoke, 0 dust/mist
@@ -139,6 +158,7 @@ extern const Sprite SPR_POT, SPR_BEDROLL, SPR_PACK, SPR_CAIRN, SPR_BONES, SPR_FI
 void PropsInit(void);        // per room, after the tiles are known
 void PropsStep(void);
 void PropsDrawBack(void);    // after the back wall, before the tiles
+void PropsDrawEmis(void);   // what of the dressing gives its own light
 void PropsDrawFront(void);   // after the tiles, before the living things
 void PropsLight(void);       // called by LightStep
 void PropsReset(void);       // the one persistent change (the fire) back to how it began
@@ -267,6 +287,7 @@ enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SP
 void  AudioInit(int mute);
 void  AudioStep(void);
 void  Sfx(int id, float vol, float pitch, float pan);
+void  SfxAt(int id, float vol, float pitch, float wx, float wy);   // from a place in the room: panned, fading off the view
 void  AudioAmbience(int room);
 float AudioRnd(void);          // -1..1, for pitch and level variation
 int   AudioExportMontage(const char *path);
@@ -293,9 +314,14 @@ extern RenderTexture2D screenRT;
 int  LightPoints(float *pos4, float *col4, int max);   // this frame's point lights, for the composite
 Texture2D LightBakeTexture(void);
 // the far city, room 0, seen through a break in the back wall (city.c)
-int  CityBreachSpan(int y, int *x0, int *x1);
-void CityErase(void);
-void CityDraw(void);
+void CityDraw(void);        // what shows through the openings, in the back layer
+// backdrop.c: the colossus, the great window, the fireguard
+void BackdropInit(void);
+void BackdropDraw(void);    // over the far wall, under the stone
+void BackdropDrawEmis(void);
+void BackdropLights(void);
+int  WindowSpan(int y, int *x0, int *x1);   // room px spans of the openings, per row
+int  GrilleSpan(int y, int *x0, int *x1);
 
 // ---------------------------------------------------------------- the palette of the new look
 enum { PL_VOID, PL_DEEP, PL_DARK, PL_STONE, PL_STONEL, PL_STONEH, PL_WARMD, PL_WARM, PL_AMBER,

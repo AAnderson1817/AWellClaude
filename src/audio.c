@@ -353,6 +353,22 @@ void Sfx(int id, float vol, float pitch, float pan) {
     PlaySound(snd);
 }
 
+// A sound from a place in the room. Panned by where it sits across the view, and quieter the
+// further it is outside it, gone two thirds of a screen away: the room is six screens and
+// you hear the one you are in, and a little of its neighbours. Played even when silent, so
+// the trace still counts it.
+void SfxAt(int id, float vol, float pitch, float wx, float wy) {
+    float x0 = camX, y0 = camY, x1 = camX + GW, y1 = camY + SH * TS, dx = 0, dy = 0;
+    if (wx < x0) dx = x0 - wx; else if (wx > x1) dx = wx - x1;
+    if (wy < y0) dy = y0 - wy; else if (wy > y1) dy = wy - y1;
+    float f = 1.0f - sqrtf(dx * dx + dy * dy) / 210.0f;
+    if (f < 0) f = 0;
+    float pan = (wx - x0) / GW;
+    if (pan < 0) pan = 0;
+    if (pan > 1) pan = 1;
+    Sfx(id, vol * f * f, pitch, pan);
+}
+
 void AudioAmbience(int room) {
     if (!ready || room < 0 || room >= ROOM_COUNT) return;
     if (ambRoom >= 0) StopSound(amb[ambRoom]);

@@ -14,8 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NX (RW * TS / 4)            // 80 cells across
-#define NY (RH * TS / 4)            // 44 down
+#define NX (RW * TS / 4)            // 240 cells across
+#define NY (RH * TS / 4)            // 88 down
 #define IX(i, j) ((i) + (NX + 2) * (j))
 #define SZ ((NX + 2) * (NY + 2))
 #define ITERS 10
@@ -133,20 +133,7 @@ void AirAt(f32 px, f32 py, f32 *vx, f32 *vy) {
 
 void AirStep(void) {
     if (airOff) return;
-    // The room's own drafts, gentle: air rises through the grate from the cistern below;
-    // in the flooded room the water breathes a mist that lies on its surface, and the
-    // drain lets a little air fall.
-    if (roomIdx == 0) {
-        for (int x = 21 * TS; x < 27 * TS; x += 8) AirPush((f32)x + 4, 20 * TS - 2.0f, 0.0f, -0.05f, 5.0f);
-    } else {
-        if ((frameNo % 4) == 0) {
-            u32 h = Hash2((int)frameNo, 31);
-            f32 x = 8 * TS + (f32)(h % (23 * TS));
-            AirPuff(x, 7 * TS - 3.0f, 0.30f, 7.0f, 0.0f);
-            AirPush(x, 7 * TS - 3.0f, ((h >> 12) & 1) ? 0.12f : -0.12f, -0.02f, 8.0f);
-        }
-        AirPush(23.5f * TS, 2.0f * TS, 0.0f, 0.03f, 10.0f);
-    }
+    RoomDrafts();
     // velocity: carried by itself, made to swirl, and let go of slowly
     memcpy(u0, u, sizeof u); memcpy(v0, v, sizeof v);
     Advect(u, u0, u0, v0); Advect(v, v0, u0, v0);
@@ -169,8 +156,9 @@ void AirStep(void) {
 // and a lamp or the fire finds them hanging in the air. Never over stone.
 void AirDraw(void) {
     if (airOff) return;
-    for (int j = 1; j <= NY; j++)
-        for (int i = 1; i <= NX; i++) {
+    int i0v = (int)(camX / 4.0f), j0v = (int)(camY / 4.0f) - 1;     // only the cells in view
+    for (int j = j0v < 1 ? 1 : j0v; j <= NY && j <= j0v + GH / 4 + 2; j++)
+        for (int i = i0v < 1 ? 1 : i0v; i <= NX && i <= i0v + GW / 4 + 2; i++) {
             int k = IX(i, j);
             if (d[k] < 0.03f) continue;
             for (int y = 0; y < 4; y++)

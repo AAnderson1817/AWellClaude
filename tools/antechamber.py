@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""The antechamber, drawn. Run it to rewrite src/antechamber.c.
+
+Six screens, three across and two down. The lore is claude/LORE.md, the design and the
+reasons for each shape are claude/ANTECHAMBER.md; this is only where things are.
+
+    A entry      | B upper gallery | C great window
+    D undercroft | E hall floor    | F inner gate
+
+Rows that matter, top to bottom: the walk along the top (the step, the gallery, the sill)
+stands on row 14; the undercroft and the hall floor stand on row 35; the basin's surface is
+row 36. Everything between is the climb, and the climb is the colossus.
+"""
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from roomgen import Room, write
+
+R = Room(120, 44)
+R.fill(0, 0, 119, 43, '#')             # start solid, and carve
+
+# ------------------------------------------------------------------ A: the entry
+# The upper cave: raw rock, low and close over the door, rising to the right.
+R.clear(1, 4, 12, 13)
+R.clear(2, 3, 10, 3)
+R.clear(13, 3, 27, 13)
+R.clear(16, 2, 24, 2)
+# the ceiling, ragged
+R.stamp(1, 3, """
+#..........###.
+""")
+R.stamp(24, 3, """
+..##
+...#
+""")
+# the flue slot: out of reach, over the door, one amber seam inside it
+R.clear(6, 1, 7, 3)
+R.at(8, 1, '*')
+# the step at the door, and the drop past it: the chasm down into the undercroft
+R.clear(13, 14, 17, 26)                 # the chasm, 5 wide
+# the passage right: rock floor on row 14, the ceiling coming down into a mouth
+R.clear(18, 4, 39, 13)
+R.fill(29, 3, 39, 5, '#')
+R.fill(31, 6, 39, 6, '#')
+R.fill(33, 7, 39, 7, '#')
+# seams in the raw rock: warm around the door, one over the chasm
+for x, y in ((0, 6), (0, 11), (12, 2), (19, 1), (28, 3)):
+    R.at(x, y, '*')
+R.at(12, 17, '*'); R.at(18, 21, '*')    # in the chasm walls, lighting the ropes going down
+R.at(4, 15, ',');
+R.stamp(9, 13, ",")
+
+R.at(7, 13, 'P')                        # you, beside the door
+
+# ------------------------------------------------------------------ D: the undercroft
+# Low, raw, amber. The fire is the whole composition; its mouth opens right into the hall.
+R.clear(1, 27, 39, 34)
+R.clear(2, 26, 12, 26)
+R.clear(18, 26, 33, 26)
+R.clear(30, 22, 39, 26)                 # the mouth rises, and the colossus's hand hangs in
+R.clear(34, 18, 39, 21)
+R.fill(1, 27, 3, 29, '#'); R.fill(1, 30, 1, 31, '#')
+R.at(0, 31, '*'); R.at(5, 26, '*'); R.at(24, 25, '*')
+R.at(1, 34, ','); R.at(10, 34, ',')
+
+# ------------------------------------------------------------------ B/E/C/F: the hall
+# One volume, four screens: everything from x 40 is the tall ones' masonry.
+R.clear(40, 1, 118, 35)
+# the ceiling: a coffered vault would be a lie at this size; it is lost in the dark, with a
+# rib or two of stone where the light reaches
+R.fill(40, 0, 119, 0, '#')
+
+# the gallery: row 14, masonry two thick, crossing the colossus's shoulder
+R.fill(40, 14, 79, 15, '#')
+R.fill(56, 14, 60, 15, '.'); R.shelf(56, 60, 14)   # the one place you come up through it
+
+# the colossus: collision only where it holds you. 'X' is carved solid, 'x' carved shelf:
+# the art draws them, the tiles only stand under it.
+R.fill(40, 26, 45, 26, 'X')             # the back of the hand
+R.fill(46, 24, 49, 24, 'X')             # the forearm, in bands
+R.fill(50, 22, 53, 22, 'X')
+R.fill(54, 20, 57, 20, 'X')             # the elbow
+R.fill(57, 17, 60, 17, 'X')             # the band on the upper arm
+R.fill(60, 25, 72, 25, 'X')             # the lap
+
+# the way up to the hand from the floor: two corbels on the niche's wall, one-way, so the
+# floor under them stays open to the water -- a body carrying a stone jumps too low to
+# climb, and must still be able to walk into the basin and sink
+R.shelf(41, 44, 32)
+R.shelf(36, 39, 29)                     # and the hunters' planks, lashed up under its fingers
+R.at(42, 34, 's')                       # the stone, on the hall floor by the basin
+
+# the floor: paving at the undercroft's mouth, stepping down into the basin
+R.fill(40, 35, 49, 43, '#')
+R.fill(50, 37, 51, 43, '#')
+R.fill(52, 39, 53, 43, '#')
+# the basin, under the lap and on to the fireguard
+R.fill(50, 36, 96, 42, '~')
+R.fill(50, 37, 51, 42, '#'); R.fill(52, 39, 53, 42, '#')
+
+# F: the giant stair, built for the tall ones: treads a jump high, up from the water to
+# the sill's far end
+treads = [(97, 34), (100, 31), (103, 28), (106, 25), (109, 22), (112, 19), (115, 16)]
+for x0, top in treads:
+    R.fill(x0, top, 118, 42, '#')
+R.fill(97, 35, 118, 42, '#')
+
+# C: the sill, the one long flat run, a balcony across the window's foot
+R.fill(80, 14, 111, 15, '#')
+R.fill(112, 14, 118, 15, '.')
+
+# the city's glass lamps, set in their masonry: one in the threshold's arch, so the right of the
+# first screen is washed green; one in the altar's face, lighting the hand from below; one in
+# the foot of the stair; two in the sill's face
+for x, y in ((37, 7), (97, 35), (86, 15), (106, 15)):
+    R.at(x, y, '*')
+# E/F: the dead seams where the rock runs in
+for x, y in ((41, 36), (44, 38), (33, 17)):
+    R.at(x, y, 'k')
+
+# ------------------------------------------------------------------ zones
+R.city(40, 0, 119, 43)                  # the hall
+R.city(34, 4, 39, 13)                   # the threshold: the passage's last few steps are theirs
+
+# ------------------------------------------------------------------ backdrop pieces
+# (kind, x, y, w, h, a) in tiles
+R.feat('F_CORNICE', 40, 1, 79, 1)
+R.feat('F_NICHE', 45, 3, 32, 40)
+R.feat('F_PILLAR', 78, 2, 3, 34)
+R.feat('F_PILLAR', 42, 2, 2, 12)
+R.feat('F_COLOSSUS', 40, 1, 36, 42)
+R.feat('F_WINDOW', 82, 2, 30, 19)
+R.feat('F_GRILLE', 81, 24, 15, 18)
+
+# ------------------------------------------------------------------ props
+R.prop(1, 8, 'D')                       # the door, in the left wall
+R.prop(12, 14, 'r'); R.prop(12, 14, 'r')
+R.prop(29, 8, 'R'); R.prop(21, 3, 'R')
+R.prop(47, 2, 'c')                      # a lamp on a long chain before the colossus's face
+R.prop(68, 16, 'c')                     # and one under the gallery, over its lap
+R.prop(91, 16, 'c')                     # and one under the sill
+R.prop(20, 34, 'B')                     # the camp: bedroll, cairn, fire, pack
+R.prop(26, 34, 'C')
+R.prop(33, 34, 'F')
+R.prop(36, 34, 'K')
+
+# ------------------------------------------------------------------ the draft
+# In low under the fireguard, across the basin, up past the colossus, out of the window.
+for x in range(92, 52, -6): R.draft(x, 34.5, -0.020, 0.0, 10)
+for y in range(33, 4, -5): R.draft(76, y, 0.0, -0.020, 12)
+for x in range(78, 100, 6): R.draft(x, 4, 0.020, 0.0, 12)
+
+ok = write(R, "// antechamber.c -- the room: tiles, dressing, zones, backdrop pieces, drafts. Written by\n"
+              "// tools/antechamber.py (run it after editing that); read once at startup, never at runtime.")
+sys.exit(0 if ok else 1)

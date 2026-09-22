@@ -49,7 +49,7 @@ static void BushStep(void) {
 // ---------------------------------------------------------------- perches
 // Where a bird may sit: the two ends of every standable run that is not the floor and
 // not under water, and the top of every bush. Derived from the map, never authored.
-#define PERCH_MAX 128
+#define PERCH_MAX 400
 typedef struct { i32 x, y; } Perch;
 static Perch perches[PERCH_MAX];
 static int perchCount;
@@ -59,7 +59,7 @@ static void FindPerches(void) {
     int n = SurfCount();
     for (int i = 0; i < n && perchCount < PERCH_MAX - 1; i++) {
         int x0, x1, y, shelf; SurfGet(i, &x0, &x1, &y, &shelf);
-        if (y >= 19) continue;                                // not the floor
+        if (y >= RH - 3) continue;                            // not the floor
         if (TileGet(x0, y - 1) == T_WATER) continue;
         perches[perchCount++] = (Perch){ x0 * TS + 2, y * TS };
         if (x1 > x0) perches[perchCount++] = (Perch){ x1 * TS + 4, y * TS };
@@ -70,7 +70,7 @@ static void FindPerches(void) {
 }
 
 // ---------------------------------------------------------------- birds
-#define BIRD_MAX 4
+#define BIRD_MAX 8
 enum { B_PERCH, B_FLY };
 typedef struct {
     f32 x, y, vx, vy;
@@ -96,7 +96,7 @@ static int PickPerch(float awayX, float awayY, int notThis) {
 static void BirdsInit(void) {
     memset(birds, 0, sizeof birds);
     if (perchCount == 0) return;
-    int want = roomIdx == 0 ? 2 : 1;      // was 3 and 2; the user found them a bit much
+    int want = 4;      // over six screens. It was 3 in one, then 2: the user found them a bit much
     float sx = player.x, sy = player.y;
     for (int i = 0; i < want && i < BIRD_MAX; i++) {
         int p = PickPerch(sx, sy, -1);
@@ -115,7 +115,7 @@ static void BirdStartle(Bird *b, float fromX, float fromY) {
     if (t < 0) return;
     b->target = t; b->state = B_FLY; b->flap = 0;
     b->vy = -1.2f; b->vx = (perches[t].x > b->x ? 0.6f : -0.6f);
-    Sfx(SFX_WING, 0.8f, 0.9f + AudioRnd() * 0.2f, b->x / (float)GW);
+    SfxAt(SFX_WING, 0.8f, 0.9f + AudioRnd() * 0.2f, b->x, b->y);
     AirPush(b->x, b->y - 2.0f, 0.0f, 1.2f, 7.0f);
     lifeBirdsStartled++;
 }
@@ -141,7 +141,7 @@ static void BirdsStep(void) {
                 float r = Rnd();
                 if (r < 0.55f) b->facing = -b->facing;                 // look the other way
                 else if (r < 0.72f && dx > 70)                          // a small song, when you are not near
-                    Sfx(SFX_CHIRP, 0.5f + Rnd() * 0.3f, b->pitch, b->x / (float)GW);
+                    SfxAt(SFX_CHIRP, 0.5f + Rnd() * 0.3f, b->pitch, b->x, b->y);
                 else if (r < 0.77f) BirdStartle(b, b->x + (Rnd() - 0.5f) * 40, b->y);   // restless
             }
         } break;
@@ -251,12 +251,12 @@ static void BeastStep(void) {
         if (beast.x <= beast.x0) { beast.x = beast.x0; beast.dir = 1; lifeBeastTurns++; }
         if (beast.x >= beast.x1) { beast.x = beast.x1; beast.dir = -1; lifeBeastTurns++; }
         if (((int)(beast.legT * 2) & 1) != ((int)((beast.legT - 0.16f) * 2) & 1) && fabsf(dx) < 130)
-            Sfx(SFX_PAD, 0.35f, 0.9f + AudioRnd() * 0.2f, cx / (float)GW);
+            SfxAt(SFX_PAD, 0.35f, 0.9f + AudioRnd() * 0.2f, cx, beast.y);
         if (--beast.timer <= 0) {
             float r = Rnd();
             beast.state = r < 0.7f ? M_PAUSE : M_SIT;
             beast.timer = beast.state == M_SIT ? 600 + (int)(Rnd() * 900) : 120 + (int)(Rnd() * 300);
-            if (beast.state == M_SIT && Rnd() < 0.5f) Sfx(SFX_CHIRR, 0.45f, 0.95f + AudioRnd() * 0.1f, cx / (float)GW);
+            if (beast.state == M_SIT && Rnd() < 0.5f) SfxAt(SFX_CHIRR, 0.45f, 0.95f + AudioRnd() * 0.1f, cx, beast.y);
         }
         break;
     case M_PAUSE:
@@ -350,7 +350,7 @@ static void PlantSyllable(Plant *p) {
     p->pod = pod; p->mouth = 7 + (int)(Rnd() * 4);
     p->timer = p->mouth + 2 + (int)(Rnd() * 3);
     int which = SFX_PLANT0 + (int)(Rnd() * 3);
-    Sfx(which, 0.8f, p->basePitch * PODPITCH[pod] * (0.97f + Rnd() * 0.06f), p->x / (float)GW);
+    SfxAt(which, 0.8f, p->basePitch * PODPITCH[pod] * (0.97f + Rnd() * 0.06f), (float)p->x, (float)p->y);
 }
 
 static void PlantsStep(void) {

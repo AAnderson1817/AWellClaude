@@ -20,15 +20,13 @@ def fake_run(plan, at=None, frames=None, room=None):
                     room=1, wet=0, sfx="-", hold=0, lampRoom=0, lampX=0, lampY=0,
                     stoneRoom=0, stoneX=0, stoneY=0, fade=0.0)
         base.update(k); return base
-    if plan == "-:20,D:300":                 return [row(room=1, wet=1)]              # shaft down
-    if plan == "-:10,J:30,-:60":             return [row(room=0, y=149.0, x=176.0)]  # shaft up: row 20
-    if plan.startswith("-:110,L"):           return [row(y=37.0, x=30.0)]            # water -> left island: row 6, col 3
-    if plan.startswith("-:110,R"):           return [row(y=37.0, x=250.0)]           # water -> right island: row 6, col 31
-    if plan == "-:6,J:6,-:6,D:120":          return [row(wet=1)]                     # through A1 with Down
-    if plan.endswith("H:90,-:60"):           return [row(wet=1, hold=2)] * 20 + [row(room=0, x=17.0, y=109.0)]   # reset from the deep: the start, beside the door
+    if plan.startswith("-:90,R"):            return [row(y=261.0, x=780.0)]          # the basin -> the first tread: row 34, col 97
+    if plan == "R:900":                      return [row(y=101.0, x=160.0 + 4 * i) for i in range(200)]   # the long walk: row 14, past col 108
+    if plan == "R:30,-:200":                 return [row(y=269.0, x=136.0)]          # the chasm: the undercroft's floor, row 35
+    if plan.endswith("H:90,-:60"):           return [row(wet=1, hold=2)] * 20 + [row(x=57.0, y=101.0)]   # reset from the deep: the start, beside the door
     if plan.endswith("H:90,-:40"):           return [row(hold=2, stoneX=290)] * 20 + [row(hold=0, stoneX=290)]   # the stone goes home
     if plan.endswith("H:40,-:40"):           return [row(hold=2, fade=0.44)] * 20 + [row(hold=2, fade=0.0)]      # let go early
-    return [row()]                                                                    # on A1: row 1, col 21
+    return [row()]
 
 class ToolTests(unittest.TestCase):
     def route_status(self, answer):

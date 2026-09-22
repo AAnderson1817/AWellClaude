@@ -9,57 +9,13 @@
 #include "aw.h"
 #include <math.h>
 
-// Which room has the view. None, for now: the user found the break in the Vault Mouth's
-// wall unreadable -- a cut-out with platforms floating in it, in a room not built around a
-// view -- and it muddied the look test, which is about the renderer. It comes back only in a
-// room composed around it, with the climb kept to the edges.
-#define CITY_ROOM (-1)
+// The city is seen through the great window (backdrop.c cuts it). It is drawn in the frame's
+// own coordinates, a little behind the room: when the view slides, the walls cross the whole
+// frame and the city a third of it, which is most of what says it is far away.
+#define PARALLAX 0.3f
+static int OX, OY;          // frame px of the city's origin this frame
 
-// The break in the wall, room 0 only: a ragged ellipse over the open middle of the room.
-#define BR_CX 172.0f
-#define BR_CY  56.0f
-#define BR_RX 108.0f
-#define BR_RY  46.0f
-
-// Broken stone, not a cut: blocks of a few rows knocked back by different amounts, on top
-// of a slow wander, so the edge reads as masonry that fell rather than a shape.
-static float Ragged(int y, int side) {
-    u32 h = Hash2(y / 4 + side * 101, 7 + side), g = Hash2(y / 9 + side * 37, 3);
-    return (float)(h % 9) - 4.0f + (float)(g % 13) - 6.0f
-         + 7.0f * sinf(y * (side ? 0.071f : 0.093f) + side * 2.0f);
-}
-// The span of room row y that is open to the far city, or 0.
-int CityBreachSpan(int y, int *x0, int *x1) {
-    if (roomIdx != CITY_ROOM) return 0;
-    float dy = (y - BR_CY) / BR_RY;
-    if (dy <= -1.0f || dy >= 1.0f) return 0;
-    float hw = BR_RX * powf(1.0f - dy * dy, 0.38f) * (1.0f + 0.05f * sinf(y * 0.11f));
-    if (hw < 3.0f) return 0;
-    *x0 = (int)(BR_CX - hw + Ragged(y, 0));
-    *x1 = (int)(BR_CX + hw + Ragged(y, 1));
-    return *x1 > *x0;
-}
-
-// Cut the break out of the back wall that was just drawn: subtract blend of transparent
-// black writes zeros, and alpha zero is how the composite knows to show the city there.
-void CityErase(void) {
-    if (roomIdx != CITY_ROOM) return;
-    BeginBlendMode(BLEND_SUBTRACT_COLORS);
-    for (int y = 0; y < RH * TS; y++) {
-        int x0, x1;
-        if (CityBreachSpan(y, &x0, &x1)) DrawRectangle(x0, ROOM_Y + y, x1 - x0, 1, (Color){ 0, 0, 0, 0 });
-    }
-    EndBlendMode();
-    // the broken edge of the wall: a lip of lighter stone, chipped
-    for (int y = 0; y < RH * TS; y++) {
-        int x0, x1;
-        if (!CityBreachSpan(y, &x0, &x1)) continue;
-        if (Hash2(x0, y) & 1) DrawRectangle(x0 - 1, ROOM_Y + y, 1, 1, palBackLit);
-        if (Hash2(x1, y) & 1) DrawRectangle(x1, ROOM_Y + y, 1, 1, palBackLit);
-    }
-}
-
-static void Dot(int x, int y, int pl) { DrawRectangle(x, ROOM_Y + y, 1, 1, PAL[pl]); }
+static void Dot(int x, int y, int pl) { DrawRectangle(OX + x, OY + y, 1, 1, PAL[pl]); }
 
 // A window's light, hashed: whether it is lit now. A few change their minds, slowly.
 static int Lit(u32 h, int pct) {
@@ -80,8 +36,24 @@ static void Glow(int x, int y, float a) {
     else if (q > 0.55f && ((x + y) & 1)) Dot(x, y, PL_DEEP);
 }
 
-void CityDraw(void) {
-    if (roomIdx != CITY_ROOM) return;
+// Where a room point shows in the frame, a layer at depth p behind the view: at p = 0 it is
+// fixed to the room, at 1 fixed to the frame. The home view is the one the piece is composed
+// for: there it sits exactly where the room says.
+static void Place(f32 wx, f32 wy, f32 homeX, f32 homeY, f32 p, int *sx, int *sy) {
+    f32 cx = homeX + (camX - homeX) * (1.0f - p), cy = homeY + (camY - homeY) * (1.0f - p);
+    *sx = (int)lroundf(wx - cx); *sy = (int)lroundf(ROOM_Y + wy - cy);
+}
+
+static void Far(void);
+static void Beyond(void);
+void CityDraw(void) { Far(); Beyond(); }
+
+static void Far(void) {
+    int wx0, wx1;
+    if (!WindowSpan(15 * TS, &wx0, &wx1) || camX + GW < wx0 - 64 || camX > wx1 + 64) return;
+    // composed for the view of the great window's screen; the city's (176, 78) -- where its
+    // avenues meet the horizon -- is on the window's centre line, at the sill
+    Place((wx0 + wx1) * 0.5f - 176.0f, 15 * TS - 78.0f, 2 * SW * TS, 0, PARALLAX, &OX, &OY);
     int X0 = 50, X1 = 296;
     // The glow the city throws up into the air over itself, strongest at the horizon.
     for (int y = HZ - 38; y < HZ + 8; y++)
@@ -128,7 +100,7 @@ void CityDraw(void) {
         int x0 = X0 + 2 + i * 5 + (int)(h % 3), w = 2 + (int)((h >> 3) % 4);
         float mid = 1.0f - fabsf((x0 - (float)VX) / 130.0f);
         int ht = 3 + (int)((h >> 7) % 10) + (int)(mid * mid * 26.0f);
-        DrawRectangle(x0, ROOM_Y + HZ - ht, w, ht, PAL[PL_VOID]);
+        DrawRectangle(OX + x0, OY + HZ - ht, w, ht, PAL[PL_VOID]);
         for (int y = HZ - ht + 1; y < HZ - 1; y += 3)
             for (int x = x0; x < x0 + w; x += 2) {
                 u32 g = Hash2(x * 13, y * 17 + i);
@@ -161,7 +133,7 @@ void CityDraw(void) {
     static const int NW[7] = { 11, 9, 14, 9, 12, 10, 8 };
     for (int i = 0; i < 7; i++) {
         int x0 = NX[i], w = NW[i], top = HZ + 8 - NH[i], bot = HZ + 16;
-        DrawRectangle(x0, ROOM_Y + top, w, bot - top, PAL[PL_VOID]);
+        DrawRectangle(OX + x0, OY + top, w, bot - top, PAL[PL_VOID]);
         int lit = x0 + w / 2 < VX ? x0 + w - 1 : x0;                 // the edge that faces the glow
         for (int y = top; y < bot; y++) if (y > HZ - 22 && ((y & 1) || y > HZ - 8)) Dot(lit, y, y > HZ - 8 ? PL_COOLM : PL_COOLD);
         for (int x = x0 + 2; x < x0 + w - 2; x += 3)
@@ -179,5 +151,43 @@ void CityDraw(void) {
         float t = (float)(frameNo % 1200) / 1200.0f;
         int y = bot - (int)(t * (bot - top));
         Dot(x0, y, PL_CITYH); Dot(x0, y + 1, PL_CITY);
+    }
+}
+
+// Beyond the fireguard: the city's near halls, lit green from below, and the tall ones in
+// them -- standing, still, a long way in. Only ever silhouettes (LORE.md section 6).
+static void Beyond(void) {
+    int gx0, gx1, gy = 0;
+    for (int y = 20 * TS; y < 44 * TS; y++) if (GrilleSpan(y, &gx0, &gx1)) { gy = y; break; }
+    if (!gy || camX + GW < gx0 - 32 || camX > gx1 + 32 || camY + GH < gy - 32) return;
+    int w = gx1 - gx0, h = 44 * TS - gy;
+    Place((f32)gx0, (f32)gy, 2 * SW * TS, SH * TS, 0.45f, &OX, &OY);
+    // the light, strongest low and in the middle: it comes from further in, under the water
+    for (int y = -8; y < h + 8; y++)
+        for (int x = -12; x < w + 12; x++) {
+            f32 dy = (f32)y / h, dx = fabsf((x - w * 0.5f) / (w * 0.6f));
+            f32 a = (0.25f + 0.75f * dy) * (1.0f - dx * dx);
+            if (a > 0) Glow(x, y, a * 0.95f);
+        }
+    // the far wall of that hall: a colonnade, black against the glow
+    for (int k = 0; k < 6; k++) {
+        int x = -6 + k * (w + 12) / 5;
+        DrawRectangle(OX + x, OY - 8, 5, h + 16, PAL[PL_DEEP]);
+    }
+    // the tall ones: three, at different depths, the nearest largest; heads long, shoulders
+    // narrow, arms down. One of them is always a step nearer than you remember.
+    static const int TX[3] = { 30, 68, 98 }, TH[3] = { 70, 92, 60 };
+    for (int i = 0; i < 3; i++) {
+        int x = TX[i] * w / 120, H = TH[i], foot = h - 6 - i * 3, top = foot - H;
+        int hw = 3 + H / 30;
+        DrawRectangle(OX + x - hw, OY + top + H / 5, hw * 2, H - H / 5, PAL[PL_VOID]);            // body
+        DrawRectangle(OX + x - hw - 1, OY + top + H / 5 + 2, 1, H / 2, PAL[PL_VOID]);              // arm
+        DrawRectangle(OX + x + hw, OY + top + H / 5 + 2, 1, H / 2, PAL[PL_VOID]);
+        DrawRectangle(OX + x - hw / 2 - 1, OY + top + H / 5 - 3, hw + 2, 4, PAL[PL_VOID]);         // neck
+        for (int r = 0; r < H / 5 + 2; r++) {                                                         // the long head, tipped forward
+            int hwid = (int)(hw * 0.9f * sinf(3.1416f * (r + 0.5f) / (H / 5 + 2))) + 1;
+            DrawRectangle(OX + x - hwid - r / 4, OY + top - 2 + r, hwid * 2, 1, PAL[PL_VOID]);
+        }
+        DrawRectangle(OX + x + hw, OY + top + H / 5, 1, H - H / 5, PAL[PL_COOLD]);                // the glow on one edge
     }
 }

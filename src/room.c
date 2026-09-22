@@ -18,77 +18,33 @@ const u8 tileFlags[T_KINDS] = {
     [T_BUSH]  = 0,
 };
 
+// The map is in antechamber.c. Its letters:
 // '#' stone   '-' shelf   '~' water   '*' seam   ',' moss   'b' bush   'o' bulb
 // 'm' the animal's home   'f' a talking plant   's' a stone   'P' start
-static const char *MAPS[ROOM_COUNT][RH] = {
-    { // 0: the chamber
-        "########################################",
-        "#...#.#.###..#..#...#.#*#...#..#..###..#",
-        "#.......###............,..........###..#",
-        "#........,........................###..#",
-        "#..................-----...........,...#",
-        "#..f.........-----.........-----.......#",
-        "#####.------.....................#######",
-        "#####............................#######",
-        "#####.......................-----#######",
-        "#.....----............................##",
-        "#......................................#",
-        "#.........................----.........#",
-        "#..........----..................,.....#",
-        "#.................###.........#.b.m.sb.#",
-        "#.P...............###.........#####*####",
-        "####..----........###.........##########",
-        "####..............###.----....##########",
-        "#####.............###.........##########",
-        "#####*............###.......o.##########",
-        "######b...b.o.....###....,.##b##########",
-        "#####################------#############",
-        "#####################......#############",
-    },
-    { // 1: below it, flooded
-        "####################*......#############",
-        "#..##...#...,#.......------..,.##...#..#",
-        "#......................................#",
-        "#...............------....------.......#",
-        "#......................................#",
-        "#...bs,..-----.............-----b.f....#",
-        "#..#####.......................#####...#",
-        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~~~~~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~#*#~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~###~~~~~~~~~~#####~~~#",
-        "#~~#####~~~~~~~~~~###~~~~~~~~~~#####~~~#",
-        "#~~########~~~~~~~###~~~~~~~~~~#####~~~#",
-        "#~~########~~~~~~~###~~~~~~~########~~~#",
-        "#~~########~~~~~~~###~~~~~~~########~~~#",
-        "#~~########~~~~~~~###~~~~~~~########~~~#",
-        "#~~########~~~~~~~###~~~~~~~########~~~#",
-        "#~~########~~~~~~~###~~~~~~~########~~~#",
-        "##########################*#############",
-    },
-};
-
+// 'X' carved stone and 'x' a carved shelf: a backdrop piece draws them   'k' a dead seam
 u8  tiles[RH][RW];
 u8  roomTiles[ROOM_COUNT][RH][RW];
+u8  tileDeco[RH][RW];
 int  roomIdx;
 
-// The city, as rectangles of tiles; everything else is the vault. Room 0: the balcony and
-// its mass with the right block above it, and the column, the street and the grate. Room 1
-// is dressed in the next build and stays raw until then.
-typedef struct { i16 x0, y0, x1, y1; } ZRect;
-static const ZRect CITY[ROOM_COUNT][4] = {
-    { { 26, 5, 39, 12 }, { 18, 13, 39, 21 }, { -1, 0, 0, 0 } },
-    { { -1, 0, 0, 0 } },
-};
-int ZoneAt(int tx, int ty) {
-    for (int i = 0; i < 4 && CITY[roomIdx][i].x0 >= 0; i++) {
-        const ZRect *r = &CITY[roomIdx][i];
-        if (tx >= r->x0 && tx <= r->x1 && ty >= r->y0 && ty <= r->y1) return Z_CITY;
+// The city, as rectangles of tiles (ROOM_CITY, in antechamber.c); everything else is the
+// vault. Resolved into a grid once, since the room asks per tile, per frame.
+static u8 zone[RH][RW];
+static void ZonesBuild(void) {
+    memset(zone, Z_VAULT, sizeof zone);
+    for (int i = 0; ROOM_CITY[i].x0 >= 0; i++) {
+        const ZRect *r = &ROOM_CITY[i];
+        for (int y = r->y0; y <= r->y1; y++)
+            for (int x = r->x0; x <= r->x1; x++)
+                if (x >= 0 && x < RW && y >= 0 && y < RH) zone[y][x] = Z_CITY;
     }
-    return Z_VAULT;
+}
+int ZoneAt(int tx, int ty) {
+    if (tx < 0) tx = 0;
+    if (tx >= RW) tx = RW - 1;
+    if (ty < 0) ty = 0;
+    if (ty >= RH) ty = RH - 1;
+    return zone[ty][tx];
 }
 static int markBeastX = -1, markBeastY = -1;
 static int markPlantN, markPlantX[4], markPlantY[4];
@@ -126,7 +82,7 @@ u8 TileAtPx(float px, float py) {
 // behind it stays black, which is the whole reason the room reads as having depth.
 #define LATT_O 0.835f      // attenuation per orthogonal step (0.796 before the lighting pass: too short a reach)
 #define LATT_D 0.748f      // per diagonal step
-#define LPASS  48          // relaxation passes; the grid is 880 cells, this is free
+#define LPASS  48          // relaxation passes; the grid is 5280 cells, done once
 
 // Two bakes, two colours. Warm is flame and flame is the hunters': the seams in raw rock,
 // your lamp, the fire. Cool is the city's own light: its glass, the face, the native. You
@@ -186,14 +142,14 @@ static void Relax(f32 l[RH][RW]) {
                         if (nx < 0 || nx >= RW || ny < 0 || ny >= RH) continue;
                         if (Opaque(nx, ny)) continue;
                         f32 c = l[ny][nx] * ((dx && dy) ? LATT_D : LATT_O);
-                        if (TileWater(tiles[y][x])) c *= 0.90f;   // light dies faster under
+                        if (TileWater(tiles[y][x])) c *= 0.78f;   // light dies fast under
                         if (c > best) best = c;
                     }
                 l[y][x] = best;
             }
         }
     }
-    f32 face[RH][RW];
+    static f32 face[RH][RW];
     memset(face, 0, sizeof face);
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
@@ -231,16 +187,25 @@ static void LightBake(void) {
                     if (l[ny][nx] < 1.0f) l[ny][nx] = 1.0f;
                 }
         }
+    // The openings to the city are its light, pouring in: strong, so it reaches across the
+    // hall. Seeded on every open tile whose middle is inside one.
+    for (int y = 0; y < RH; y++)
+        for (int x = 0; x < RW; x++) {
+            if (Opaque(x, y) || TileWater(tiles[y][x])) continue;
+            int x0, x1, py = y * TS + TS / 2, px = x * TS + TS / 2;
+            if (WindowSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 1.25f) lstatC[y][x] = 1.25f;
+            if (GrilleSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 0.9f) lstatC[y][x] = 0.9f;
+        }
+    // And the hall is never quite dark: the city's cold is in the air of the whole of it,
+    // enough to see the colossus by and not enough to see the floor.
+    for (int y = 0; y < RH; y++)
+        for (int x = 0; x < RW; x++)
+            if (!Opaque(x, y) && !TileWater(tiles[y][x]) && ZoneAt(x, y) == Z_CITY && lstatC[y][x] < 0.16f) lstatC[y][x] = 0.16f;
     for (int i = 0; i < bulbCount; i++) {
         int bx = bulbs[i].x / TS, by = (bulbs[i].y - 1) / TS;
         if (bx >= 0 && bx < RW && by >= 0 && by < RH && !Opaque(bx, by) && lstatW[by][bx] < 0.42f)
             lstatW[by][bx] = 0.42f;
     }
-    // An opening in the floor is lit from beneath by the room below -- the grate over the
-    // cistern glows up through its bars.
-    if (roomIdx < ROOM_COUNT - 1)
-        for (int x = 0; x < RW; x++)
-            if (tiles[RH - 1][x] == T_EMPTY && lstatC[RH - 1][x] < 0.55f) lstatC[RH - 1][x] = 0.55f;
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
             if (!(tileFlags[tiles[y][x]] & TF_EMIT)) continue;
@@ -290,6 +255,10 @@ static void LightBake(void) {
 // The body carries a little light of its own -- enough to find yourself by, not
 // enough to see the room with. Occluded properly, or it shines through walls.
 static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK, int cool) {
+    // Only what can reach the view: the composite has room for sixteen, and the room holds
+    // more lights than that.
+    f32 reach = R * TS + 2.0f;
+    if (px + reach < camX || px - reach > camX + GW || py + reach < camY - ROOM_Y || py - reach > camY + GH) return;
     if (LOOK_NEW) {
         // Kept whole for the composite, which lights and shadows it per pixel. If there are
         // too many, the weakest goes.
@@ -342,6 +311,7 @@ void LightStep(void) {
     LifeLights();
     ItemsLight();
     PropsLight();
+    BackdropLights();
     // A bulb that has just been landed on throws light for a moment; more, and further,
     // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
@@ -409,14 +379,18 @@ void LightDraw(void) {
 }
 
 // ---------------------------------------------------------------- load
-static void ParseRoom(int idx, u8 dst[RH][RW]) {
+static void ParseRoom(u8 dst[RH][RW]) {
     bulbCount = 0; markBeastX = markBeastY = -1; markPlantN = 0; markStoneN = 0;
     for (int y = 0; y < RH; y++) {
         for (int x = 0; x < RW; x++) {
-            char c = MAPS[idx][y][x];
+            char c = ROOM_MAP[y][x];
             u8 t = T_EMPTY;
+            tileDeco[y][x] = 0;
             switch (c) {
                 case '#': t = T_ROCK;  break;
+                case 'X': t = T_ROCK;  tileDeco[y][x] = TD_CARVED; break;
+                case 'x': t = T_LEDGE; tileDeco[y][x] = TD_CARVED; break;
+                case 'k': t = T_ROCK;  tileDeco[y][x] = TD_DEAD; break;
                 case '-': t = T_LEDGE; break;
                 case '*': t = T_VEIN;  break;
                 case ',': t = T_MOSS;  break;
@@ -447,7 +421,8 @@ static void FindSurfaces(void);
 
 void RoomEnter(int idx) {
     roomIdx = idx;
-    ParseRoom(idx, tiles);          // sets the bulbs for this room too
+    ParseRoom(tiles);               // sets the bulbs too
+    ZonesBuild();
     FindSurfaces();
     PropsInit();
     AirInit();
@@ -463,12 +438,14 @@ void RoomLoad(void) {
     // A map row that is one character short reads its last column as the string
     // terminator and quietly opens a hole in the wall. Editing these strings by
     // hand did exactly that once, and nothing downstream noticed.
-    for (int r = 0; r < ROOM_COUNT; r++)
-        for (int y = 0; y < RH; y++) {
-            int n = 0;
-            while (MAPS[r][y][n]) n++;
-            if (n != RW) TraceLog(LOG_ERROR, "room %d row %d is %d wide, expected %d", r, y, n, RW);
-        }
+    for (int y = 0; y < RH; y++) {
+        int n = 0, m = 0;
+        while (ROOM_MAP[y][n]) n++;
+        while (ROOM_PROPS[y][m]) m++;
+        if (n != RW) TraceLog(LOG_ERROR, "map row %d is %d wide, expected %d", y, n, RW);
+        if (m != RW) TraceLog(LOG_ERROR, "props row %d is %d wide, expected %d", y, m, RW);
+    }
+    BackdropInit();
     Image im = GenImageColor(RW + 1, RH + 1, WHITE);
     lightTex = LoadTextureFromImage(im);
     glowTex  = LoadTextureFromImage(im);
@@ -481,40 +458,66 @@ void RoomLoad(void) {
     SetTextureFilter(glowTex, TEXTURE_FILTER_BILINEAR);
     SetTextureWrap(glowTex, TEXTURE_WRAP_CLAMP);
     // items[0] is the lamp (added by main after this); stones follow
-    for (int r = 0; r < ROOM_COUNT; r++) {
-        ParseRoom(r, roomTiles[r]);
-        int xs[4], ys[4], n = RoomMarkStones(xs, ys, 4);
-        for (int i = 0; i < n; i++) ItemsAdd(IT_STONE, r, xs[i], ys[i]);
-    }
-    ParseRoom(0, roomTiles[0]);                                          // finds P
+    ParseRoom(roomTiles[0]);                                             // finds P
+    int xs[4], ys[4], n = RoomMarkStones(xs, ys, 4);
+    for (int i = 0; i < n; i++) ItemsAdd(IT_STONE, 0, xs[i], ys[i]);
     RoomEnter(0);
 }
 
-// The body has crossed the top or the bottom. Positions are continuous across the seam
-// (y shifts by exactly one room), so nothing about the motion changes but the walls
-// around it -- and since TileGet already sees the next room's tiles, nothing about the
-// collision changes either.
-//
-// Down switches when the CENTRE crosses: a body that lands on a shelf just inside the
-// lower room, head still through the seam, must be shown in the room its feet are in.
-// Up switches only when the centre is UP_MARGIN past the seam: a jump that merely pokes
-// into the room above and comes back down -- every plain jump from A2 to A1 does --
-// would otherwise cut the camera to the upper room for a few frames and back.
-#define UP_MARGIN 16.0f
-int RoomTransition(void) {
-    float cy = player.y + player.h * 0.5f;
-    if (cy >= RH * TS && roomIdx < ROOM_COUNT - 1) {
-        RoomEnter(roomIdx + 1);
-        player.y -= RH * TS;
-        return 1;
-    }
-    if (cy < -UP_MARGIN && roomIdx > 0) {
-        RoomEnter(roomIdx - 1);
-        player.y += RH * TS;
-        return 1;
-    }
-    return 0;
+// ---------------------------------------------------------------- the camera
+// The room is six screens. The view is always exactly one of them, composed as a screen
+// (L11), and when your centre leaves it the view slides to the next: a third of a second,
+// eased at both ends, and the world keeps running under it. It never follows you inside a
+// screen. Going back needs a little more than crossing the line -- a jump that pokes over
+// the top edge and comes down again, or a step back and forth at a side, must not slide the
+// view there and back.
+#define SCR_W (SW * TS)
+#define SCR_H (SH * TS)
+#define HYST_X 5.0f         // px past a side edge before the view goes
+#define HYST_UP 18.0f       // px past the top edge: more, because jumps go up and come back
+#define HYST_DN 2.0f
+#define SLIDE_T 22          // frames
+f32 camX, camY;
+static int scrX, scrY, slideT;
+static f32 fromX, fromY;
+
+static int ClampI(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+void CameraInit(void) {
+    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
+    scrX = ClampI((int)floorf(cx / SCR_W), 0, RW / SW - 1);
+    scrY = ClampI((int)floorf(cy / SCR_H), 0, RH / SH - 1);
+    camX = (f32)(scrX * SCR_W); camY = (f32)(scrY * SCR_H);
+    slideT = 0;
 }
+
+void CameraStep(void) {
+    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
+    int sx = scrX, sy = scrY;
+    if (cx < sx * SCR_W - HYST_X) sx--;
+    else if (cx >= (sx + 1) * SCR_W + HYST_X) sx++;
+    if (cy < sy * SCR_H - HYST_UP) sy--;
+    else if (cy >= (sy + 1) * SCR_H + HYST_DN) sy++;
+    sx = ClampI(sx, 0, RW / SW - 1);
+    sy = ClampI(sy, 0, RH / SH - 1);
+    if (sx != scrX || sy != scrY) {
+        fromX = camX; fromY = camY;      // from wherever it is, even mid-slide
+        scrX = sx; scrY = sy; slideT = SLIDE_T;
+    }
+    f32 tx = (f32)(scrX * SCR_W), ty = (f32)(scrY * SCR_H);
+    if (slideT > 0) {
+        slideT--;
+        f32 t = 1.0f - (f32)slideT / SLIDE_T, e = t * t * (3.0f - 2.0f * t);
+        camX = fromX + (tx - fromX) * e; camY = fromY + (ty - fromY) * e;
+    } else { camX = tx; camY = ty; }
+}
+
+// Whole pixels, always: a view between pixels would shimmer every edge in the room.
+void WorldBegin(void) {
+    Camera2D c = { .offset = { 0, 0 }, .target = { roundf(camX), roundf(camY) }, .rotation = 0.0f, .zoom = 1.0f };
+    BeginMode2D(c);
+}
+void WorldEnd(void) { EndMode2D(); }
 
 // ---------------------------------------------------------------- water
 void WaterDisturb(float px, float strength) {
@@ -578,11 +581,20 @@ static void DrawStone(int x, int y, int px, int py) {
         return;
     }
     if (up && dn && lf && rt && Massive(x - 1, y - 1) && Massive(x + 1, y - 1) && Massive(x - 1, y + 1) && Massive(x + 1, y + 1)) {
-        // Buried: nothing will see its edges, and there is a lot of it.
+        // Buried: nothing will see its edges, and there is a lot of it. Strata, and a crack
+        // or a pebble now and then, so a great mass of it is still rock and not a hole.
         Color c = PAL[PL_STONE]; c.a = TAG_STONE; DrawRectangle(px, py, TS, TS, c);
         u32 h = Hash2(x, y);
         Color k = PAL[PL_DARK]; k.a = TAG_STONE;
+        Color l = PAL[PL_STONEL]; l.a = TAG_STONE;
+        int sy = (int)((Hash2(x / 3, y) >> 4) & 7);                       // a stratum line, wandering
+        DrawRectangle(px, py + sy, TS, 1, k);
         DrawRectangle(px + (h & 7), py + (h >> 3 & 7), 1 + (h >> 6 & 1), 1, k);
+        if ((h >> 9 & 3) == 0) DrawRectangle(px + (h >> 11 & 7), py + (h >> 14 & 7), 2, 1, l);
+        if ((h >> 17 & 7) == 0) {                                          // a crack, three steps
+            int cx = px + (h >> 20 & 7), cy = py + (h >> 23 & 3);
+            DrawRectangle(cx, cy, 1, 2, k); DrawRectangle(cx + 1, cy + 2, 1, 2, k); DrawRectangle(cx, cy + 4, 1, 2, k);
+        }
         return;
     }
     RockQuarter(x, y, px, py, 0, 0); RockQuarter(x, y, px, py, 1, 0);
@@ -602,6 +614,19 @@ static void DrawVein(int x, int y, int px, int py) {
     }
     // In raw rock, a seam is a vein of crystal that burns with its own light.
     DrawSpriteTag((Hash2(x, y * 3) & 1) ? &SPR_VEIN2 : &SPR_VEIN1, px, py, Hash2(y, x) & 1, TAG_STONE);
+}
+
+// A seam the city has drunk: the crystal still there in the joint, black. It gives nothing.
+static void DrawDeadSeam(int x, int y, int px, int py) {
+    const Sprite *v = (Hash2(x, y * 3) & 1) ? &SPR_VEIN2 : &SPR_VEIN1;
+    int flip = Hash2(y, x) & 1;
+    Color k = PAL[PL_VOID], g = PAL[PL_DARK]; k.a = g.a = TAG_STONE;
+    for (int j = 0; j < v->h; j++)
+        for (int i = 0; i < v->w; i++) {
+            char c = v->rows[j][flip ? v->w - 1 - i : i];
+            if (c == 'a') DrawRectangle(px + i, py + j, 1, 1, k);
+            else if (c == 'A') DrawRectangle(px + i, py + j, 1, 1, g);
+        }
 }
 
 static void DrawLedge(int x, int y, int px, int py) {
@@ -635,10 +660,12 @@ static void DrawWater(int x, int y, int px, int py) {
         int d = (int)(surfH[x] * 3.0f);
         if (d >  3) d =  3;
         if (d < -3) d = -3;
-        DrawRectangle(px, py + d, TS, TS - d, PAL[PL_WATER]);
+        DrawRectangle(px, py + d, TS, 3, PAL[PL_WATER]);
         DrawRectangle(px, py + d, TS, 1, PAL[PL_WATERL]);
     } else {
-        DrawRectangle(px, py, TS, TS, PAL[PL_WATER]);
+        // No fill below the surface: what is behind the water shows through it, and the
+        // composite puts it in the water's own blues by how bright it is. Stone under the
+        // water is seen as a paler shape in the dark blue.
         // a fleck drifting up now and then: the water is not still
         if (((x * 3 + y * 7 + (int)(frameNo / 26)) % 11) == 0)
             DrawRectangle(px + 2 + (x & 3), py + 3, 1, 1, PAL[PL_WATERL]);
@@ -663,8 +690,14 @@ void RoomDraw(void) {
     // The far wall, under everything: hewn blocks in the vault, coursed in the city. Barely
     // a shade off the dark -- invisible until something lights it, which is the point: you
     // learn the room's depth by carrying light into it.
-    for (int y = 0; y < RH; y++)
-        for (int x = 0; x < RW; x++) {
+    int vx0 = (int)floorf(camX / TS) - 1, vx1 = vx0 + SW + 2;
+    int vy0 = (int)floorf(camY / TS) - 1, vy1 = vy0 + SH + 2;
+    if (vx0 < 0) vx0 = 0;
+    if (vx1 > RW - 1) vx1 = RW - 1;
+    if (vy0 < 0) vy0 = 0;
+    if (vy1 > RH - 1) vy1 = RH - 1;
+    for (int y = vy0; y <= vy1; y++)
+        for (int x = vx0; x <= vx1; x++) {
             int px = x * TS, py = ROOM_Y + y * TS;
             if (ZoneAt(x, y) == Z_CITY)
                 DrawSpriteRect(&SPR_WALL_CITY, px, py, (x & 1) * 8, 0, 8, 8, 0, TAG_WALL);
@@ -673,14 +706,15 @@ void RoomDraw(void) {
                 DrawSpriteRect(&SPR_WALL_VAULT, px, py, ((x + shift) & 1) * 8, (y & 1) * 8, 8, 8, 0, TAG_WALL);
             }
         }
-    if (LOOK_NEW) CityErase();   // the break in the wall, where the far city shows
+    BackdropDraw();       // the colossus, and the openings cut in the wall
     PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone
 
-    for (int y = 0; y < RH; y++) {
-        for (int x = 0; x < RW; x++) {
+    for (int y = vy0; y <= vy1; y++) {
+        for (int x = vx0; x <= vx1; x++) {
             int px = x * TS, py = ROOM_Y + y * TS;
+            if (tileDeco[y][x] & TD_CARVED) continue;       // the backdrop piece draws it
             switch (tiles[y][x]) {
-                case T_ROCK:  DrawStone(x, y, px, py); break;
+                case T_ROCK:  DrawStone(x, y, px, py); if (tileDeco[y][x] & TD_DEAD) DrawDeadSeam(x, y, px, py); break;
                 case T_VEIN:  DrawVein(x, y, px, py);  break;
                 case T_LEDGE: DrawLedge(x, y, px, py); break;
                 case T_WATER: DrawWater(x, y, px, py); break;
@@ -743,8 +777,8 @@ void BulbsDraw(void) {
 // reading order, tagged letter+digit: A1..A9, B1..B9, ... Letters that look like
 // digits at 3x5 (I, O, S, Z) are skipped. Bulbs are ^1, ^2 (the ^ is drawn as a dome). This is for talking about
 // the room -- "B3 is too far from B4" -- and it is off unless asked for.
-#define SURF_MAX 200
-typedef struct { i32 x0, x1, y; u8 shelf; char tag[3]; } Surf;
+#define SURF_MAX 600
+typedef struct { i32 x0, x1, y; u8 shelf; char tag[4]; } Surf;
 static Surf surfs[SURF_MAX];
 static int  surfCount;
 static const char TAG_LETTERS[] = "ABCDEFGHJKLMNPQRTUVWXY";
@@ -774,9 +808,12 @@ static void FindSurfaces(void) {
             }
             Surf *s = &surfs[surfCount++];
             s->x0 = x0; s->x1 = x - 1; s->y = y; s->shelf = (u8)shelf;
-            s->tag[0] = TAG_LETTERS[(n / 9) % (int)(sizeof TAG_LETTERS - 1)];
-            s->tag[1] = (char)('1' + n % 9);
-            s->tag[2] = 0;
+            // A1..Y9, then AA1..: past 198 surfaces a second letter
+            int L = (int)(sizeof TAG_LETTERS - 1), k = n / 9, c = 0;
+            if (k >= L) s->tag[c++] = TAG_LETTERS[(k / L - 1) % L];
+            s->tag[c++] = TAG_LETTERS[k % L];
+            s->tag[c++] = (char)('1' + n % 9);
+            s->tag[c] = 0;
             n++;
         }
     }
@@ -834,8 +871,8 @@ void DebugLabelsDraw(void) {
         char t[3] = { '^', (char)('1' + i), 0 };
         Tag(bulbs[i].x - 4, ROOM_Y + bulbs[i].y - BULB_H - 8, t, palBulbLit);
     }
-    char r[3] = { 'R', (char)('0' + roomIdx), 0 };
-    Tag(3, ROOM_Y + 2, r, (Color){ 160, 200, 255, 255 });
+    char r[3] = { (char)('A' + scrX), (char)('1' + scrY), 0 };     // which screen: A1 top left .. C2
+    Tag((int)roundf(camX) + 3, (int)roundf(camY) + ROOM_Y + 2, r, (Color){ 160, 200, 255, 255 });
 }
 
 // For the console: the same table, so a screenshot and a transcript can agree.

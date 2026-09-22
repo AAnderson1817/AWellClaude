@@ -112,11 +112,11 @@ static void Fall(Item *it) {
         if (blocked) {
             if (step > 0) {
                 if (it->vy > 1.0f) {
-                    if (it->kind == IT_LAMP) Sfx(SFX_SETDOWN, 0.5f + 0.2f * it->vy, 0.9f + Rnd() * 0.1f, cx / GW);
-                    else { Sfx(SFX_STONE, 0.5f + 0.25f * it->vy, 0.9f + Rnd() * 0.1f, cx / GW);
+                    if (it->kind == IT_LAMP) SfxAt(SFX_SETDOWN, 0.5f + 0.2f * it->vy, 0.9f + Rnd() * 0.1f, cx, it->y);
+                    else { SfxAt(SFX_STONE, 0.5f + 0.25f * it->vy, 0.9f + Rnd() * 0.1f, cx, it->y);
                            FxBurst(FX_DUST, cx, ny + H(it), (int)(2 + it->vy * 2), 0.8f, 0.25f); }
                 } else if (wet && it->kind == IT_STONE && it->vy > 0.3f) {
-                    Sfx(SFX_STONE, 0.25f, 0.7f, cx / GW);              // meeting the floor, under
+                    SfxAt(SFX_STONE, 0.25f, 0.7f, cx, it->y);              // meeting the floor, under
                 }
                 it->onGround = 1;
             }
@@ -148,7 +148,7 @@ void ItemsStep(void) {
             if (Blocked(it, x, y)) x = player.x + (player.w - W(it)) * 0.5f;
             it->x = x; it->y = y; it->cool = 8;
             heldItem = -1;
-            Sfx(it->kind == IT_LAMP ? SFX_SETDOWN : SFX_STONE, 0.6f, 1.0f + Rnd() * 0.1f, x / GW);
+            SfxAt(it->kind == IT_LAMP ? SFX_SETDOWN : SFX_STONE, 0.6f, 1.0f + Rnd() * 0.1f, x, y);
         }
     }
     // Everything not in hand falls. Then, if your hands are free and you asked, take
@@ -165,7 +165,7 @@ void ItemsStep(void) {
     if (heldItem < 0 && best >= 0 && in.actPressed && items[best].cool == 0) {
         heldItem = best; items[best].cool = 8;
         Item *it = &items[best];
-        Sfx(it->kind == IT_LAMP ? SFX_PICKUP : SFX_STONE_UP, 0.7f, 0.95f + Rnd() * 0.1f, it->x / GW);
+        SfxAt(it->kind == IT_LAMP ? SFX_PICKUP : SFX_STONE_UP, 0.7f, 0.95f + Rnd() * 0.1f, it->x, it->y);
     }
     player.heavy = PlayerHolds() == IT_STONE;
 }
