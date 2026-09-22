@@ -30,6 +30,7 @@ const Color PAL[PL_COUNT] = {
     [PL_WATER]  = {  22,  51,  78, 255 },
     [PL_WATERL] = {  63, 124, 156, 255 },
     [PL_ACCENT] = { 196,  70, 110, 255 },
+    [PL_WATERD] = {   9,  22,  38, 255 },   // water nothing lights: the pool still reads in the dark
 };
 
 // ---------------------------------------------------------------- the new look
@@ -50,7 +51,7 @@ static const char *COMP_BODY =
 "uniform vec4 uLP[16];\n"           // x, y (room px), radius px, peak
 "uniform vec4 uLC[16];\n"           // x: 1 = the city's light
 "uniform int uLN;\n"
-"uniform vec3 uPal[18];\n"
+"uniform vec3 uPal[19];\n"
 "uniform vec3 uAmb;\n"
 "uniform float uBands;\n"
 "vec2 uvOf(vec2 p) { return vec2((p.x + 0.5) / 320.0, 1.0 - (p.y + 0.5) / 180.0); }\n"
@@ -68,9 +69,12 @@ static const char *COMP_BODY =
 "  vec2 a = mod(floor(p), 4.0); vec2 a1 = mod(a, 2.0); vec2 a2 = floor(a / 2.0);\n"
 "  return (4.0 * mod(2.0*a1.x + 3.0*a1.y, 4.0) + mod(2.0*a2.x + 3.0*a2.y, 4.0) + 0.5) / 16.0;\n"
 "}\n"
-"vec3 nearest(vec3 c) {\n"
+"vec3 nearest(vec3 c, bool uw) {\n"          // uw: under the water, where only stone and blue exist
 "  vec3 best = uPal[0]; float bd = 1000.0;\n"
-"  for (int i = 0; i < 18; i++) { vec3 d = c - uPal[i]; float e = dot(d * d, vec3(0.30, 0.59, 0.11)); if (e < bd) { bd = e; best = uPal[i]; } }\n"
+"  for (int i = 0; i < 19; i++) {\n"
+"    if (uw && ((i >= 6 && i <= 14) || i == 17)) continue;\n"
+"    vec3 d = c - uPal[i]; float e = dot(d * d, vec3(0.30, 0.59, 0.11)); if (e < bd) { bd = e; best = uPal[i]; }\n"
+"  }\n"
 "  return best;\n"
 "}\n"
 "void main() {\n"
@@ -78,9 +82,12 @@ static const char *COMP_BODY =
 "  vec2 rp = p - vec2(0.0, 2.0) + 0.5;\n"
 "  vec2 uv = uvOf(p);\n"
 "  vec4 em = TEX(uEmis, uv);\n"
-"  if (em.a > 0.5) { OUT(nearest(em.rgb)); return; }\n"
+"  if (em.a > 0.5) { OUT(nearest(em.rgb, false)); return; }\n"
 "  vec4 alb = TEX(texture0, uv);\n"
 "  if (alb.a < 0.5) { OUT(TEX(uBack, uv).rgb); return; }\n"
+"  float tc = code(floor(rp / 8.0));\n"                       // this pixel's tile: stone, seam, shelf, water, air
+"  float al = dot(alb.rgb, vec3(0.30, 0.59, 0.11));\n"
+"  if (tc > 0.9 && al > 0.45) { OUT(nearest(alb.rgb, false)); return; }\n"   // the bright of a seam or their glass gives its own light
 "  float solid = solidAt(rp);\n"
 "  vec2 n = vec2(0.0); float edge = 0.0;\n"
 "  if (solid > 0.5) {\n"
@@ -137,7 +144,15 @@ static const char *COMP_BODY =
 "    if (edge >= 1.0 && n.y < -0.5) fl = uPal[2];\n"          // and a dim line on every standable top,
 "    lit = max(lit, fl);\n"                                   // so the climb reads without a light
 "  }\n"
-"  OUT(nearest(lit));\n"
+"  if (tc > 0.1 && tc < 0.25) {\n"                            // water: one blue ramp, never a hue per band
+"    float L = dot(lit, vec3(0.30, 0.59, 0.11)) + th * 0.03;\n"
+"    vec3 o = uPal[18];\n"
+"    if (L > 0.065) o = uPal[15];\n"
+"    if (L > 0.24) o = uPal[16];\n"
+"    if (al > 0.5) o = L > 0.10 ? uPal[16] : uPal[15];\n"     // the surface line: always a shape, bright when lit
+"    OUT(o); return;\n"
+"  }\n"
+"  OUT(nearest(lit, bk.b > 0.5));\n"
 "}\n";
 
 #if defined(PLATFORM_WEB)

@@ -208,9 +208,18 @@ one composite pass puts them together (`render.c`):
   unlit stone sits one palette step above black and every standable top keeps a dim line,
   against a back wall that stays black, so the climb reads without a light
 
-V toggles the old look for comparing (`--oldlook` starts in it). The flooded room keeps
-the old look until it is converted: under the new one its water goes black and its lamps
-posterise into rings. Found on the way: L and V were read inside the physics step, which
+V toggles the old look for comparing (`--oldlook` starts in it).
+
+**The flooded room, converted.** Under the first cut its water went black and its lamps
+posterised into rainbow rings: snapping each band to the nearest colour hopped between the
+blues and the greens. Now water has one ramp of its own -- a darker blue for water nothing
+lights (added to the palette, now 19), the water blue, the lit blue -- and every pixel in a
+water tile is placed on it by how bright it is, so the bands stay one hue and anything
+under the surface, you included, goes cold. The surface line is always a shape, bright
+when lit. Stone under the water may only take stone and blue. And the bright part of any
+seam or of their glass now gives its own light rather than being lit, so the seams on the
+flooded floor glow instead of dimming. The tile code in the bake's alpha now tells seam
+from stone and water from air. Found on the way: L and V were read inside the physics step, which
 can run several ticks per rendered frame, so one press could toggle twice and do nothing.
 They are read once per frame now.
 

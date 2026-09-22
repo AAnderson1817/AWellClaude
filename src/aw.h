@@ -252,9 +252,9 @@ extern int sfxCount[SFX_COUNT];
 // with dithering, rim light on edges that face a light, one palette. The old one is the
 // blurred multiply it replaces, kept for comparing.
 extern int lookNew;
-// The look test covers the Vault Mouth only; the flooded room keeps the old look until it
-// is converted (under the new one its water goes black and its lamps ring).
-#define LOOK_NEW (lookNew && roomIdx == 0)
+// Both rooms are drawn in it. (The flooded room was held back until its water had a ramp
+// of its own: under the first cut the water went black and its lamps rang in rainbows.)
+#define LOOK_NEW (lookNew)
 enum { RL_EMIS = 1, RL_BACK };
 void RenderInit(void);
 void RenderBegin(void);
@@ -272,7 +272,7 @@ void CityDraw(void);
 // ---------------------------------------------------------------- the palette of the new look
 enum { PL_VOID, PL_DEEP, PL_DARK, PL_STONE, PL_STONEL, PL_STONEH, PL_WARMD, PL_WARM, PL_AMBER,
        PL_AMBERH, PL_COOLD, PL_COOLM, PL_CITY, PL_CITYH, PL_BONE, PL_WATER, PL_WATERL, PL_ACCENT,
-       PL_COUNT };
+       PL_WATERD, PL_COUNT };
 extern const Color PAL[PL_COUNT];
 
 // ---------------------------------------------------------------- palette

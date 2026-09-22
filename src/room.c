@@ -276,7 +276,11 @@ static void LightBake(void) {
                 }
             f32 w = n ? aw / n : 0, c = n ? ac / n : 0, wf = n ? (f32)wn / n : 0;
             u8 code = 0;
-            if (i < RW && j < RH) code = (tileFlags[tiles[j][i]] & TF_OPAQUE) ? 255 : (TileOneWay(tiles[j][i]) ? 128 : 0);
+            if (i < RW && j < RH) {
+                u8 f = tileFlags[tiles[j][i]];
+                code = (f & TF_OPAQUE) ? ((f & TF_EMIT) ? 255 : 210)      // stone; a seam is stone that shines
+                     : (f & TF_ONEWAY) ? 128 : (f & TF_WATER) ? 40 : 0;   // shelf; water; air
+            }
             bpix[j * (RW + 1) + i] = (Color){ (u8)(fminf(w * 0.5f, 1.0f) * 255), (u8)(fminf(c * 0.5f, 1.0f) * 255),
                                               (u8)(wf * 255), code };
         }
