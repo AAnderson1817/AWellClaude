@@ -18,38 +18,32 @@ from roomgen import Room, write
 R = Room(120, 44)
 R.fill(0, 0, 119, 43, '#')             # start solid, and carve
 
-# ------------------------------------------------------------------ A: the entry
-# The upper cave: raw rock, low and close over the door, rising to the right.
-R.clear(1, 4, 12, 13)
-R.clear(2, 3, 10, 3)
-R.clear(13, 3, 27, 13)
-R.clear(16, 2, 24, 2)
-# the ceiling, ragged
-R.stamp(1, 3, """
-#..........###.
-""")
-R.stamp(24, 3, """
-..##
-...#
-""")
-# the flue slot: out of reach, over the door, one amber seam inside it
-R.clear(6, 1, 7, 3)
-R.at(8, 1, '*')
-# the step at the door, and the drop past it: the chasm down into the undercroft
-R.clear(13, 14, 17, 26)                 # the chasm, 5 wide
-# the passage right: rock floor on row 14, the ceiling coming down into a mouth
-R.clear(18, 4, 39, 13)
-R.fill(29, 3, 39, 5, '#')
-R.fill(31, 6, 39, 6, '#')
-R.fill(33, 7, 39, 7, '#')
-# seams in the raw rock: warm around the door, one over the chasm
-for x, y in ((0, 6), (0, 11), (12, 2), (19, 1), (28, 3)):
+# ------------------------------------------------------------------ A: the forecourt
+# A tall cave inside the vault, and the whole of its far wall is the door: fifteen times
+# your height, floor to roof (the backdrop piece F_DOOR). You wake at its foot. To the right
+# a chasm drops to the undercroft, and a slope of fallen rock climbs to the passage.
+R.clear(1, 1, 33, 20)
+R.clear(34, 1, 39, 13)
+R.fill(1, 0, 22, 0, 'X')                # the door's head runs up into the roof: its art draws it
+# the roof over the right-hand side, ragged, and hanging in over the chasm
+R.fill(23, 1, 39, 1, '#')
+R.fill(24, 2, 39, 2, '#')
+R.fill(26, 3, 28, 3, '#'); R.fill(33, 3, 35, 3, '#'); R.at(27, 4, '#')
+# the flue slot: out of reach, in the roof over the slope, one amber seam inside it
+R.clear(30, 1, 31, 3)
+R.at(32, 1, '*')
+# the chasm, down to the undercroft; the slope of fallen rock up to the passage
+R.clear(24, 21, 26, 26)
+R.fill(29, 18, 31, 20, '#')
+R.fill(32, 16, 33, 20, '#')
+R.fill(34, 14, 39, 20, '#')
+# seams in the raw rock: warm down the left wall and in the roof and the slope
+for x, y in ((0, 7), (0, 15), (25, 2), (31, 18), (33, 16)):
     R.at(x, y, '*')
-R.at(12, 17, '*'); R.at(18, 21, '*')    # in the chasm walls, lighting the ropes going down
-R.at(4, 13, ',');
-R.stamp(9, 13, ",")
+R.at(23, 22, '*'); R.at(27, 24, '*')    # in the chasm's walls, lighting the ropes going down
+R.at(2, 20, ','); R.at(21, 20, ','); R.at(28, 20, ',')
 
-R.at(7, 13, 'P')                        # you, beside the door
+R.at(12, 20, 'P')                       # you, at the door's foot
 
 # ------------------------------------------------------------------ D: the undercroft
 # Low, raw, amber. The fire is the whole composition; its mouth opens right into the hall.
@@ -57,7 +51,6 @@ R.clear(1, 27, 39, 34)
 R.clear(2, 26, 12, 26)
 R.clear(18, 26, 33, 26)
 R.clear(30, 22, 39, 26)                 # the mouth rises, and the colossus's hand hangs in
-R.clear(34, 18, 39, 21)
 R.fill(1, 26, 3, 29, '#'); R.fill(1, 30, 1, 31, '#')    # no pocket too low to stand in
 R.at(0, 31, '*'); R.at(5, 26, '*'); R.at(24, 25, '*'); R.at(10, 25, '*'); R.at(28, 25, '*'); R.at(3, 29, '*')
 R.at(1, 34, ','); R.at(10, 34, ',')
@@ -111,7 +104,7 @@ R.fill(112, 14, 118, 15, '.')
 # the city's glass lamps, set in their masonry: one in the threshold's arch, so the right of the
 # first screen is washed green; one in the altar's face, lighting the hand from below; one in
 # the foot of the stair; two in the sill's face
-for x, y in ((37, 7), (97, 35), (86, 15), (106, 15)):
+for x, y in ((37, 2), (97, 35), (86, 15), (106, 15)):
     R.at(x, y, '*')
 # E/F: the dead seams where the rock runs in
 for x, y in ((41, 36), (44, 38), (33, 17)):
@@ -119,23 +112,23 @@ for x, y in ((41, 36), (44, 38), (33, 17)):
 
 # ------------------------------------------------------------------ zones
 R.city(40, 0, 119, 43)                  # the hall
-R.city(34, 4, 39, 13)                   # the threshold: the passage's last few steps are theirs
+R.city(34, 2, 39, 13)                   # the threshold: the passage's last few steps are theirs
+R.city(1, 0, 22, 20)                    # and the door's wall: theirs, built into the rock
 
 # ------------------------------------------------------------------ backdrop pieces
 # (kind, x, y, w, h, a) in tiles
+R.feat('F_DOOR', 1, 0, 22, 21)          # the door: canvas at (8, 2) px, see tools/art/door_*.py
 R.feat('F_CORNICE', 40, 1, 79, 1)
 R.feat('F_NICHE', 45, 3, 32, 40)
 R.feat('F_PILLAR', 78, 2, 3, 34)
-R.feat('F_PILLAR', 42, 2, 2, 12)
 R.feat('F_COLOSSUS', 40, 1, 36, 42)
 R.feat('F_WINDOW', 82, 2, 30, 19)
 R.feat('F_GRILLE', 81, 24, 15, 18)
 
 # ------------------------------------------------------------------ props
-R.prop(1, 8, 'D')                       # the door, in the left wall
-R.prop(13, 14, 'r'); R.prop(15, 14, 'r')    # old lines over the chasm's lip: every anchor at the top
+R.prop(24, 21, 'r'); R.prop(26, 21, 'r')    # old lines over the chasm's lip: every anchor at the top
 R.prop(44, 16, 'r'); R.prop(52, 16, 'r')    # and from the gallery rail into the hall
-R.prop(29, 8, 'R'); R.prop(21, 3, 'R')
+R.prop(28, 4, 'R'); R.prop(33, 3, 'R')
 R.prop(47, 2, 'c')                      # a lamp on a long chain before the colossus's face
 R.prop(68, 16, 'c')                     # and one under the gallery, over its lap
 R.prop(91, 16, 'c')                     # and one under the sill

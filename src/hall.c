@@ -92,9 +92,10 @@ static const int SITX[3] = { 93 * TS, 96 * TS + 2, 99 * TS + 5 };
 #define NICHE_X0  (4 * TS)           // the dead lamps, in a recess at the back of the undercroft
 #define NICHE_N   5
 #define PATCH_X   (NICHE_X0 + NICHE_N * 7)        // the clean patch at the end of the row
-#define FLUE_X    (6 * TS + 8)                    // the flue slot's mouth
+#define FLUE_X    (30 * TS + 8)                   // the flue slot's mouth, in the roof over the slope
 #define FLUE_Y    (4 * TS)
-#define STEP_Y    (14 * TS)                       // the step at the door
+#define DOOR_CX   (12 * TS)                       // the foot of the door, where you wake
+#define DOOR_FOOT (21 * TS)
 #define MURAL_X0  (26 * TS)          // the threshold: the mural runs along its wall
 #define MURAL_X1  (39 * TS)
 #define MURAL_Y   (10 * TS + 2)
@@ -165,7 +166,7 @@ void HallStep(void) {
 
     // The prints: with no flame within about eight tiles of the door, they come up, slowly;
     // any flame and they are gone, quickly.
-    int dark = LampDist(5 * TS, 11 * TS) > 8 * TS;
+    int dark = LampDist(DOOR_CX, DOOR_FOOT - 30) > 8 * TS;
     printsA += dark ? 0.004f : -0.05f;
     if (printsA < 0) printsA = 0;
     if (printsA > 1) printsA = 1;
@@ -185,8 +186,9 @@ void HallStep(void) {
         f32 ax, ay; AirAt(leaves[i].x, leaves[i].y, &ax, &ay);
         leaves[i].x += sinf(leaves[i].ph) * 0.35f + ax * 0.5f;
         leaves[i].y += 0.22f + ay * 0.3f;
-        if (leaves[i].y >= STEP_Y - 1) {
-            leaves[i].y = STEP_Y - 1; leaves[i].down = 1; hallLeaves++;
+        u8 t = TileAtPx(leaves[i].x, leaves[i].y + 1);
+        if (TileSolid(t) || TileOneWay(t)) {
+            leaves[i].y = floorf((leaves[i].y + 1) / TS) * TS - 1; leaves[i].down = 1; hallLeaves++;
             SfxAt(SFX_LEAF, 0.35f, 0.9f + Rnd() * 0.2f, leaves[i].x, leaves[i].y);
         }
     }
@@ -298,12 +300,13 @@ static const u16 PRINT[4] = {
     0xDBF6,   // six
 };
 static void Prints(void) {
-    if (printsA <= 0.02f || !InView(6 * TS, 11 * TS, 64)) return;
-    for (int k = 0; k < 26; k++) {
+    if (printsA <= 0.02f || !InView(DOOR_CX, DOOR_FOOT - 40, 120)) return;
+    for (int k = 0; k < 30; k++) {
         u32 h = Hash2(k, 77);
-        int x = TS + 2 + (int)(h % (11 * TS)), y = 7 * TS + (int)((h >> 8) % (7 * TS));
-        if (k == 0) { x = 6 * TS + 3; y = 12 * TS + 1; }            // yours: at your height, by the door
-        if (k == 1) { x = 3 * TS; y = 13 * TS + 3; }                 // one low, where something crawled
+        // on the door's lower face: at your height, and twice it, and higher
+        int x = 3 * TS + (int)(h % (18 * TS)), y = DOOR_FOOT - 12 - (int)((h >> 8) % 44);
+        if (k == 0) { x = DOOR_CX - 10; y = DOOR_FOOT - 9; }            // yours: at your height
+        if (k == 1) { x = DOOR_CX + 30; y = DOOR_FOOT - 5; }            // one low, where something crawled
         u16 p = PRINT[(h >> 16) & 3];
         f32 own = k == 0 ? 1.0f - fminf((f32)frameNo / (60 * 180), 1.0f) : 0;
         for (int j = 0; j < 4; j++) for (int i = 0; i < 4; i++) {

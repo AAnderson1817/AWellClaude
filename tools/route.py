@@ -22,17 +22,17 @@ def water_to(key, at, row, cols):
             if onto(run(plan, at=at), row, cols): return "from the water: " + plan
     return None
 
-# Walking the top: from the passage along the gallery -- over the shelf where the arm comes
+# Walking the top: from the passage over the fallen rock, along the gallery -- over the shelf where the arm comes
 # up through it -- to the far end of the sill, never off row 14.
 def the_long_walk():
-    rows = run("R:900", at=(19, 13))
+    rows = run("R:900", at=(35, 13))
     upto = [r for r in rows if r["x"] < 108 * 8]
     ok = len(upto) < len(rows) and all(r["ground"] and round((r["y"] + 11) / 8) == 14 for r in upto[2:])
     return "walked to col 108 without leaving row 14 (%d frames)" % len(upto) if ok else None
 
 # The drop: off the end of the step, into the chasm, down to the undercroft's floor.
 def the_chasm():
-    e = run("R:30,-:200", at=(11, 13))[-1]
+    e = run("R:30,-:200", at=(22, 20))[-1]
     return "fell to row %d at col %d" % (round((e["y"] + 11) / 8), e["x"] // 8) \
         if e["ground"] and round((e["y"] + 11) / 8) == 35 else None
 
@@ -58,7 +58,7 @@ def reset_let_go_early_does_nothing():
         if e["hold"] == 2 and abs(e["x"] - a["x"]) < 0.5 and e["fade"] == 0 \
         and max(r["fade"] for r in rows) > 0.3 else None
 
-START = (7, 13)          # the tile you stand in at the start
+START = (12, 20)         # the tile you stand in at the start
 STONE = (42, 34)         # where the basin's stone lies
 
 RESET = [
@@ -70,8 +70,11 @@ RESET = [
 # (name, start cols, start row (the row you stand IN), target row (the tile stood ON),
 #  target cols, direction)
 ROUTE = [
- ("T0 the step     -> over the chasm",        range(8, 13), 13, 14, range(18, 24), +1),
- ("T0b the passage -> back over it",          range(18, 23), 13, 14, range(8, 13), -1),
+ ("T0 the door's foot -> over the chasm",     range(19, 24), 20, 21, range(27, 29), +1),
+ ("T0b and back over it",                     range(27, 29), 20, 21, range(19, 24), -1),
+ ("R1 the far side -> the fallen rock",       range(27, 29), 20, 18, range(29, 32), +1),
+ ("R2 fallen rock  -> fallen rock",           range(29, 32), 17, 16, range(32, 34), +1),
+ ("R3 fallen rock  -> the passage",           range(32, 34), 15, 14, range(34, 40), +1),
  ("T1 the long walk, passage to sill",        the_long_walk),
  ("T2 the chasm, down to the undercroft",     the_chasm),
  ("U1 hall floor   -> the low corbel",        range(40, 46), 34, 32, range(41, 45),  0),

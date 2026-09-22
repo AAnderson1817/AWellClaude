@@ -76,7 +76,7 @@ class Room:
                     open_ = any(self.get(x + dx, y + dy) not in '#*' for dx in (-1, 0, 1) for dy in (-1, 0, 1))
                     if not open_: errs.append("seam at %d,%d is walled in" % (x, y))
         for x in range(self.w):
-            if self.t[0][x] not in '#*' or self.t[self.h - 1][x] not in '#*':
+            if self.t[0][x] not in '#*X' or self.t[self.h - 1][x] not in '#*X':
                 errs.append("the room is open at column %d" % x); break
         for y in range(self.h):
             if self.t[y][0] not in '#*' or self.t[y][self.w - 1] not in '#*':

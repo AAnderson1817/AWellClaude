@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""From every standable surface in the room, can a body get back to where it began?
+"""From every standable surface in the room, can a body get back to the forecourt, where it began?
 
 The route checks say the designed climb works. This asks the opposite question of every
 surface the map has: drop the wander bot there -- it does not know the route -- and leave
@@ -17,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(ROOT, "build", "game")
 SURF = re.compile(r"R(\d) (\S+) (shelf|stone) row\s+(\d+) cols\s+(\d+)-\s*(\d+)")
 FRAMES = 600000         # nearly three hours of play per attempt; the sim is cheap, the bot is not clever
-SEEDS = (1, 2, 3, 4, 5, 6)
+SEEDS = tuple(range(1, 11))  # a long way home from the basin floor: the bot is lucky, not clever
 
 def game(*args):
     r = subprocess.run([GAME, *args, "--mute"], capture_output=True, text=True, cwd=ROOT)

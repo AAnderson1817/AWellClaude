@@ -11,6 +11,18 @@ winter.
 
 Nothing here wants to hurt you. Everything here wants to sit near you.
 
+## 0. The archive (the user's direction, after the first build)
+
+The temple is **a living archive of technology interwoven with nature.** This does not
+replace the hearth; it is what the hearth is made of. The tall ones' glass keeps what
+touches it -- that is already how the prints work: the stone kept each push's warmth and
+gives it back cold -- so everything they built is a record, and they built it out of things
+that grow: glass seeded and grown, roots that carry what glass carries, rings laid down a
+year at a time. The door is the archive's cover and its first page: every hand that ever
+pushed on it is in it. Whatever design of the door is chosen, it should be readable as
+made (rings, blades, cells, wheels, inscription) and as grown (roots, moss, rings, leaves),
+and its light should be theirs.
+
 ## 1. The surface (the first ten minutes)
 
 You are a treasure hunter. You came down a throat of rock glittering with green glass, and

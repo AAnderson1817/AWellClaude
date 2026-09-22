@@ -27,8 +27,8 @@ the whole composition. What changes is that the composition continues past its e
 
 ```
 +------------------+------------------+------------------+
-| A  ENTRY         | B  UPPER GALLERY | C  GREAT WINDOW  |
-| door, prints,    | colossus head,   | far city, ring,  |
+| A  FORECOURT     | B  UPPER GALLERY | C  GREAT WINDOW  |
+| the door (15x),  | colossus head,   | far city, ring,  |
 | ropes, flue slot,| niche, lamps     | sill, sitters    |
 | mural threshold  |                  |                  |
 +------------------+------------------+------------------+
@@ -39,16 +39,31 @@ the whole composition. What changes is that the composition continues past its e
 +------------------+------------------+------------------+
 ```
 
-Rows that matter: the walk along the top (the step, the passage, the gallery, the sill)
-stands on row 14. The undercroft and the hall floor stand on row 35. The basin's surface
+Rows that matter: the door's foot is row 21. The walk along the top (the passage, the
+gallery, the sill) stands on row 14. The undercroft and the hall floor stand on row 35. The basin's surface
 is row 36, its floor row 43.
 
-**A, entry.** You start on the step beside the shut door, lamp at your feet. Raw rock,
-amber seams. Past the step the ledge ends at a chasm with old ropes going over its lip
-(every anchor at the top). Across it the passage runs right into the threshold, where the
-rock becomes the tall ones' masonry and a glass lamp in the arch washes the right edge
-green: the pull right. The flue slot is over the door, out of reach: one amber seam in
-it, and every minute or two a leaf. The prints come up on the door only in the dark.
+**A, forecourt.** You wake at the foot of the door. It is the whole of the first
+screen's far wall: 168 px tall, fifteen times your height, set into a wall of the tall
+ones' masonry built into the raw rock. Four designs of it are in the build for choosing
+between (keys 1-4, `--door N`; `tools/art/doors.py`), all on the theme of a living archive,
+technology grown through with living things:
+
+1. **iris**: a closed aperture of nine leaf-blades, each with a midrib of light, closing on
+   a lens; its ring inscribed in bands and set with glass; roots gripping it, moss hanging.
+2. **heartwood**: a trunk's cross-section grown as the door. The rings are the records,
+   cut with marks; a few are in use, an arc of light along them with a bright point where
+   it reads. Bark rim, roots into the floor banded in iron and beaded with glass.
+3. **stacks**: an arched portal in a cliff of archive niches, records lit and dark, some
+   grown over; a round seal across the parting with a slit of light; roots and vines.
+4. **engine**: geared, inscribed wheels round a stone flower with a glass heart, beads of
+   glass riding the inner wheel, pipes into the floor, flowering vines through the gears.
+
+The door's light is its own: its glow picture is drawn in the emissive layer and seeds
+the bake where it covers a tile. The prints come up on its lower face in the dark. To the
+right, a chasm drops to the undercroft (old ropes over its lip) and a slope of fallen rock
+climbs to the passage, where the mural runs and a glass lamp in the roof washes it green.
+The flue slot is in the roof over the slope, out of reach.
 
 **B, upper gallery.** The colossus's head fills the back wall inside its niche: a
 seated tall one in profile, facing the undercroft, one green glass eye. A lamp on a long
@@ -77,8 +92,8 @@ from the water to the sill's far end, treads a jump high: built for them.
 
 ## The climbs (all checked by `tools/route.py`)
 
-- **Over the chasm** from the step to the passage, and back (T0, T0b). Fall short and you
-  land in the undercroft (T2).
+- **Over the chasm** from the door's foot to the fallen rock, and back (T0, T0b). Fall
+  short and you land in the undercroft (T2). **Up the fallen rock** to the passage (R1-R3).
 - **The long walk**: passage, gallery (over the shelf), sill, never leaving row 14 (T1).
 - **The colossus**: hall floor, low corbel, the planks, the back of the hand, two bands
   of the forearm, the elbow, the band on the upper arm, up through the gallery (U1-U8).
@@ -92,7 +107,8 @@ The corbels are shelves so the floor under them stays open: carrying the stone y
 too low to climb, and must still be able to walk into the basin and sink.
 
 `tools/escape.py` drops a wandering bot on every surface and asks whether it ever gets
-back up to the entry's level (the step or the passage, one checked jump apart).
+back to the forecourt (anywhere in the first screen; the door's foot is a drop and a
+checked jump from all of it).
 
 ## The light
 
@@ -109,8 +125,8 @@ back up to the entry's level (the step or the passage, one checked jump apart).
 
 | thing | where | what it does |
 |---|---|---|
-| the prints | A | come up on the door and rock only with no flame within ~8 tiles; gone at once when one comes. The one at your height is brighter, and fades over the first three minutes |
-| leaves | A | one every one to two minutes from the flue, spinning down onto the step; they pile until the reset |
+| the prints | A | come up on the door's lower face only with no flame within ~8 tiles; gone at once when one comes. The one at your height is brighter, and fades over the first three minutes |
+| leaves | A | one every one to two minutes from the flue, spinning down onto whatever is under it; they pile until the reset |
 | the mural | A | phosphor procession of tall figures in the dark; under your lamp it fades and the carved small figures in its gaps show |
 | the hunter | D | cold fire: tends his cairn now and then. Lit: hands out to it, hums. Lamp near: head turns a pixel. Lamp set on the clean patch among the dead lamps: looks up and hums once |
 | the fire | D | lit by the lamp held near (D6: it stays lit until the reset); its glow rims the colossus's fingertips |

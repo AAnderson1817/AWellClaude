@@ -16,6 +16,24 @@
 
 extern const unsigned char ART_COLOSSUS[];
 extern const int ART_COLOSSUS_LEN;
+extern const unsigned char ART_DOOR_IRIS[], ART_DOOR_IRIS_GLOW[], ART_DOOR_HEARTWOOD[], ART_DOOR_HEARTWOOD_GLOW[],
+                           ART_DOOR_STACKS[], ART_DOOR_STACKS_GLOW[], ART_DOOR_ENGINE[], ART_DOOR_ENGINE_GLOW[];
+extern const int ART_DOOR_IRIS_LEN, ART_DOOR_IRIS_GLOW_LEN, ART_DOOR_HEARTWOOD_LEN, ART_DOOR_HEARTWOOD_GLOW_LEN,
+                 ART_DOOR_STACKS_LEN, ART_DOOR_STACKS_GLOW_LEN, ART_DOOR_ENGINE_LEN, ART_DOOR_ENGINE_GLOW_LEN;
+
+// The temple door, in the designs being chosen between (tools/art/doors.py). Each is a
+// picture for the far wall and a picture of what of it gives its own light.
+static const struct { const unsigned char *a, *g; const int *an, *gn; } DOORS[DOOR_KINDS] = {
+    { ART_DOOR_IRIS, ART_DOOR_IRIS_GLOW, &ART_DOOR_IRIS_LEN, &ART_DOOR_IRIS_GLOW_LEN },
+    { ART_DOOR_HEARTWOOD, ART_DOOR_HEARTWOOD_GLOW, &ART_DOOR_HEARTWOOD_LEN, &ART_DOOR_HEARTWOOD_GLOW_LEN },
+    { ART_DOOR_STACKS, ART_DOOR_STACKS_GLOW, &ART_DOOR_STACKS_LEN, &ART_DOOR_STACKS_GLOW_LEN },
+    { ART_DOOR_ENGINE, ART_DOOR_ENGINE_GLOW, &ART_DOOR_ENGINE_LEN, &ART_DOOR_ENGINE_GLOW_LEN },
+};
+int doorKind = -1;                      // -1: the map's choice (F_DOOR's a)
+static Texture2D doorGlow;
+static int doorX, doorY;                // room px of the door picture's top-left
+static f32 glowTile[RH][RW];            // how much of each tile the door's light covers, 0..1
+f32 BackdropGlow(int tx, int ty) { return (tx < 0 || tx >= RW || ty < 0 || ty >= RH) ? 0 : glowTile[ty][tx]; }
 
 static Texture2D wallTex;
 static Color *px;                       // the picture being painted, (RW*TS) x (RH*TS)
@@ -237,6 +255,39 @@ static void Colossus(const Feature *f) {
     UnloadImage(im);
 }
 
+// The door: its picture into the wall, its light kept as a texture of its own and as a
+// coverage per tile, which the bake seeds its light from.
+static void Door(const Feature *f) {
+    int k = doorKind >= 0 ? doorKind : f->a;
+    if (k < 0 || k >= DOOR_KINDS) k = 0;
+    doorKind = k;
+    doorX = f->x * TS; doorY = f->y * TS + 2;
+    Image im = LoadImageFromMemory(".png", DOORS[k].a, *DOORS[k].an);
+    ImageFormat(&im, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    Color *c = (Color *)im.data;
+    for (int y = 0; y < im.height; y++)
+        for (int x = 0; x < im.width; x++) {
+            Color p = c[y * im.width + x];
+            if (!p.a || doorX + x >= PW || doorY + y >= PH) continue;
+            px[(doorY + y) * PW + doorX + x] = p;
+        }
+    UnloadImage(im);
+    Image g = LoadImageFromMemory(".png", DOORS[k].g, *DOORS[k].gn);
+    ImageFormat(&g, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    Color *gc = (Color *)g.data;
+    memset(glowTile, 0, sizeof glowTile);
+    for (int y = 0; y < g.height; y++)
+        for (int x = 0; x < g.width; x++) {
+            if (!gc[y * g.width + x].a) continue;
+            int tx = (doorX + x) / TS, ty = (doorY + y) / TS;
+            if (tx < RW && ty < RH) glowTile[ty][tx] += 1.0f / 12.0f;
+        }
+    for (int y = 0; y < RH; y++) for (int x = 0; x < RW; x++) if (glowTile[y][x] > 1) glowTile[y][x] = 1;
+    if (doorGlow.id) UnloadTexture(doorGlow);
+    doorGlow = LoadTextureFromImage(g);
+    UnloadImage(g);
+}
+
 // ---------------------------------------------------------------- the stone
 // Masonry, where the map has the city's stone: the same giant courses as the wall behind,
 // set a course apart so a mass and the wall do not read as one surface, and lighter -- it is
@@ -295,6 +346,7 @@ void BackdropInit(void) {
             if (pass == 1 && f->kind == F_WINDOW) Window(f);
             if (pass == 1 && f->kind == F_GRILLE) Grille(f);
             if (pass == 2 && f->kind == F_COLOSSUS) Colossus(f);
+            if (pass == 2 && f->kind == F_DOOR) Door(f);
         }
     for (int ty = 0; ty < RH; ty++)               // and last, the stone in front of all of it
         for (int tx = 0; tx < RW; tx++) {
@@ -320,6 +372,8 @@ void BackdropDraw(void) {
 
 // What gives its own light: the colossus's eye, green glass, and the sliver of the other.
 void BackdropDrawEmis(void) {
+    if (doorGlow.id && doorX < camX + GW + 8 && doorX + doorGlow.width > camX - 8 && doorY < camY + GH + 8)
+        DrawTexture(doorGlow, doorX, ROOM_Y + doorY, WHITE);
     if (!Find(F_COLOSSUS)) return;
     int ex = 36 * TS + 150, ey = ROOM_Y + TS + 46;
     if (ex < camX - 16 || ex > camX + GW + 16 || ey < camY - 16 || ey > camY + GH + 16) return;

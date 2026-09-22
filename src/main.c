@@ -62,7 +62,7 @@ static int PlanExhausted(void) { return planLen && frameNo > planTotal + 2; }
 static int wanderSeed = 0;
 static u8 stood[ROOM_COUNT][RH][RW];
 static long homeFrame = 0;                 // first frame a bot dropped elsewhere stood on the start tile again
-static float homeX, homeY;
+static float homeX, homeY;             // where you began (kept for the trace; home is the forecourt)
 static u32 wrng;
 static float WRnd(void) {
     wrng ^= wrng << 13; wrng ^= wrng >> 17; wrng ^= wrng << 5;
@@ -200,11 +200,12 @@ static void Sim(void) {
     PropsStep();
     HallStep();
     AirStep();
-    // Home is the entry's level: the step at the door or the passage beside it, which one
-    // verified jump joins (tools/route.py T0, both ways). A bot that gets back up there out of
-    // the undercroft or the hall has found the way the room gives back.
+    // Home is the forecourt: standing anywhere in the first screen, the door's. From any of
+    // it the door's foot is a drop and a checked jump away (tools/route.py T0b, R1-R3). A bot
+    // that gets back there out of the undercroft or the hall has found the way the room
+    // gives back.
     if (wanderSeed && !homeFrame && frameNo > 60 && player.onGround
-        && player.x < SW * TS && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
+        && player.x < SW * TS && player.y + player.h <= SH * TS) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
         // a fraction past the tile top; landing on a shelf stops them a fraction
@@ -227,6 +228,8 @@ static void Frame(void) {
     if (!planLen && !wanderSeed) {
         if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
         if (IsKeyPressed(KEY_V)) lookNew = !lookNew;    // the old look, for comparing
+        for (int k = 0; k < DOOR_KINDS; k++)             // the door's designs, for choosing between
+            if (IsKeyPressed(KEY_ONE + k) && doorKind != k) { doorKind = k; BackdropInit(); RoomRelight(); }
     }
     if (dbgFixedStep) {
         Sim();
@@ -300,7 +303,7 @@ static void Frame(void) {
 
 int main(int argc, char **argv) {
     int winScale = 4, atx = -1, aty = -1, startRoom = 0;
-    int lampRoom = 0, lampTx = 9, lampTy = 13;     // at your feet, at the foot of the door
+    int lampRoom = 0, lampTx = 14, lampTy = 20;    // at your feet, at the foot of the door
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");
@@ -330,6 +333,8 @@ int main(int argc, char **argv) {
             winScale = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--wander") && i + 1 < argc) {
             wanderSeed = atoi(argv[++i]); dbgFixedStep = 1; noDraw = 1;
+        } else if (!strcmp(argv[i], "--door") && i + 1 < argc) {
+            doorKind = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
             startRoom = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--lamp") && i + 1 < argc) {
