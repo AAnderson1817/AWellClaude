@@ -299,6 +299,8 @@ int main(int argc, char **argv) {
             dbgTrace = 1;
         } else if (!strcmp(argv[i], "--nodraw")) {
             noDraw = 1;
+        } else if (!strcmp(argv[i], "--albedo")) {
+            dbgAlbedo = 1;
         } else if (!strcmp(argv[i], "--oldlook")) {
             lookNew = 0;
         } else if (!strcmp(argv[i], "--labels")) {

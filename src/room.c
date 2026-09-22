@@ -543,104 +543,88 @@ static int Massive(int x, int y) {
     return t == T_ROCK || t == T_VEIN;
 }
 
+// Raw rock is built from quarter pieces, each chosen by the two neighbours it faces and the
+// one diagonal between them: the inside, a top (the surface you stand on), a side (a cliff
+// face), an underside (ragged, with drips), an outer corner, an inner corner. Authored for
+// the left quarters; the right quarters are the same pieces mirrored.
+static const Sprite *const RK_I[4] = { &SPR_RK_I1, &SPR_RK_I2, &SPR_RK_I3, &SPR_RK_I4 };
+static const Sprite *const RK_T[3] = { &SPR_RK_T1, &SPR_RK_T2, &SPR_RK_T3 };
+static void RockQuarter(int x, int y, int px, int py, int right, int bottom) {
+    int hx = right ? 1 : -1, vy = bottom ? 1 : -1;
+    int V = Massive(x, y + vy), H = Massive(x + hx, y), D = Massive(x + hx, y + vy);
+    u32 h = Hash2(x * 4 + right * 2 + bottom, y * 7 + 1);
+    const Sprite *q;
+    if (V && H)       q = D ? RK_I[h & 3] : (bottom ? &SPR_RK_NB : &SPR_RK_NT);
+    else if (!V && H) q = bottom ? ((h & 1) ? &SPR_RK_B1 : &SPR_RK_B2) : RK_T[h % 3];
+    else if (V && !H) q = (h & 1) ? &SPR_RK_L1 : &SPR_RK_L2;
+    else              q = bottom ? &SPR_RK_OB : &SPR_RK_OT;
+    DrawSpriteTag(q, px + right * 4, py + bottom * 4, right, TAG_STONE);
+}
+
 static void DrawStone(int x, int y, int px, int py) {
     int up = Massive(x, y - 1), dn = Massive(x, y + 1);
     int lf = Massive(x - 1, y), rt = Massive(x + 1, y);
-    int buried = up && dn && lf && rt;
-    int city = ZoneAt(x, y) == Z_CITY;
-
-    if (city) {
-        // Dressed stone: ashlar, coursed, with the joints offset every other row. The
-        // same eight pixels as the rock; what makes it built is that someone lined it up.
-        DrawRectangle(px, py, TS, TS, buried ? palRockDeep : palAshlar);
-        if (!buried) {
-            DrawRectangle(px, py + TS - 1, TS, 1, palMortar);
-            DrawRectangle(px + ((y & 1) ? 4 : 0), py, 1, TS - 1, palMortar);
-            u32 h = Hash2(x * 3 + 1, y * 5 + 2);
-            DrawRectangle(px + 1 + ((h >> 2) & 5), py + 1 + ((h >> 5) & 5), 1, 1, ((h & 1) ? palMortar : palAshlarLit));
-        }
-        if (!up) DrawRectangle(px, py, TS, 1, palAshlarLit);
-        if (!dn) DrawRectangle(px, py + TS - 1, TS, 1, palRockDeep);
-        if (!up && !lf) DrawRectangle(px, py, 1, 1, palBack);
-        if (!up && !rt) DrawRectangle(px + TS - 1, py, 1, 1, palBack);
+    if (ZoneAt(x, y) == Z_CITY) {
+        // Dressed stone: ashlar in running bond, a lit cap where it is open above, a shadowed
+        // foot where it is open below. Built things have straight edges.
+        DrawSpriteTag((Hash2(x * 3 + 1, y * 5 + 2) & 1) ? &SPR_ASH2 : &SPR_ASH1, px, py, 0, TAG_STONE);
+        Color cap = PAL[PL_STONEH], foot = PAL[PL_DEEP], side = PAL[PL_STONEL], back = PAL[PL_DARK];
+        cap.a = foot.a = side.a = back.a = TAG_STONE;
+        if (!up) DrawRectangle(px, py, TS, 1, cap);
+        if (!dn) DrawRectangle(px, py + TS - 1, TS, 1, foot);
+        if (!lf) DrawRectangle(px, py + (up ? 0 : 1), 1, TS - 1 - (up ? 0 : 1), side);
+        if (!rt) DrawRectangle(px + TS - 1, py + (up ? 0 : 1), 1, TS - 1 - (up ? 0 : 1), back);
         return;
     }
-
-    DrawRectangle(px, py, TS, TS, buried ? palRockDeep : palRock);
-
-    // Grain. Same seed, same room, every run: a screenshot is a fact.
-    u32 h = Hash2(x, y);
-    for (int k = 0; k < 3; k++) {
-        int gx = (h >> (k * 7)) & 7, gy = (h >> (k * 7 + 3)) & 7;
-        Color c = ((h >> (k * 7 + 6)) & 1) ? palRockDeep : palRockLit;
-        if (c.r == palRockLit.r) c = (Color){ 74, 71, 92, 255 };
-        DrawRectangle(px + gx, py + gy, 1, 1, c);
+    if (up && dn && lf && rt && Massive(x - 1, y - 1) && Massive(x + 1, y - 1) && Massive(x - 1, y + 1) && Massive(x + 1, y + 1)) {
+        // Buried: nothing will see its edges, and there is a lot of it.
+        Color c = PAL[PL_STONE]; c.a = TAG_STONE; DrawRectangle(px, py, TS, TS, c);
+        u32 h = Hash2(x, y);
+        Color k = PAL[PL_DARK]; k.a = TAG_STONE;
+        DrawRectangle(px + (h & 7), py + (h >> 3 & 7), 1 + (h >> 6 & 1), 1, k);
+        return;
     }
-
-    if (!up) {                                   // the surface catches everything
-        DrawRectangle(px, py, TS, 1, palRockLit);
-        DrawRectangle(px, py + 1, TS, 1, palRock);
-    }
-    if (!dn) DrawRectangle(px, py + TS - 1, TS, 1, palRockDeep);
-
-    // Knock the exposed corners off. Collision stays square -- this is the only
-    // reason a room of rectangles does not look like a room of rectangles.
-    if (!up && !lf) DrawRectangle(px, py, 1, 1, palBack);
-    if (!up && !rt) DrawRectangle(px + TS - 1, py, 1, 1, palBack);
-    if (!dn && !lf) DrawRectangle(px, py + TS - 1, 1, 1, palBack);
-    if (!dn && !rt) DrawRectangle(px + TS - 1, py + TS - 1, 1, 1, palBack);
+    RockQuarter(x, y, px, py, 0, 0); RockQuarter(x, y, px, py, 1, 0);
+    RockQuarter(x, y, px, py, 0, 1); RockQuarter(x, y, px, py, 1, 1);
 }
 
 static void DrawVein(int x, int y, int px, int py) {
     DrawStone(x, y, px, py);
     if (ZoneAt(x, y) == Z_CITY) {
-        // In the city a seam is one of their lamps: a pane of glass set into the stone in
-        // an iron frame, still lit after all this time. Not a vein of anything.
-        DrawRectangle(px + 1, py + 1, 6, 6, palIron);
-        DrawRectangle(px + 2, py + 2, 4, 4, palCityGlass);
+        // In the city a seam is one of their lamps: a pane of glass in the stone, in an iron
+        // frame, still lit after all this time. A glint crosses it now and then.
+        DrawSpriteTag(&SPR_GLASS, px, py, 0, TAG_STONE);
         u32 h = Hash2(x * 7 + (int)(frameNo / 13), y);
-        DrawRectangle(px + 2 + (h & 3), py + 2 + ((h >> 2) & 3), 1, 1, palCityGlassLit);
+        Color g = PAL[PL_CITYH]; g.a = TAG_STONE;
+        if ((h & 3) == 0) DrawRectangle(px + 2 + (h >> 2 & 3), py + 2 + (h >> 4 & 3), 1, 1, g);
         return;
     }
-    // A seam running through the stone. Its shape is hashed from where it is, so
-    // no two look alike and all of them look like the same mineral.
-    u32 h = Hash2(x * 7 + 1, y * 13 + 3);
-    int sx = 2 + (h & 3);
-    for (int i = 0; i < 6; i++) {
-        int yy = py + 1 + i;
-        int xx = px + sx + (int)(((h >> (i * 3)) & 3) - 1);
-        if (xx < px + 1) xx = px + 1;
-        if (xx > px + TS - 2) xx = px + TS - 2;
-        DrawRectangle(xx, yy, 1, 1, palVeinHot);
-        if ((h >> (i + 12)) & 1) DrawRectangle(xx + 1, yy, 1, 1, palVein);
-        else                     DrawRectangle(xx - 1, yy, 1, 1, palVein);
-    }
+    // In raw rock, a seam is a vein of crystal that burns with its own light.
+    DrawSpriteTag((Hash2(x, y * 3) & 1) ? &SPR_VEIN2 : &SPR_VEIN1, px, py, Hash2(y, x) & 1, TAG_STONE);
 }
 
 static void DrawLedge(int x, int y, int px, int py) {
     int lf = TileGet(x - 1, y) == T_LEDGE, rt = TileGet(x + 1, y) == T_LEDGE;
-    if (ZoneAt(x, y) == Z_CITY) {
-        // A stone cornice, not a plank: the same three pixels of shelf, in dressed stone,
-        // with dentils along its underside instead of pegs.
-        DrawRectangle(px, py, TS, 3, palCornice);
-        DrawRectangle(px, py, TS, 1, palCorniceLit);
-        DrawRectangle(px + 1, py + 2, 1, 1, palRockDeep); DrawRectangle(px + 4, py + 2, 1, 1, palRockDeep); DrawRectangle(px + 7, py + 2, 1, 1, palRockDeep);
-        if (!lf) { DrawRectangle(px, py, 1, 1, palBack); DrawRectangle(px, py + 2, 1, 1, palBack); }
-        if (!rt) { DrawRectangle(px + TS - 1, py, 1, 1, palBack); DrawRectangle(px + TS - 1, py + 2, 1, 1, palBack); }
-        return;
-    }
-    // Three pixels of shelf, and nothing at all below it. A one-way surface has to
+    int city = ZoneAt(x, y) == Z_CITY;
+    // Three pixels of shelf and nothing below but what holds it up. A one-way surface has to
     // look like a thing you land on top of, or landing on top of it is a surprise.
-    DrawRectangle(px, py, TS, 3, palLedge);
-    DrawRectangle(px, py, TS, 1, palLedgeLit);
-    DrawRectangle(px, py + 2, TS, 1, (Color){ 62, 54, 46, 255 });
-    u32 h = Hash2(x * 3, y * 5 + 11);
-    if (h & 1) DrawRectangle(px + 2 + (h >> 1 & 3), py + 1, 1, 1, (Color){ 68, 60, 50, 255 });
-    // pegs, so you can see the shelf is held up rather than resting on something
-    if (((x + y) & 1) == 0) DrawRectangle(px + 3, py + 3, 1, 2, (Color){ 62, 54, 46, 255 });
-    if (!lf) { DrawRectangle(px, py, 1, 1, palBack); DrawRectangle(px, py + 2, 1, 1, palBack); }
-    if (!rt) { DrawRectangle(px + TS - 1, py, 1, 1, palBack);
-               DrawRectangle(px + TS - 1, py + 2, 1, 1, palBack); }
+    const Sprite *end = city ? &SPR_CORNICE_END : &SPR_PLANK_END;
+    const Sprite *mid = city ? &SPR_CORNICE : ((Hash2(x * 3, y * 5 + 11) & 1) ? &SPR_PLANK2 : &SPR_PLANK1);
+    if (!lf)      DrawSpriteTag(end, px, py, 0, TAG_STONE);
+    else if (!rt) DrawSpriteTag(end, px, py, 1, TAG_STONE);
+    else          DrawSpriteTag(mid, px, py, 0, TAG_STONE);
+    if (!city && ((x + y) & 1) == 0) {                      // a peg under a plank, and its shadow
+        DrawRectangle(px + 3, py + 3, 1, 2, PAL[PL_WARMD]);
+        DrawRectangle(px + 4, py + 3, 1, 1, PAL[PL_DARK]);
+    }
+}
+
+static void DrawMoss(int x, int y, int px, int py) {
+    int hanging = Massive(x, y - 1) || TileGet(x, y - 1) == T_LEDGE;
+    u32 h = Hash2(x * 11 + 5, y * 17);
+    if (ZoneAt(x, y) == Z_CITY) { DrawSpriteEx(&SPR_LICHEN, px, py, h & 1); return; }
+    if (hanging) DrawSpriteEx((h & 1) ? &SPR_MOSS_H2 : &SPR_MOSS_H1, px, py, (h >> 1) & 1);
+    else         DrawSpriteEx(&SPR_MOSS_F1, px, py, h & 1);
 }
 
 static void DrawWater(int x, int y, int px, int py) {
@@ -650,13 +634,13 @@ static void DrawWater(int x, int y, int px, int py) {
         int d = (int)(surfH[x] * 3.0f);
         if (d >  3) d =  3;
         if (d < -3) d = -3;
-        DrawRectangle(px, py + d, TS, TS - d, palWater);
-        DrawRectangle(px, py + d, TS, 1, palWaterLit);
+        DrawRectangle(px, py + d, TS, TS - d, PAL[PL_WATER]);
+        DrawRectangle(px, py + d, TS, 1, PAL[PL_WATERL]);
     } else {
-        DrawRectangle(px, py, TS, TS, palWater);
+        DrawRectangle(px, py, TS, TS, PAL[PL_WATER]);
         // a fleck drifting up now and then: the water is not still
         if (((x * 3 + y * 7 + (int)(frameNo / 26)) % 11) == 0)
-            DrawRectangle(px + 2 + (x & 3), py + 3, 1, 1, palWaterFleck);
+            DrawRectangle(px + 2 + (x & 3), py + 3, 1, 1, PAL[PL_WATERL]);
     }
 }
 
@@ -673,58 +657,20 @@ static void DrawBush(int x, int y, int px, int py) {
     DrawSpriteRows(&SPR_BUSH, px, py, flip, 6, 8, -1);
 }
 
-static void DrawMoss(int x, int y, int px, int py) {
-    u32 h = Hash2(x * 11 + 5, y * 17);
-    if (ZoneAt(x, y) == Z_CITY) {
-        // lichen on the masonry: flat patches, not hanging strands
-        for (int i = 0; i < 3; i++)
-            DrawRectangle(px + ((h >> (i * 5)) & 5), py + 1 + ((h >> (i * 5 + 2)) & 5), 2, 1, palLichen);
-        return;
-    }
-    int down = Massive(x, y - 1) || TileGet(x, y - 1) == T_LEDGE;
-    for (int i = 0; i < 4; i++) {
-        int gx = px + 1 + ((h >> (i * 4)) & 5);
-        int len = 2 + ((h >> (i * 4 + 3)) & 3);
-        int gy = down ? py : py + TS - len;
-        DrawRectangle(gx, gy, 1, len, palMoss);
-        DrawRectangle(gx, down ? gy + len - 1 : gy, 1, 1, (Color){ 96, 122, 92, 255 });
-    }
-}
 
 void RoomDraw(void) {
-    // The far wall. Coursed stone, barely a shade off the dark -- invisible until
-    // something lights it, which is the point: you learn the room's depth by
-    // carrying light into it, not by being shown a diagram of it.
-    DrawRectangle(0, ROOM_Y, GW, RH * TS, palBack);
-    for (int y = 0; y < RH * TS; y += 16) {
-        DrawRectangle(0, ROOM_Y + y, GW, 1, palBackLit);
-        int off = ((y / 16) & 1) ? 8 : 0;
-        for (int x = off; x < GW; x += 16)
-            DrawRectangle(x, ROOM_Y + y, 1, 16, palBackLit);
-    }
+    // The far wall, under everything: hewn blocks in the vault, coursed in the city. Barely
+    // a shade off the dark -- invisible until something lights it, which is the point: you
+    // learn the room's depth by carrying light into it.
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
-            if (tiles[y][x] != T_EMPTY) continue;
-            u32 h = Hash2(x + 91, y + 17);
-            if (ZoneAt(x, y) == Z_CITY) {
-                // The far wall of the city is coursed tighter: a joint every tile, offset by
-                // half a tile on alternate rows. Still barely a shade off the dark.
-                DrawRectangle(x * TS, ROOM_Y + y * TS + TS - 1, TS, 1, palBackLit);
-                DrawRectangle(x * TS + ((y & 1) ? 4 : 0), ROOM_Y + y * TS, 1, TS - 1, palBackLit);
-                continue;
+            int px = x * TS, py = ROOM_Y + y * TS;
+            if (ZoneAt(x, y) == Z_CITY)
+                DrawSpriteRect(&SPR_WALL_CITY, px, py, (x & 1) * 8, 0, 8, 8, 0, TAG_WALL);
+            else {
+                int shift = Hash2(y >> 1, 77) & 1;          // blocks of alternate rows offset a tile
+                DrawSpriteRect(&SPR_WALL_VAULT, px, py, ((x + shift) & 1) * 8, (y & 1) * 8, 8, 8, 0, TAG_WALL);
             }
-            if (LOOK_NEW) {
-                // Hewn rock, mottled: a lighter block and a darker crack in every tile, so a
-                // band of light falling on the wall reveals stone instead of filling a shape.
-                int bx = x * TS + (h >> 3 & 3), by = ROOM_Y + y * TS + (h >> 6 & 3);
-                DrawRectangle(bx, by, 3 + (h >> 9 & 3), 2 + (h >> 11 & 1), (h >> 12 & 1) ? palBackLit : (Color){ 58, 54, 80, 255 });
-                if ((h >> 13 & 3) == 0) DrawRectangle(x * TS + (h >> 15 & 7), ROOM_Y + y * TS + (h >> 18 & 3) + 3, 1, 3, palRockDeep);
-                if ((h >> 20 & 3) == 0) DrawRectangle(x * TS + (h >> 22 & 3) + 2, ROOM_Y + y * TS + 7, 4, 1, palRockDeep);
-                continue;
-            }
-            if ((h & 7) == 0)
-                DrawRectangle(x * TS + (h >> 3 & 7), ROOM_Y + y * TS + (h >> 6 & 7), 1, 1,
-                              (Color){ 30, 29, 44, 255 });
         }
     if (LOOK_NEW) CityErase();   // the break in the wall, where the far city shows
     PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone

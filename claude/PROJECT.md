@@ -251,6 +251,30 @@ on a body crossing the edge of a lamp's band it was a checkerboard.
 in a dim one, snapped to the palette), and `tools/sprite_set.py NAME` replaces one sprite's
 rows -- the loop the art was made in.
 
+### The tileset, hand-made
+
+The tiles -- most of every frame -- were the last programmer art. They are sprites now too:
+
+- **Raw rock** is built from quarter pieces, each chosen by the two neighbours it faces and
+  the diagonal between them: inside, top (the surface you stand on, a lit lip, a chip now and
+  then), side (a ragged cliff face), underside (dark, with drips), outer corner, inner
+  corner. Authored for the left quarters, mirrored for the right. Buried rock, which nothing
+  sees the edges of, is one fill.
+- **The city's ashlar**: courses in running bond, a lit cap where open above, a shadowed
+  foot below. Built things keep straight edges.
+- **Seams**: amber crystal veins in raw rock; in the city, their glass lamp in an iron frame.
+- **Shelves**: timber planks with cut ends and pegs in the vault; stone cornices with
+  dentils in the city. **Moss** hangs from stone or tufts a floor; **lichen** on masonry.
+- **The far wall**: hewn blocks in the vault, courses in the city, tiled from 16px art so a
+  band of light falling on it reveals stone instead of filling a shape.
+
+Stone and shelves go down with alpha 253 (drawn things 254, the far wall 255), and the
+composite takes the silhouette from that rather than from the tile grid: the rim light and
+the dark's faint shapes follow the drawn, chipped edge, not the square the tile occupies.
+Past the room's edges counts as stone -- found when the border rock was being backlit as if
+the blank strip outside the room were the far city. `--albedo` shows the art under flat
+light, for judging it.
+
 ### Calm (a tuning, after the Vault Mouth was played)
 
 The user heard the rooms as busy. Measured standing still for a minute: 56 unprompted

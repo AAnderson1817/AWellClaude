@@ -41,7 +41,8 @@ const Color PAL[PL_COUNT] = {
 // rim light on every edge that faces a light; and here, one palette.
 static RenderTexture2D albedoRT, emisRT, backRT;
 static Shader comp;
-static int cBack, cEmis, cBake, cLP, cLC, cLN, cPal, cAmb, cBands;
+static int cBack, cEmis, cBake, cLP, cLC, cLN, cPal, cAmb, cBands, cDebug;
+int dbgAlbedo = 0;
 
 static const char *COMP_BODY =
 "uniform sampler2D texture0;\n"     // albedo: alpha 0 where the wall is broken
@@ -54,16 +55,16 @@ static const char *COMP_BODY =
 "uniform vec3 uPal[19];\n"
 "uniform vec3 uAmb;\n"
 "uniform float uBands;\n"
+"uniform float uDebug;\n"                                   // 1: show the art under flat light
 "vec2 uvOf(vec2 p) { return vec2((p.x + 0.5) / 320.0, 1.0 - (p.y + 0.5) / 180.0); }\n"
 "float code(vec2 t) {\n"
 "  if (t.x < 0.0 || t.x > 39.0 || t.y < 0.0 || t.y > 21.0) return 1.0;\n"
 "  return TEX(uBake, (t + 0.5) / vec2(41.0, 23.0)).a;\n"
 "}\n"
-"float solidAt(vec2 rp) {\n"
-"  vec2 t = floor(rp / 8.0); float c = code(t);\n"
-"  if (c > 0.75) return 1.0;\n"
-"  if (c > 0.25 && mod(rp.y, 8.0) < 3.0) return 1.0;\n"   // a shelf: its top three pixels
-"  return 0.0;\n"
+"float maskAt(vec2 p) {\n"                                   // stone and shelves as drawn: alpha 253
+"  if (p.x < 0.0 || p.x > 319.0 || p.y < 2.0 || p.y > 177.0) return 1.0;\n"   // past the room: stone
+"  float a = TEX(texture0, uvOf(p)).a;\n"
+"  return (a > 0.5 && a < 0.994) ? 1.0 : 0.0;\n"
 "}\n"
 "float bayer(vec2 p) {\n"
 "  vec2 a = mod(floor(p), 4.0); vec2 a1 = mod(a, 2.0); vec2 a2 = floor(a / 2.0);\n"
@@ -88,19 +89,20 @@ static const char *COMP_BODY =
 "  float tc = code(floor(rp / 8.0));\n"                       // this pixel's tile: stone, seam, shelf, water, air
 "  float al = dot(alb.rgb, vec3(0.30, 0.59, 0.11));\n"
 "  if (tc > 0.9 && al > 0.45) { OUT(nearest(alb.rgb, false)); return; }\n"   // the bright of a seam or their glass gives its own light
-"  float solid = solidAt(rp);\n"
+"  float solid = (alb.a > 0.5 && alb.a < 0.994) ? 1.0 : 0.0;\n"   // the drawn silhouette, not the tile
+"  if (uDebug > 0.5) { OUT(nearest(alb.rgb, false)); return; }\n"
 "  vec2 n = vec2(0.0); float edge = 0.0;\n"
 "  if (solid > 0.5) {\n"
-"    if (solidAt(rp + vec2(0.0, -1.0)) < 0.5) n += vec2(0.0, -1.0);\n"
-"    if (solidAt(rp + vec2(0.0,  1.0)) < 0.5) n += vec2(0.0,  1.0);\n"
-"    if (solidAt(rp + vec2(-1.0, 0.0)) < 0.5) n += vec2(-1.0, 0.0);\n"
-"    if (solidAt(rp + vec2( 1.0, 0.0)) < 0.5) n += vec2( 1.0, 0.0);\n"
+"    if (maskAt(p + vec2(0.0, -1.0)) < 0.5) n += vec2(0.0, -1.0);\n"
+"    if (maskAt(p + vec2(0.0,  1.0)) < 0.5) n += vec2(0.0,  1.0);\n"
+"    if (maskAt(p + vec2(-1.0, 0.0)) < 0.5) n += vec2(-1.0, 0.0);\n"
+"    if (maskAt(p + vec2( 1.0, 0.0)) < 0.5) n += vec2( 1.0, 0.0);\n"
 "    if (dot(n, n) > 0.0) edge = 1.0;\n"
 "    else {\n"
-"      if (solidAt(rp + vec2(0.0, -2.0)) < 0.5) n += vec2(0.0, -1.0);\n"
-"      if (solidAt(rp + vec2(0.0,  2.0)) < 0.5) n += vec2(0.0,  1.0);\n"
-"      if (solidAt(rp + vec2(-2.0, 0.0)) < 0.5) n += vec2(-1.0, 0.0);\n"
-"      if (solidAt(rp + vec2( 2.0, 0.0)) < 0.5) n += vec2( 1.0, 0.0);\n"
+"      if (maskAt(p + vec2(0.0, -2.0)) < 0.5) n += vec2(0.0, -1.0);\n"
+"      if (maskAt(p + vec2(0.0,  2.0)) < 0.5) n += vec2(0.0,  1.0);\n"
+"      if (maskAt(p + vec2(-2.0, 0.0)) < 0.5) n += vec2(-1.0, 0.0);\n"
+"      if (maskAt(p + vec2( 2.0, 0.0)) < 0.5) n += vec2( 1.0, 0.0);\n"
 "      if (dot(n, n) > 0.0) edge = 0.45;\n"
 "    }\n"
 "    if (edge > 0.0) n = normalize(n);\n"
@@ -111,7 +113,8 @@ static const char *COMP_BODY =
 "  if (edge > 0.0) {\n"
 "    vec4 bo = TEX(uBake, ((rp + n * 6.0) / 8.0 + 0.5) / vec2(41.0, 23.0));\n"
 "    rw = bo.r * 2.0 * edge; rc = bo.g * 2.0 * edge;\n"
-"    if (code(floor(rp / 8.0)) > 0.75 && TEX(texture0, uvOf(p + n * 2.0)).a < 0.5) rc += 0.42 * edge;\n"  // stone against the far city: backlit
+"    vec2 q = p + n * 2.0;\n"
+"    if (q.x >= 0.0 && q.x <= 319.0 && q.y >= 2.0 && q.y <= 177.0 && code(floor(rp / 8.0)) > 0.75 && TEX(texture0, uvOf(q)).a < 0.5) rc += 0.42 * edge;\n"  // stone against the far city: backlit
 "  }\n"
 "  vec2 own = floor(rp / 8.0);\n"
 "  for (int i = 0; i < 16; i++) {\n"
@@ -306,6 +309,7 @@ void RenderInit(void) {
     cLC = GetShaderLocation(comp, "uLC");      cLN = GetShaderLocation(comp, "uLN");
     cPal = GetShaderLocation(comp, "uPal");    cAmb = GetShaderLocation(comp, "uAmb");
     cBands = GetShaderLocation(comp, "uBands");
+    cDebug = GetShaderLocation(comp, "uDebug");
 }
 
 void RenderBegin(void) {
@@ -342,6 +346,8 @@ void RenderComposite(void) {
         SetShaderValueV(comp, cPal, pal, SHADER_UNIFORM_VEC3, PL_COUNT);
         SetShaderValue(comp, cAmb, amb, SHADER_UNIFORM_VEC3);
         SetShaderValue(comp, cBands, &bands, SHADER_UNIFORM_FLOAT);
+        float dbg = (float)dbgAlbedo;
+        SetShaderValue(comp, cDebug, &dbg, SHADER_UNIFORM_FLOAT);
         DrawTexturePro(albedoRT.texture, (Rectangle){ 0, 0, (float)GW, -(float)GH },
                        (Rectangle){ 0, 0, (float)GW, (float)GH }, (Vector2){ 0, 0 }, 0.0f, WHITE);
     EndShaderMode();

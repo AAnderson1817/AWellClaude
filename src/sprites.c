@@ -20,9 +20,32 @@ static int Ink(char c) {
     }
 }
 
-// Sprites go down with alpha 254, not 255: the composite reads that as "a drawn thing, not a
-// wall" and gives it a clean band edge instead of dither, which on a body is a checkerboard.
-static Color Tag(int k) { Color c = PAL[k]; c.a = 254; return c; }
+// The alpha a pixel goes down with tells the composite what it is: 255 the far wall, 254 a
+// drawn thing (a clean band edge instead of dither, which on a body is a checkerboard), 253
+// stone and shelves (a silhouette, with rim light on its drawn edge rather than the tile's).
+static u8 tagNow = 254;
+static Color Tag(int k) { Color c = PAL[k]; c.a = tagNow; return c; }
+
+// Any rectangle of a sprite, as a given kind of pixel: the far wall tiles 16x16 art per 8x8
+// tile this way.
+void DrawSpriteRect(const Sprite *s, int px, int py, int sx, int sy, int w, int h, int flip, u8 tag) {
+    u8 was = tagNow; tagNow = tag;
+    for (int y = sy; y < sy + h && y < s->h; y++) {
+        const char *row = s->rows[y];
+        int x = sx;
+        while (x < sx + w && x < s->w) {
+            int k = Ink(row[flip ? s->w - 1 - x : x]);
+            if (k < 0) { x++; continue; }
+            int x0 = x;
+            while (x < sx + w && x < s->w && Ink(row[flip ? s->w - 1 - x : x]) == k) x++;
+            DrawRectangle(px + x0 - sx, py + y - sy, x - x0, 1, Tag(k));
+        }
+    }
+    tagNow = was;
+}
+void DrawSpriteTag(const Sprite *s, int px, int py, int flip, u8 tag) {
+    u8 was = tagNow; tagNow = tag; DrawSpriteEx(s, px, py, flip); tagNow = was;
+}
 
 // Draw a sprite with its top-left at (px, py); flip mirrors it, for things facing left.
 // Runs of one letter go out as one rectangle, so a 40x48 door is not 1920 quads.
@@ -381,3 +404,300 @@ static const char *const SPR_DOOR_ROWS[] = {
     "5555555555555555555555555555555555555555",
 };
 const Sprite SPR_DOOR = { 40, 48, SPR_DOOR_ROWS };
+
+static const char *const SPR_RK_I1_ROWS[] = {
+    "3333",
+    "3233",
+    "3332",
+    "3333",
+};
+const Sprite SPR_RK_I1 = { 4, 4, SPR_RK_I1_ROWS };
+
+static const char *const SPR_RK_I2_ROWS[] = {
+    "3343",
+    "3333",
+    "2333",
+    "3332",
+};
+const Sprite SPR_RK_I2 = { 4, 4, SPR_RK_I2_ROWS };
+
+static const char *const SPR_RK_I3_ROWS[] = {
+    "3333",
+    "3333",
+    "3323",
+    "3233",
+};
+const Sprite SPR_RK_I3 = { 4, 4, SPR_RK_I3_ROWS };
+
+static const char *const SPR_RK_I4_ROWS[] = {
+    "3333",
+    "3334",
+    "3333",
+    "3333",
+};
+const Sprite SPR_RK_I4 = { 4, 4, SPR_RK_I4_ROWS };
+
+static const char *const SPR_RK_T1_ROWS[] = {
+    "5544",
+    "4443",
+    "3333",
+    "3323",
+};
+const Sprite SPR_RK_T1 = { 4, 4, SPR_RK_T1_ROWS };
+
+static const char *const SPR_RK_T2_ROWS[] = {
+    "4554",
+    "3444",
+    "3333",
+    "3333",
+};
+const Sprite SPR_RK_T2 = { 4, 4, SPR_RK_T2_ROWS };
+
+static const char *const SPR_RK_T3_ROWS[] = {
+    ".554",
+    "5443",
+    "3333",
+    "3233",
+};
+const Sprite SPR_RK_T3 = { 4, 4, SPR_RK_T3_ROWS };
+
+static const char *const SPR_RK_L1_ROWS[] = {
+    "4333",
+    "4333",
+    "4323",
+    "4333",
+};
+const Sprite SPR_RK_L1 = { 4, 4, SPR_RK_L1_ROWS };
+
+static const char *const SPR_RK_L2_ROWS[] = {
+    ".433",
+    "4333",
+    "4333",
+    ".433",
+};
+const Sprite SPR_RK_L2 = { 4, 4, SPR_RK_L2_ROWS };
+
+static const char *const SPR_RK_OT_ROWS[] = {
+    "..54",
+    ".544",
+    "5443",
+    "4333",
+};
+const Sprite SPR_RK_OT = { 4, 4, SPR_RK_OT_ROWS };
+
+static const char *const SPR_RK_NT_ROWS[] = {
+    "4333",
+    "3333",
+    "3333",
+    "3332",
+};
+const Sprite SPR_RK_NT = { 4, 4, SPR_RK_NT_ROWS };
+
+static const char *const SPR_RK_B1_ROWS[] = {
+    "3333",
+    "3332",
+    "2222",
+    ".11.",
+};
+const Sprite SPR_RK_B1 = { 4, 4, SPR_RK_B1_ROWS };
+
+static const char *const SPR_RK_B2_ROWS[] = {
+    "3323",
+    "3333",
+    "2222",
+    "1..1",
+};
+const Sprite SPR_RK_B2 = { 4, 4, SPR_RK_B2_ROWS };
+
+static const char *const SPR_RK_OB_ROWS[] = {
+    "4333",
+    "4332",
+    ".222",
+    "..1.",
+};
+const Sprite SPR_RK_OB = { 4, 4, SPR_RK_OB_ROWS };
+
+static const char *const SPR_RK_NB_ROWS[] = {
+    "3333",
+    "3333",
+    "3333",
+    "2333",
+};
+const Sprite SPR_RK_NB = { 4, 4, SPR_RK_NB_ROWS };
+
+static const char *const SPR_ASH1_ROWS[] = {
+    "24444444",
+    "23333333",
+    "23333333",
+    "22222222",
+    "44442444",
+    "33332333",
+    "33332333",
+    "22222222",
+};
+const Sprite SPR_ASH1 = { 8, 8, SPR_ASH1_ROWS };
+
+static const char *const SPR_ASH2_ROWS[] = {
+    "24444444",
+    "23333323",
+    "23332333",
+    "22222222",
+    "44442444",
+    "33432333",
+    "33332333",
+    "22222222",
+};
+const Sprite SPR_ASH2 = { 8, 8, SPR_ASH2_ROWS };
+
+static const char *const SPR_VEIN1_ROWS[] = {
+    "........",
+    "....A...",
+    "...aAa..",
+    "..aAa...",
+    "..aa.a..",
+    ".....Aa.",
+    "....aa..",
+    "........",
+};
+const Sprite SPR_VEIN1 = { 8, 8, SPR_VEIN1_ROWS };
+
+static const char *const SPR_VEIN2_ROWS[] = {
+    "........",
+    "..A.....",
+    ".aAa....",
+    "..aa.A..",
+    "....aAa.",
+    "...aAa..",
+    "........",
+    "........",
+};
+const Sprite SPR_VEIN2 = { 8, 8, SPR_VEIN2_ROWS };
+
+static const char *const SPR_GLASS_ROWS[] = {
+    "23333332",
+    "3cCCCCc3",
+    "3CgGGgC3",
+    "3CGggGC3",
+    "3CGggGC3",
+    "3CgGGgC3",
+    "3cCCCCc3",
+    "23333332",
+};
+const Sprite SPR_GLASS = { 8, 8, SPR_GLASS_ROWS };
+
+static const char *const SPR_PLANK1_ROWS[] = {
+    "WaWWWWaW",
+    "WWWwWWWW",
+    "wwwwwwww",
+};
+const Sprite SPR_PLANK1 = { 8, 3, SPR_PLANK1_ROWS };
+
+static const char *const SPR_PLANK2_ROWS[] = {
+    "WWWWaWWW",
+    "WwWWWWwW",
+    "wwwwwwww",
+};
+const Sprite SPR_PLANK2 = { 8, 3, SPR_PLANK2_ROWS };
+
+static const char *const SPR_PLANK_END_ROWS[] = {
+    ".aWWWWWW",
+    "wWWwWWWW",
+    ".wwwwwww",
+};
+const Sprite SPR_PLANK_END = { 8, 3, SPR_PLANK_END_ROWS };
+
+static const char *const SPR_CORNICE_ROWS[] = {
+    "55555555",
+    "44444444",
+    "33333333",
+    "2.2.2.2.",
+};
+const Sprite SPR_CORNICE = { 8, 4, SPR_CORNICE_ROWS };
+
+static const char *const SPR_CORNICE_END_ROWS[] = {
+    ".5555555",
+    "44444444",
+    ".3333333",
+    "..2.2.2.",
+};
+const Sprite SPR_CORNICE_END = { 8, 4, SPR_CORNICE_END_ROWS };
+
+static const char *const SPR_MOSS_H1_ROWS[] = {
+    ".c..C.c.",
+    ".C..C.C.",
+    ".C..c.C.",
+    ".c....c.",
+    "......C.",
+    "......c.",
+    "........",
+    "........",
+};
+const Sprite SPR_MOSS_H1 = { 8, 8, SPR_MOSS_H1_ROWS };
+
+static const char *const SPR_MOSS_H2_ROWS[] = {
+    "c.C..cC.",
+    "C.C...C.",
+    "c.C...c.",
+    "..c.....",
+    "........",
+    "........",
+    "........",
+    "........",
+};
+const Sprite SPR_MOSS_H2 = { 8, 8, SPR_MOSS_H2_ROWS };
+
+static const char *const SPR_MOSS_F1_ROWS[] = {
+    "........",
+    "........",
+    "........",
+    "........",
+    "...C....",
+    ".c.Cc.C.",
+    ".CcCC.Cc",
+    "cCCcCCCc",
+};
+const Sprite SPR_MOSS_F1 = { 8, 8, SPR_MOSS_F1_ROWS };
+
+static const char *const SPR_LICHEN_ROWS[] = {
+    "........",
+    "..cC....",
+    ".cCCc...",
+    "..cc....",
+    "......C.",
+    ".....cCc",
+    "......c.",
+    "........",
+};
+const Sprite SPR_LICHEN = { 8, 8, SPR_LICHEN_ROWS };
+
+static const char *const SPR_WALL_VAULT_ROWS[] = {
+    "3333332333333333",
+    "3333332333343333",
+    "3433332333333333",
+    "3333332222222233",
+    "2222223333333323",
+    "3333323333333323",
+    "3343323333433323",
+    "3333323333333322",
+    "3333322222333333",
+    "2222233332333333",
+    "3333333332343333",
+    "3333433332333333",
+    "3333333332222222",
+    "3333333332333333",
+    "2222222222334333",
+    "3333323333333333",
+};
+const Sprite SPR_WALL_VAULT = { 16, 16, SPR_WALL_VAULT_ROWS };
+
+static const char *const SPR_WALL_CITY_ROWS[] = {
+    "3333333233333332",
+    "3333333233333332",
+    "3433333233343332",
+    "2222222222222222",
+    "3332333333323333",
+    "3332333343323333",
+    "3332333333323333",
+    "2222222222222222",
+};
+const Sprite SPR_WALL_CITY = { 16, 8, SPR_WALL_CITY_ROWS };

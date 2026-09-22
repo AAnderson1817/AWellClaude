@@ -111,6 +111,15 @@ void  DrawSprite(const Sprite *s, int px, int py);
 void  DrawSpriteEx(const Sprite *s, int px, int py, int flip);
 // rows y0..y1-1 only; ink >= 0 draws every pixel in that palette colour (a silhouette)
 void  DrawSpriteRows(const Sprite *s, int px, int py, int flip, int y0, int y1, int ink);
+// tag: 255 the far wall, 254 a drawn thing, 253 stone and shelves (see sprites.c)
+void  DrawSpriteTag(const Sprite *s, int px, int py, int flip, u8 tag);
+void  DrawSpriteRect(const Sprite *s, int px, int py, int sx, int sy, int w, int h, int flip, u8 tag);
+enum { TAG_WALL = 255, TAG_THING = 254, TAG_STONE = 253 };
+extern const Sprite SPR_RK_I1, SPR_RK_I2, SPR_RK_I3, SPR_RK_I4, SPR_RK_T1, SPR_RK_T2, SPR_RK_T3, SPR_RK_L1, SPR_RK_L2;
+extern const Sprite SPR_RK_OT, SPR_RK_NT, SPR_RK_B1, SPR_RK_B2, SPR_RK_OB, SPR_RK_NB;
+extern const Sprite SPR_ASH1, SPR_ASH2, SPR_VEIN1, SPR_VEIN2, SPR_GLASS;
+extern const Sprite SPR_PLANK1, SPR_PLANK2, SPR_PLANK_END, SPR_CORNICE, SPR_CORNICE_END;
+extern const Sprite SPR_MOSS_H1, SPR_MOSS_H2, SPR_MOSS_F1, SPR_LICHEN, SPR_WALL_VAULT, SPR_WALL_CITY;
 extern const Sprite SPR_PLAYER_IDLE, SPR_PLAYER_WALK1, SPR_PLAYER_WALK2, SPR_PLAYER_JUMP, SPR_PLAYER_FALL;
 extern const Sprite SPR_BIRD_PERCH, SPR_BIRD_LOOK, SPR_BIRD_UP, SPR_BIRD_DOWN;
 extern const Sprite SPR_BEAST_STAND, SPR_BEAST_WALK1, SPR_BEAST_WALK2, SPR_BEAST_SIT, SPR_BEAST_HEAD;
@@ -259,6 +268,7 @@ extern int sfxCount[SFX_COUNT];
 // with dithering, rim light on edges that face a light, one palette. The old one is the
 // blurred multiply it replaces, kept for comparing.
 extern int lookNew;
+extern int dbgAlbedo;      // --albedo: the art under flat light, for judging it
 // Both rooms are drawn in it. (The flooded room was held back until its water had a ramp
 // of its own: under the first cut the water went black and its lamps rang in rainbows.)
 #define LOOK_NEW (lookNew)
