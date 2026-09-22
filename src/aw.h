@@ -300,7 +300,9 @@ void CityDraw(void);
 // ---------------------------------------------------------------- the palette of the new look
 enum { PL_VOID, PL_DEEP, PL_DARK, PL_STONE, PL_STONEL, PL_STONEH, PL_WARMD, PL_WARM, PL_AMBER,
        PL_AMBERH, PL_COOLD, PL_COOLM, PL_CITY, PL_CITYH, PL_BONE, PL_WATER, PL_WATERL, PL_ACCENT,
-       PL_WATERD, PL_COUNT };
+       PL_WATERD, PL_VIOLET, PL_PEACH, PL_CYAN, PL_MOSSD, PL_MOSS, PL_MOSSL, PL_ROSED, PL_ROSEL,
+       PL_COUNT };
+#define PAL_MAX 32
 extern const Color PAL[PL_COUNT];
 
 // ---------------------------------------------------------------- palette

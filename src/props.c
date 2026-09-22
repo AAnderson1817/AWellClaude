@@ -294,7 +294,7 @@ void PropsLight(void) {
             LightAddPointCool(p->tx * TS + 20.0f, p->ty * TS + 3.0f, 4.2f, 0.85f);
         } else if (p->kind == PR_FIRE && fireLit[roomIdx]) {
             f32 f = 0.85f + 0.15f * sinf(p->phase) + Rnd() * 0.08f;
-            LightAddPoint(p->tx * TS + 4.0f, p->ty * TS + 3.0f, 5.2f, 0.62f * f);
+            LightAddPoint(p->tx * TS + 4.0f, p->ty * TS + 3.0f, 6.8f, 0.75f * f);
         } else if (p->kind == PR_CHAINLAMP) {
             f32 L = p->len * (f32)TS - 3.0f;
             f32 gx = p->tx * TS + 4.0f + sinf(p->a) * L, gy = p->ty * TS + cosf(p->a) * L;

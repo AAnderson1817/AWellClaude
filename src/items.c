@@ -13,7 +13,7 @@ Item items[ITEM_MAX];
 int  itemCount;
 int  heldItem = -1;
 
-#define LAMP_R    7.4f
+#define LAMP_R    9.0f
 #define LAMP_PEAK 0.90f
 
 static u32 rng = 0x1A5B7C9Du;

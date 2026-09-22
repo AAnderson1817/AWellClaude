@@ -124,8 +124,8 @@ u8 TileAtPx(float px, float py) {
 // open space beside it, that space pushes into its neighbours, and stone receives
 // light but never passes it on. So the wall facing a seam glows and the tunnel
 // behind it stays black, which is the whole reason the room reads as having depth.
-#define LATT_O 0.796f      // attenuation per orthogonal step
-#define LATT_D 0.706f      // per diagonal step
+#define LATT_O 0.835f      // attenuation per orthogonal step (0.796 before the lighting pass: too short a reach)
+#define LATT_D 0.748f      // per diagonal step
 #define LPASS  48          // relaxation passes; the grid is 880 cells, this is free
 
 // Two bakes, two colours. Warm is flame and flame is the hunters': the seams in raw rock,
@@ -329,7 +329,7 @@ static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK, int cool) {
 }
 
 static void AddAura(void) {
-    AddPoint(player.x + player.w * 0.5f, player.y + player.h * 0.5f, 4.6f, 0.42f, 0);
+    AddPoint(player.x + player.w * 0.5f, player.y + player.h * 0.5f, 5.4f, 0.48f, 0);
 }
 void LightAddPoint(f32 px, f32 py, f32 R, f32 peak)     { AddPoint(px, py, R, peak, 0); }
 void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak) { AddPoint(px, py, R, peak, 1); }

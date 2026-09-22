@@ -5,7 +5,8 @@
 // is what the composite snaps to:
 //   0 void  1 deep  2 dark  3 stone  4 stone-lit  5 stone-high
 //   w warm-dark  W warm  a amber  A amber-high  c cool-dark  C cool  g city  G city-high
-//   b bone  u water  U water-lit  d water-dark  r accent  . nothing
+//   b bone  u water  U water-lit  d water-dark  r rose  p rose-dark  P rose-light
+//   v violet  o peach  y cyan  m moss-dark  M moss  L moss-light  . nothing
 #include "aw.h"
 
 static int Ink(char c) {
@@ -15,7 +16,9 @@ static int Ink(char c) {
         case 'w': return PL_WARMD; case 'W': return PL_WARM;   case 'a': return PL_AMBER; case 'A': return PL_AMBERH;
         case 'c': return PL_COOLD; case 'C': return PL_COOLM;  case 'g': return PL_CITY;  case 'G': return PL_CITYH;
         case 'b': return PL_BONE;  case 'u': return PL_WATER;  case 'U': return PL_WATERL; case 'd': return PL_WATERD;
-        case 'r': return PL_ACCENT;
+        case 'r': return PL_ACCENT; case 'p': return PL_ROSED; case 'P': return PL_ROSEL;
+        case 'v': return PL_VIOLET; case 'o': return PL_PEACH; case 'y': return PL_CYAN;
+        case 'm': return PL_MOSSD;  case 'M': return PL_MOSS;  case 'L': return PL_MOSSL;
         default:  return -1;
     }
 }

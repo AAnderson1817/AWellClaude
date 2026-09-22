@@ -14,7 +14,8 @@ for name, r, g, b in re.findall(r"\[PL_(\w+)\]\s*=\s*\{\s*(\d+),\s*(\d+),\s*(\d+
     PAL[name] = (int(r), int(g), int(b))
 LEGEND = {'0': 'VOID', '1': 'DEEP', '2': 'DARK', '3': 'STONE', '4': 'STONEL', '5': 'STONEH',
           'w': 'WARMD', 'W': 'WARM', 'a': 'AMBER', 'A': 'AMBERH', 'c': 'COOLD', 'C': 'COOLM',
-          'g': 'CITY', 'G': 'CITYH', 'b': 'BONE', 'u': 'WATER', 'U': 'WATERL', 'r': 'ACCENT', 'd': 'WATERD'}
+          'g': 'CITY', 'G': 'CITYH', 'b': 'BONE', 'u': 'WATER', 'U': 'WATERL', 'r': 'ACCENT', 'd': 'WATERD',
+          'p': 'ROSED', 'P': 'ROSEL', 'v': 'VIOLET', 'o': 'PEACH', 'y': 'CYAN', 'm': 'MOSSD', 'M': 'MOSS', 'L': 'MOSSL'}
 
 def sprites():
     s = open(os.path.join(ROOT, "src/sprites.c")).read()
