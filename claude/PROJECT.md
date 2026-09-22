@@ -275,6 +275,28 @@ Past the room's edges counts as stone -- found when the border rock was being ba
 the blank strip outside the room were the far city. `--albedo` shows the art under flat
 light, for judging it.
 
+### The air
+
+Animal Well runs a fluid solver over the whole screen on a layer of its own, and sprites
+push into it; it is presentational, never mechanical. `src/air.c` is the same idea, small:
+stable fluids on a grid of 4px cells over the room (80x44), stone a wall to it and the
+water's surface its floor, ten relaxation passes a step.
+
+What stirs it: your body moving through it; a landing, which shoves the air out sideways
+and throws the floor's dust into it; a jump; a splash; the fire, whose heat rises and
+carries smoke that leans in a draft that comes and goes; the door's settling dust in the
+first seconds and when you land hard beside it; a pot breaking; a bird taking off; a draft
+up through the grate from the cistern; mist breathing off the flooded water, lying on it;
+a little air falling down the drain. What shows it: dust, smoke and mist drawn into the
+lit layer as ordered-dither pixels paler than any wall -- so they are seen only where light
+falls, and vanish in the dark -- and the motes and landing dust, which ride the currents.
+
+It is quiet on purpose: nothing billows unless something made it. Nothing reads it, and
+headless runs switch it off (the bots run a million frames). `AWELL_AIRDBG=1` prints the
+field's density and speed every ten frames -- which is how the first cut was found to be
+too thin to see: its puffs peaked at 0.2 and a landing's own push scattered them in a few
+frames, and it was drawn in the wall's greys, so the light snapped it to the wall.
+
 ### Calm (a tuning, after the Vault Mouth was played)
 
 The user heard the rooms as busy. Measured standing still for a minute: 56 unprompted

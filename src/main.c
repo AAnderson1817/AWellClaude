@@ -196,6 +196,7 @@ static void Sim(void) {
     FxStep();
     LifeStep();
     PropsStep();
+    AirStep();
     if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
         && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
@@ -237,6 +238,7 @@ static void Frame(void) {
             RoomDraw();
             PropsDrawFront();
             BulbsDraw();
+            AirDraw();             // dust, smoke, mist: seen only where the light falls
             LifeDraw();
             ItemsDrawBehind();
             PlayerDraw();
@@ -327,6 +329,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    airOff = noDraw;          // the air is only ever looked at
     SetTraceLogLevel(LOG_WARNING);
     if (!dbgFixedStep) SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(GW * winScale, GH * winScale, "well");

@@ -186,9 +186,10 @@ void PropsStep(void) {
         case PR_DOOR: {
             f32 cx = px + 20, foot = py + 48;
             // The closing just happened: the lintel sheds for the first three seconds.
-            if (age < 180 && (age % 9) == 0) Dust(px + 2, px + 30, py, 1);
+            if (age < 180 && (age % 9) == 0) { Dust(px + 2, px + 30, py, 1); AirPuff(px + 16, py + 4, 0.16f, 8.0f, 0.0f); AirPush(px + 16, py + 4, 0.0f, 0.15f, 8.0f); }
             if (Landed() && fabsf(PCX() - cx) < 4 * TS && player.y + player.h > foot - 12) {
                 Dust(px + 2, px + 30, py, 4);
+                AirPuff(px + 16, py + 4, 0.4f, 10.0f, 0.0f);
                 Sfx(SFX_GRIT, 0.5f, 1.0f + Rnd() * 0.1f, cx / GW);
             }
             // Your lamp near: a glint runs once around the spiral, then not again until you leave.
@@ -224,6 +225,9 @@ void PropsStep(void) {
                 }
             } else {
                 p->phase += 0.21f + Rnd() * 0.06f;
+                AirPush(cx, cy - 5.0f, 0.0f, -0.22f, 4.0f);              // heat rises, and takes smoke with it
+                AirPush(cx, cy - 20.0f, 0.10f * sinf(frameNo * 0.013f), 0.0f, 8.0f);   // and leans in a draft that comes and goes
+                if ((frameNo % 2) == 0) AirPuff(cx, cy - 6.0f, 0.22f, 3.0f, 1.0f);
                 if (--p->timer <= 0) { Sfx(SFX_CRACKLE, 0.2f + Rnd() * 0.12f, 0.9f + Rnd() * 0.3f, cx / GW); p->timer = 180 + (int)((Rnd() + 0.5f) * 360); }
                 if ((frameNo % 7) == 0 && Rnd() > 0.1f) FxBurst(FX_SPARK, cx + Rnd() * 3, cy - 3, 1, 0.3f, 0.7f);
             }
@@ -256,6 +260,7 @@ void PropsStep(void) {
                 if (TileSolid(below) || (TileOneWay(below) && p->vy > 0)) {
                     p->state = POT_GONE;
                     FxBurst(FX_SHARD, p->x + 2.5f, p->y + 5.0f, 9, 1.1f, 0.9f);
+                    AirPuff(p->x + 2.5f, p->y + 3.0f, 0.5f, 6.0f, 0.0f);
                     FxBurst(FX_DUST, p->x + 2.5f, p->y + 5.0f, 4, 0.7f, 0.2f);
                     Sfx(SFX_SHATTER, 0.7f, 0.95f + Rnd() * 0.1f, p->x / GW);
                 } else if (p->y > RH * TS + 8) p->state = POT_GONE;

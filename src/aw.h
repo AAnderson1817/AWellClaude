@@ -103,6 +103,17 @@ enum { Z_VAULT = 0, Z_CITY };
 int ZoneAt(int tx, int ty);
 void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak);   // the city's colour of light
 
+// ---------------------------------------------------------------- the air
+// A small fluid over the room (air.c). Presentational: nothing reads it. Things push it and
+// put dust, smoke or mist into it; the motes ride it; it is drawn into the lit layer.
+extern int airOff;          // headless runs: off
+void AirInit(void);         // per room, after the tiles
+void AirStep(void);
+void AirDraw(void);
+void AirPush(f32 px, f32 py, f32 vx, f32 vy, f32 radius);         // px per frame
+void AirPuff(f32 px, f32 py, f32 amount, f32 radius, f32 warm);   // warm: 1 smoke, 0 dust/mist
+void AirAt(f32 px, f32 py, f32 *vx, f32 *vy);
+
 // ---------------------------------------------------------------- props
 // The dressing that answers you: a second text grid per room in props.c. Set pieces are
 // text sprites, rows of palette letters. Nothing here is read by a rule.

@@ -62,8 +62,11 @@ void FxBurst(int kind, float x, float y, int n, float spread, float up) {
 void FxStep(void) {
     for (int i = 0; i < MOTE_N; i++) {
         motes[i].ph += 0.013f + motes[i].sp * 0.004f;
-        motes[i].x += sinf(motes[i].ph) * 0.10f;
-        motes[i].y -= motes[i].sp * 0.14f;          // the air in here rises, slowly
+        f32 ax, ay; AirAt(motes[i].x, motes[i].y, &ax, &ay);
+        motes[i].x += sinf(motes[i].ph) * 0.10f + ax * 0.9f;
+        motes[i].y -= motes[i].sp * 0.14f - ay * 0.9f;   // the air in here rises, slowly, and moves when it is moved
+        if (motes[i].x < 0) motes[i].x += RW * TS;
+        if (motes[i].x >= RW * TS) motes[i].x -= RW * TS;
         if (motes[i].y < 0) { motes[i].y = RH * TS; motes[i].x = Rnd() * (RW * TS); }
     }
 
@@ -102,6 +105,7 @@ void FxStep(void) {
             case FX_DUST:
             case FX_SHARD: {
                 p->vy += (p->kind == FX_SPLASH) ? 0.13f : (p->kind == FX_SHARD ? 0.12f : 0.020f);
+                if (p->kind == FX_DUST) { f32 ax, ay; AirAt(p->x, p->y, &ax, &ay); p->x += ax * 0.6f; p->y += ay * 0.6f; }
                 p->x += p->vx; p->y += p->vy;
                 p->vx *= (p->kind == FX_SHARD) ? 0.97f : 0.90f;
                 if (TileSolid(TileAtPx(p->x, p->y))) p->life = 0;

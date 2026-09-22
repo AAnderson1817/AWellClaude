@@ -116,6 +116,7 @@ static void BirdStartle(Bird *b, float fromX, float fromY) {
     b->target = t; b->state = B_FLY; b->flap = 0;
     b->vy = -1.2f; b->vx = (perches[t].x > b->x ? 0.6f : -0.6f);
     Sfx(SFX_WING, 0.8f, 0.9f + AudioRnd() * 0.2f, b->x / (float)GW);
+    AirPush(b->x, b->y - 2.0f, 0.0f, 1.2f, 7.0f);
     lifeBirdsStartled++;
 }
 

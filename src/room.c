@@ -450,6 +450,7 @@ void RoomEnter(int idx) {
     ParseRoom(idx, tiles);          // sets the bulbs for this room too
     FindSurfaces();
     PropsInit();
+    AirInit();
     LightBake();
     memset(surfH, 0, sizeof surfH);
     memset(surfV, 0, sizeof surfV);

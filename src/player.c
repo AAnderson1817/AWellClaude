@@ -121,6 +121,10 @@ static void MoveY(float dy) {
                     if (n > 10) n = 10;
                     FxBurst(FX_DUST, cx, cy, n, 0.8f, 0.30f);
                     player.landImpact = 7;
+                    // the air under you is shoved out sideways, and takes the floor's dust with it
+                    AirPuff(cx, cy - 2.0f, (0.6f + player.vy * 0.35f) * (player.heavy ? 1.5f : 1.0f), 6.0f, 0.0f);
+                    AirPush(cx - 5.0f, cy - 2.0f, -0.45f - player.vy * 0.15f, -0.12f, 5.0f);
+                    AirPush(cx + 5.0f, cy - 2.0f,  0.45f + player.vy * 0.15f, -0.12f, 5.0f);
                     float v = (player.vy - 0.8f) / 2.2f;
                     if (player.heavy) v = v * 1.3f + 0.15f;
                     if (v > 1.0f) v = 1.0f;
@@ -188,6 +192,8 @@ void PlayerStep(void) {
             if (!wasSubmerged && sp > 0.4f) {
                 float v = 0.35f + sp * 0.25f; if (v > 1.0f) v = 1.0f;
                 Sfx(SFX_SPLASH_IN, v, 0.92f + AudioRnd() * 0.1f, 0.5f);
+                AirPuff(cx, (float)player.waterY - 3.0f, 0.3f + sp * 0.2f, 6.0f, 0.0f);
+                AirPush(cx, (float)player.waterY - 3.0f, 0.0f, -0.6f - sp * 0.3f, 6.0f);
                 player.splashCool = 75;      // the settling bob crosses the line for about a second
             } else if (wasSubmerged && player.vy < -0.8f) {
                 Sfx(SFX_SPLASH_OUT, 0.6f, 1.0f + AudioRnd() * 0.1f, 0.5f);
@@ -265,6 +271,7 @@ void PlayerStep(void) {
             player.jumpBuf = 0; player.coyote = 0;
             player.onGround = 0; player.jumpHeld = 1;
             FxBurst(FX_DUST, player.x + player.w * 0.5f, player.y + player.h, 4, 0.5f, 0.10f);
+            AirPush(player.x + player.w * 0.5f, player.y + player.h, 0.0f, 1.0f, 5.0f);
             Sfx(SFX_JUMP, 1.0f, 0.95f + AudioRnd() * 0.1f, 0.5f);
         }
         if (!in.jump) player.jumpHeld = 0;
@@ -304,6 +311,9 @@ void PlayerStep(void) {
                 (player.heavy ? 0.84f : 0.92f) + AudioRnd() * 0.12f, 0.5f);
         }
     }
+    // A body moving through air moves the air.
+    if (fabsf(player.vx) > 0.3f || fabsf(player.vy) > 0.5f)
+        AirPush(player.x + player.w * 0.5f, player.y + player.h * 0.5f, player.vx * 0.45f, player.vy * 0.25f, 6.0f);
     player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;
     player.leanY += (player.vy * 0.35f - player.leanY) * 0.18f;
     if (--player.blink < 0) player.blink = 70 + (int)(Hash2((int)frameNo, 3) % 150);
