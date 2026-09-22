@@ -43,27 +43,17 @@ Rows that matter: the door's foot is row 21. The walk along the top (the passage
 gallery, the sill) stands on row 14. The undercroft and the hall floor stand on row 35. The basin's surface
 is row 36, its floor row 43.
 
-**A, forecourt.** You wake at the foot of the door. It is the whole of the first
-screen's far wall: 168 px tall, fifteen times your height, set into a wall of the tall
-ones' masonry built into the raw rock. Four designs of it are in the build for choosing
-between (keys 1-4, `--door N`; `tools/art/doors.py`), all on the theme of a living archive,
-technology grown through with living things:
-
-1. **iris**: a closed aperture of nine leaf-blades, each with a midrib of light, closing on
-   a lens; its ring inscribed in bands and set with glass; roots gripping it, moss hanging.
-2. **heartwood**: a trunk's cross-section grown as the door. The rings are the records,
-   cut with marks; a few are in use, an arc of light along them with a bright point where
-   it reads. Bark rim, roots into the floor banded in iron and beaded with glass.
-3. **stacks**: an arched portal in a cliff of archive niches, records lit and dark, some
-   grown over; a round seal across the parting with a slit of light; roots and vines.
-4. **engine**: geared, inscribed wheels round a stone flower with a glass heart, beads of
-   glass riding the inner wheel, pipes into the floor, flowering vines through the gears.
-
-The door's light is its own: its glow picture is drawn in the emissive layer and seeds
-the bake where it covers a tile. The prints come up on its lower face in the dark. To the
-right, a chasm drops to the undercroft (old ropes over its lip) and a slope of fallen rock
-climbs to the passage, where the mural runs and a glass lamp in the roof washes it green.
-The flue slot is in the roof over the slope, out of reach.
+**A, intake (rebuilt in the archive's language; see `claude/ARCHIVE.md`).** You wake at
+the foot of the door: the largest cell in the building, 160 px across, its ring cut with the
+catalogue, nine blades closed on a lens that is awake and lights them from within. Two
+ribs frame it and lean in toward an arch out of sight overhead; the wall behind is the
+collection on its shelves -- sockets, vessels, tablets, gaps -- mostly asleep or dark, this
+being the archive's edge. To the right the mountain has pushed back in over the lower
+stacks: the chasm drops toward the heart (old ropes over its lip), fallen rock climbs to
+the passage, the index frieze runs above it (the mural is carved into it), and a third rib
+frames the way into the hall. Every vein runs down into the chasm; pulses run along them.
+The whole far wall is one picture made from the kit (`tools/art/bay_a.py`). The earlier
+four door designs are parked in `parked/art-doors/`.
 
 **B, upper gallery.** The colossus's head fills the back wall inside its niche: a
 seated tall one in profile, facing the undercroft, one green glass eye. A lamp on a long

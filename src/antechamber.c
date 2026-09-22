@@ -104,7 +104,7 @@ const ZRect ROOM_CITY[] = {
 };
 
 const Feature ROOM_FEATURES[] = {
-    { F_DOOR, 1, 0, 22, 21, 0 },
+    { F_BAY, 0, 0, 40, 22, 0 },
     { F_CORNICE, 40, 1, 79, 1, 0 },
     { F_NICHE, 45, 3, 32, 40, 0 },
     { F_PILLAR, 78, 2, 3, 34, 0 },

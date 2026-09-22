@@ -23,6 +23,13 @@ pushed on it is in it. Whatever design of the door is chosen, it should be reada
 made (rings, blades, cells, wheels, inscription) and as grown (roots, moss, rings, leaves),
 and its light should be theirs.
 
+**Decided: it quietly catalogues.** The archive's makers were to keep every living thing
+alive through the cold. Its heart is cooling and it cannot make warmth, so it moves its
+collection down the tiers -- living, sleeping, pattern -- and it does the same to whatever
+warm thing comes down the chimney. You are entered at the door (the prints), the hunter
+is kept living, the sitters are being moved to sleep, the bones are pattern. It is never
+shown as an event and nothing is done to anyone on screen. See `claude/ARCHIVE.md`.
+
 ## 1. The surface (the first ten minutes)
 
 You are a treasure hunter. You came down a throat of rock glittering with green glass, and

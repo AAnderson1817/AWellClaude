@@ -73,7 +73,7 @@ typedef struct { i16 x0, y0, x1, y1; } ZRect;
 extern const ZRect ROOM_CITY[];            //                where the stone is theirs; ends at x0 < 0
 // The backdrop's big pieces, in tiles: drawn behind everything, and only the tiles marked
 // carved in the map ('X', 'x') stand under them for you to stand on.
-enum { F_NONE = 0, F_COLOSSUS, F_WINDOW, F_GRILLE, F_NICHE, F_PILLAR, F_CORNICE, F_DOOR };
+enum { F_NONE = 0, F_COLOSSUS, F_WINDOW, F_GRILLE, F_NICHE, F_PILLAR, F_CORNICE, F_BAY };
 typedef struct { u8 kind; i16 x, y, w, h, a; } Feature;
 extern const Feature ROOM_FEATURES[];      //                ends at F_NONE
 // What a tile is drawn as, beyond its kind: carved (the backdrop draws it, the room does
@@ -334,9 +334,7 @@ void BackdropDraw(void);    // over the far wall, under the stone
 void BackdropDrawEmis(void);
 void BackdropLights(void);
 int  WindowSpan(int y, int *x0, int *x1);   // room px spans of the openings, per row
-#define DOOR_KINDS 4
-extern int doorKind;        // which design of the temple door (--door N, keys 1-4)
-f32  BackdropGlow(int tx, int ty);          // 0..1: the door's own light over a tile
+f32  BackdropGlow(int tx, int ty);          // 0..1: a bay's own light over a tile
 void RoomRelight(void);     // bake the light again (after the door changes)
 int  GrilleSpan(int y, int *x0, int *x1);
 

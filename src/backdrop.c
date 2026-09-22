@@ -16,23 +16,21 @@
 
 extern const unsigned char ART_COLOSSUS[];
 extern const int ART_COLOSSUS_LEN;
-extern const unsigned char ART_DOOR_IRIS[], ART_DOOR_IRIS_GLOW[], ART_DOOR_HEARTWOOD[], ART_DOOR_HEARTWOOD_GLOW[],
-                           ART_DOOR_STACKS[], ART_DOOR_STACKS_GLOW[], ART_DOOR_ENGINE[], ART_DOOR_ENGINE_GLOW[];
-extern const int ART_DOOR_IRIS_LEN, ART_DOOR_IRIS_GLOW_LEN, ART_DOOR_HEARTWOOD_LEN, ART_DOOR_HEARTWOOD_GLOW_LEN,
-                 ART_DOOR_STACKS_LEN, ART_DOOR_STACKS_GLOW_LEN, ART_DOOR_ENGINE_LEN, ART_DOOR_ENGINE_GLOW_LEN;
+extern const unsigned char ART_BAY_A[], ART_BAY_A_GLOW[];
+extern const int ART_BAY_A_LEN, ART_BAY_A_GLOW_LEN;
+extern const i16 VEINS_BAY_A[];          // x, y pairs; a path ends at -1
+extern const int VEINS_BAY_A_LEN;
 
-// The temple door, in the designs being chosen between (tools/art/doors.py). Each is a
-// picture for the far wall and a picture of what of it gives its own light.
-static const struct { const unsigned char *a, *g; const int *an, *gn; } DOORS[DOOR_KINDS] = {
-    { ART_DOOR_IRIS, ART_DOOR_IRIS_GLOW, &ART_DOOR_IRIS_LEN, &ART_DOOR_IRIS_GLOW_LEN },
-    { ART_DOOR_HEARTWOOD, ART_DOOR_HEARTWOOD_GLOW, &ART_DOOR_HEARTWOOD_LEN, &ART_DOOR_HEARTWOOD_GLOW_LEN },
-    { ART_DOOR_STACKS, ART_DOOR_STACKS_GLOW, &ART_DOOR_STACKS_LEN, &ART_DOOR_STACKS_GLOW_LEN },
-    { ART_DOOR_ENGINE, ART_DOOR_ENGINE_GLOW, &ART_DOOR_ENGINE_LEN, &ART_DOOR_ENGINE_GLOW_LEN },
+// The bays: the far wall of each screen drawn in the archive's parts (claude/ARCHIVE.md,
+// tools/art/kit.py). A picture for the wall, a picture of its own light, the paths of its
+// veins. Built so far: A.
+static const struct { const unsigned char *a, *g; const int *an, *gn; const i16 *v; const int *vn; } BAYS[] = {
+    { ART_BAY_A, ART_BAY_A_GLOW, &ART_BAY_A_LEN, &ART_BAY_A_GLOW_LEN, VEINS_BAY_A, &VEINS_BAY_A_LEN },
 };
-int doorKind = -1;                      // -1: the map's choice (F_DOOR's a)
-static Texture2D doorGlow;
-static int doorX, doorY;                // room px of the door picture's top-left
-static f32 glowTile[RH][RW];            // how much of each tile the door's light covers, 0..1
+#define BAY_KINDS ((int)(sizeof BAYS / sizeof BAYS[0]))
+static Texture2D bayGlow[BAY_KINDS];
+static int bayX[BAY_KINDS], bayY[BAY_KINDS];     // room px of each bay picture's top-left
+static f32 glowTile[RH][RW];            // how much of each tile a bay's own light covers, 0..1
 f32 BackdropGlow(int tx, int ty) { return (tx < 0 || tx >= RW || ty < 0 || ty >= RH) ? 0 : glowTile[ty][tx]; }
 
 static Texture2D wallTex;
@@ -255,37 +253,71 @@ static void Colossus(const Feature *f) {
     UnloadImage(im);
 }
 
-// The door: its picture into the wall, its light kept as a texture of its own and as a
-// coverage per tile, which the bake seeds its light from.
-static void Door(const Feature *f) {
-    int k = doorKind >= 0 ? doorKind : f->a;
-    if (k < 0 || k >= DOOR_KINDS) k = 0;
-    doorKind = k;
-    doorX = f->x * TS; doorY = f->y * TS + 2;
-    Image im = LoadImageFromMemory(".png", DOORS[k].a, *DOORS[k].an);
+// A bay: its picture into the wall, its light kept as a texture of its own and as a coverage
+// per tile, which the bake seeds its light from.
+static void Bay(const Feature *f) {
+    int k = f->a;
+    if (k < 0 || k >= BAY_KINDS) return;
+    bayX[k] = f->x * TS; bayY[k] = f->y * TS;
+    Image im = LoadImageFromMemory(".png", BAYS[k].a, *BAYS[k].an);
     ImageFormat(&im, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     Color *c = (Color *)im.data;
     for (int y = 0; y < im.height; y++)
         for (int x = 0; x < im.width; x++) {
             Color p = c[y * im.width + x];
-            if (!p.a || doorX + x >= PW || doorY + y >= PH) continue;
-            px[(doorY + y) * PW + doorX + x] = p;
+            int X = bayX[k] + x, Y = bayY[k] + y;
+            if (!p.a || X < 0 || X >= PW || Y < 0 || Y >= PH) continue;
+            px[Y * PW + X] = p;
         }
     UnloadImage(im);
-    Image g = LoadImageFromMemory(".png", DOORS[k].g, *DOORS[k].gn);
+    Image g = LoadImageFromMemory(".png", BAYS[k].g, *BAYS[k].gn);
     ImageFormat(&g, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     Color *gc = (Color *)g.data;
-    memset(glowTile, 0, sizeof glowTile);
     for (int y = 0; y < g.height; y++)
         for (int x = 0; x < g.width; x++) {
             if (!gc[y * g.width + x].a) continue;
-            int tx = (doorX + x) / TS, ty = (doorY + y) / TS;
-            if (tx < RW && ty < RH) glowTile[ty][tx] += 1.0f / 12.0f;
+            int tx = (bayX[k] + x) / TS, ty = (bayY[k] + y) / TS;
+            if (tx >= 0 && tx < RW && ty >= 0 && ty < RH && glowTile[ty][tx] < 1) glowTile[ty][tx] += 1.0f / 12.0f;
         }
-    for (int y = 0; y < RH; y++) for (int x = 0; x < RW; x++) if (glowTile[y][x] > 1) glowTile[y][x] = 1;
-    if (doorGlow.id) UnloadTexture(doorGlow);
-    doorGlow = LoadTextureFromImage(g);
+    if (bayGlow[k].id) UnloadTexture(bayGlow[k]);
+    bayGlow[k] = LoadTextureFromImage(g);
     UnloadImage(g);
+}
+
+// The archive reading: now and then a pulse of light runs the length of a vein, always the
+// same way -- toward the heart. Each vein has its own slow period, so they never march.
+static void VeinPulses(void) {
+    for (int k = 0; k < BAY_KINDS; k++) {
+        const i16 *v = BAYS[k].v;
+        int n = *BAYS[k].vn, start = 0, path = 0;
+        while (start < n) {
+            int end = start;
+            while (end < n && v[end] >= 0) end += 2;
+            // the path's length, and where along it the pulse is
+            f32 len = 0;
+            for (int i = start; i + 3 < end; i += 2) len += hypotf((f32)(v[i + 2] - v[i]), (f32)(v[i + 3] - v[i + 1]));
+            int period = 360 + (int)(Hash2(k * 31 + path, 7) % 420);
+            f32 t = (f32)((frameNo + Hash2(path, k) % period) % period) * 1.3f;
+            if (t < len) {
+                for (int tail = 0; tail < 5; tail++) {
+                    f32 want = t - tail * 1.5f, acc = 0;
+                    if (want < 0) break;
+                    for (int i = start; i + 3 < end; i += 2) {
+                        f32 dx = (f32)(v[i + 2] - v[i]), dy = (f32)(v[i + 3] - v[i + 1]), L = hypotf(dx, dy);
+                        if (acc + L >= want && L > 0) {
+                            f32 u = (want - acc) / L;
+                            int x = (int)(v[i] + dx * u), y = (int)(v[i + 1] + dy * u);
+                            if (x > camX - 4 && x < camX + GW + 4 && y > camY - 4 && y < camY + GH + 4)
+                                DrawRectangle(x, ROOM_Y + y, 1, 1, PAL[tail == 0 ? PL_CITYH : (tail < 3 ? PL_CITY : PL_COOLM)]);
+                            break;
+                        }
+                        acc += L;
+                    }
+                }
+            }
+            start = end + 1; path++;
+        }
+    }
 }
 
 // ---------------------------------------------------------------- the stone
@@ -330,6 +362,7 @@ static void BuriedRock(int tx, int ty) {
 
 // ---------------------------------------------------------------- build
 void BackdropInit(void) {
+    memset(glowTile, 0, sizeof glowTile);
     Image im = GenImageColor(PW, PH, BLANK);
     ImageFormat(&im, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     px = (Color *)im.data;
@@ -346,7 +379,7 @@ void BackdropInit(void) {
             if (pass == 1 && f->kind == F_WINDOW) Window(f);
             if (pass == 1 && f->kind == F_GRILLE) Grille(f);
             if (pass == 2 && f->kind == F_COLOSSUS) Colossus(f);
-            if (pass == 2 && f->kind == F_DOOR) Door(f);
+            if (pass == 2 && f->kind == F_BAY) Bay(f);
         }
     for (int ty = 0; ty < RH; ty++)               // and last, the stone in front of all of it
         for (int tx = 0; tx < RW; tx++) {
@@ -372,8 +405,11 @@ void BackdropDraw(void) {
 
 // What gives its own light: the colossus's eye, green glass, and the sliver of the other.
 void BackdropDrawEmis(void) {
-    if (doorGlow.id && doorX < camX + GW + 8 && doorX + doorGlow.width > camX - 8 && doorY < camY + GH + 8)
-        DrawTexture(doorGlow, doorX, ROOM_Y + doorY, WHITE);
+    for (int k = 0; k < BAY_KINDS; k++)
+        if (bayGlow[k].id && bayX[k] < camX + GW + 8 && bayX[k] + bayGlow[k].width > camX - 8
+            && bayY[k] < camY + GH + 8 && bayY[k] + bayGlow[k].height > camY - 8)
+            DrawTexture(bayGlow[k], bayX[k], ROOM_Y + bayY[k], WHITE);
+    VeinPulses();
     if (!Find(F_COLOSSUS)) return;
     int ex = 36 * TS + 150, ey = ROOM_Y + TS + 46;
     if (ex < camX - 16 || ex > camX + GW + 16 || ey < camY - 16 || ey > camY + GH + 16) return;
@@ -384,6 +420,8 @@ void BackdropDrawEmis(void) {
 }
 
 void BackdropLights(void) {
+    // bay A's door is a cell awake: its lens lights its own blades from within, their colour
+    if (BAY_KINDS > 0 && bayGlow[0].id) LightAddPointCool(bayX[0] + 104.0f, bayY[0] + 88.0f, 9.5f, 0.75f + 0.08f * sinf(frameNo * 0.021f));
     // the eye lights a little of the face round it, in their colour
     LightAddPointCool(36 * TS + 152, TS + 46, 5.0f, 0.55f);
 }

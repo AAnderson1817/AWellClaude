@@ -15,6 +15,7 @@ IDX = {n: i for i, n in enumerate(NAMES)}
 
 def h2(x, y, s=0):
     """A hash to 0..1, like the game's Hash2 in spirit."""
+    x, y, s = int(x), int(y), int(round(s * 1000)) if isinstance(s, float) else int(s)
     v = (x * 374761393 + y * 668265263 + s * 2246822519) & 0xFFFFFFFF
     v = (v ^ (v >> 13)) * 1274126177 & 0xFFFFFFFF
     return ((v ^ (v >> 16)) & 0xFFFF) / 65535.0

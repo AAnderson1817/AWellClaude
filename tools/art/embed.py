@@ -21,5 +21,21 @@ for f in files:
     out.append('};')
     out.append('const int %s_LEN = %d;' % (name, len(data)))
     out.append('')
+# veins: one path per line, "x,y x,y ..." in room px; as x, y pairs with -1 ending each path
+for f in sorted(glob.glob(os.path.join(ROOT, 'art', '*.veins'))):
+    name = 'VEINS_' + os.path.splitext(os.path.basename(f))[0].upper()
+    vals = []
+    for line in open(f):
+        pts = [p.split(',') for p in line.split()]
+        if len(pts) < 2: continue
+        for x, y in pts: vals += [int(x), int(y)]
+        vals.append(-1)
+    out.append('const i16 %s[%d] = {' % (name, max(len(vals), 1)))
+    for i in range(0, len(vals), 20):
+        out.append('    ' + ','.join(str(v) for v in vals[i:i + 20]) + ',')
+    out.append('};')
+    out.append('const int %s_LEN = %d;' % (name, len(vals)))
+    out.append('')
+    files.append(f)
 open(os.path.join(ROOT, 'src', 'art_data.c'), 'w', newline='\n').write('\n'.join(out))
 print('embedded', ', '.join(os.path.basename(f) for f in files))

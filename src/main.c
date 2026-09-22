@@ -228,8 +228,6 @@ static void Frame(void) {
     if (!planLen && !wanderSeed) {
         if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
         if (IsKeyPressed(KEY_V)) lookNew = !lookNew;    // the old look, for comparing
-        for (int k = 0; k < DOOR_KINDS; k++)             // the door's designs, for choosing between
-            if (IsKeyPressed(KEY_ONE + k) && doorKind != k) { doorKind = k; BackdropInit(); RoomRelight(); }
     }
     if (dbgFixedStep) {
         Sim();
@@ -333,8 +331,6 @@ int main(int argc, char **argv) {
             winScale = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--wander") && i + 1 < argc) {
             wanderSeed = atoi(argv[++i]); dbgFixedStep = 1; noDraw = 1;
-        } else if (!strcmp(argv[i], "--door") && i + 1 < argc) {
-            doorKind = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
             startRoom = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--lamp") && i + 1 < argc) {

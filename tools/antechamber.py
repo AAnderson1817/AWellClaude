@@ -117,7 +117,7 @@ R.city(1, 0, 22, 20)                    # and the door's wall: theirs, built int
 
 # ------------------------------------------------------------------ backdrop pieces
 # (kind, x, y, w, h, a) in tiles
-R.feat('F_DOOR', 1, 0, 22, 21)          # the door: canvas at (8, 2) px, see tools/art/door_*.py
+R.feat('F_BAY', 0, 0, 40, 22, 0)        # bay A, the intake: tools/art/bay_a.py paints its whole far wall
 R.feat('F_CORNICE', 40, 1, 79, 1)
 R.feat('F_NICHE', 45, 3, 32, 40)
 R.feat('F_PILLAR', 78, 2, 3, 34)
