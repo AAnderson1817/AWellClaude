@@ -1,17 +1,26 @@
-// backdrop.c -- the hall's big pieces: the colossus, the great window, the fireguard.
+// backdrop.c -- the far wall and the hall's big pieces on it: the colossus in its niche, the
+// great window, the fireguard, the pilasters and the cornice.
 //
-// They are backdrop: drawn over the far wall and under everything else, and where you can
-// stand on one, the map carves a tile under it ('X') and the room leaves the drawing to
-// this. The colossus is a picture (art/colossus.png, made by tools/art/colossus.py); the
-// window and the fireguard are openings cut in the far wall, and what shows through them is
-// city.c's.
+// All of it is still, so it is painted once, when the room is entered, into one picture of
+// the whole room's far wall, and each frame draws the part of it in view. That is what lets
+// it be painted a pixel at a time: the tall ones' masonry in blocks the size of a person, the
+// raw rock of the vault rough and cracked, the colossus sculpted (art/colossus.png, made by
+// tools/art/colossus.py). Where you can stand on a piece, the map carves a tile under it
+// ('X') and the room leaves the drawing to this.
+//
+// The openings -- the window, the fireguard -- are holes in the picture: alpha zero, which is
+// how the composite knows to show what is beyond (city.c).
 #include "aw.h"
 #include <math.h>
+#include <string.h>
 
 extern const unsigned char ART_COLOSSUS[];
 extern const int ART_COLOSSUS_LEN;
 
-static Texture2D texColossus;
+static Texture2D wallTex;
+static Color *px;                       // the picture being painted, (RW*TS) x (RH*TS)
+#define PW (RW * TS)
+#define PH (RH * TS)
 
 static const Feature *Find(int kind) {
     for (int i = 0; ROOM_FEATURES[i].kind != F_NONE; i++)
@@ -19,15 +28,127 @@ static const Feature *Find(int kind) {
     return 0;
 }
 
-void BackdropInit(void) {
-    Image im = LoadImageFromMemory(".png", ART_COLOSSUS, ART_COLOSSUS_LEN);
-    texColossus = LoadTextureFromImage(im);
-    UnloadImage(im);
+// ---------------------------------------------------------------- painting
+static void Put(int x, int y, int pl, u8 tag) {
+    if (x < 0 || x >= PW || y < 0 || y >= PH) return;
+    Color c = PAL[pl]; c.a = tag;
+    px[y * PW + x] = c;
+}
+static void Fill(int x, int y, int w, int h, int pl, u8 tag) {
+    for (int j = y; j < y + h; j++) for (int i = x; i < x + w; i++) Put(i, j, pl, tag);
+}
+static void Hole(int x, int y) { if (x >= 0 && x < PW && y >= 0 && y < PH) px[y * PW + x] = (Color){ 0, 0, 0, 0 }; }
+
+// Smooth noise, 0..1, on a lattice of `cell` px.
+static f32 Noise(int x, int y, int cell, int seed) {
+    int cx = x / cell, cy = y / cell;
+    f32 fx = (f32)(x % cell) / cell, fy = (f32)(y % cell) / cell;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+    f32 a = (Hash2(cx + seed, cy) & 1023) / 1023.0f, b = (Hash2(cx + 1 + seed, cy) & 1023) / 1023.0f;
+    f32 c = (Hash2(cx + seed, cy + 1) & 1023) / 1023.0f, d = (Hash2(cx + 1 + seed, cy + 1) & 1023) / 1023.0f;
+    return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
 }
 
-// Whether a room-px rectangle is anywhere near the view.
-static int InView(f32 x, f32 y, f32 w, f32 h) {
-    return x + w > camX - 8 && x < camX + GW + 8 && y + h > camY - 8 && y < camY + GH + 8;
+// The tall ones' masonry: courses 16 px high, blocks two to four tiles long -- a person is
+// less than one block high. Each block a face, a lit top edge where it is set in, joints dark;
+// now and then a block weathered darker, a chip out of a corner.
+#define COURSE 16
+static void CityWall(int x, int y) {
+    int c = y / COURSE, r = y % COURSE;
+    // the joints in this course: an offset, then hashed lengths
+    int j = -(int)(Hash2(c, 91) % 40), k = 0, len = 0;
+    while (1) { len = 22 + (int)(Hash2(c * 131 + k, 17) % 20); if (j + len > x) break; j += len + 1; k++; }
+    int bx = x - j;                             // px into this block
+    u32 h = Hash2(c * 131 + k, 5);
+    if (r == COURSE - 1 || bx == len) { Put(x, y, PL_DEEP, TAG_WALL); return; }   // joints
+    int face = (h & 7) == 0 ? PL_DARK : PL_STONE;                                  // a weathered block
+    if (r == 0) { Put(x, y, PL_STONEL, TAG_WALL); return; }                        // the set-in top edge
+    if (bx == 0 || r == COURSE - 2) { Put(x, y, PL_DARK, TAG_WALL); return; }       // shadowed side and foot
+    if ((h >> 4 & 7) == 1 && bx < 4 && r < 5 && bx + r < 5) { Put(x, y, PL_DARK, TAG_WALL); return; }   // a chipped corner
+    u32 g = Hash2(x, y * 7);
+    if ((g & 63) == 0) { Put(x, y, PL_DARK, TAG_WALL); return; }                   // pitting
+    if ((g & 255) == 1) { Put(x, y, PL_STONEL, TAG_WALL); return; }
+    Put(x, y, face, TAG_WALL);
+}
+
+// The vault's raw rock: rough, in patches of dark and less dark, cracked, never coursed.
+static void CaveWall(int x, int y) {
+    // strata, tipped a little and wandering, broken by cracks; the faces between them rough
+    f32 wob = Noise(x, y, 24, 13) * 10.0f;
+    f32 s = (y + x * 0.18f + wob) / 9.0f;
+    f32 band = s - floorf(s);
+    f32 n = Noise(x, y, 7, 3) * 0.55f + Noise(x, y, 3, 7) * 0.45f;
+    int pl = n > 0.66f ? PL_STONE : PL_DARK;
+    if (band < 0.12f) pl = PL_DEEP;                            // the bed between two strata
+    else if (band < 0.22f && n > 0.45f) pl = PL_STONE;          // its upper lip
+    f32 crack = fabsf(Noise(x, y, 16, 11) - 0.5f);
+    if (crack < 0.02f) pl = PL_DEEP;
+    u32 g = Hash2(x * 3, y * 5);
+    if ((g & 255) == 0) pl = PL_STONEL;
+    Put(x, y, pl, TAG_WALL);
+}
+
+// ---------------------------------------------------------------- the pieces
+static void Niche(const Feature *f) {
+    // A round-headed recess, deeper than the wall and so darker, in long courses; its arch a
+    // band of voussoirs lit on the outer edge; its jambs straight.
+    int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
+    f32 r = W * 0.5f, cx = X0 + r, cy = Y0 + r;
+    for (int y = Y0; y < Y0 + H; y++) {
+        f32 hw = r;
+        if (y < cy) { f32 dy = cy - (y + 0.5f); hw = sqrtf(fmaxf(r * r - dy * dy, 0)); }
+        int x0 = (int)lroundf(cx - hw), x1 = (int)lroundf(cx + hw);
+        int course = (y - Y0) / 12, cr = (y - Y0) % 12;
+        for (int x = x0; x < x1; x++) {
+            int pl = cr == 11 ? PL_DEEP : PL_DARK;
+            int j = (int)(Hash2(course, 5) % 50);
+            if (((x - X0 + j) % 57) == 0) pl = PL_DEEP;
+            if (cr == 0 && (Hash2(x, course) & 3) == 0) pl = PL_STONE;
+            Put(x, y, pl, TAG_WALL);
+        }
+    }
+    for (int a = 0; a <= 180 * 4; a++) {
+        f32 t = a * 0.25f * 0.0174533f;
+        for (int k = 0; k < 9; k++) {
+            f32 rr = r + 1 + k;
+            int x = (int)lroundf(cx - rr * cosf(t)), y = (int)lroundf(cy - rr * sinf(t));
+            int joint = ((int)(a * 0.25f) % 8) == 0;
+            Put(x, y, k == 8 ? PL_STONEL : (k == 0 ? PL_DEEP : (joint ? PL_DARK : (k < 3 ? PL_STONEL : PL_STONE))), TAG_WALL);
+        }
+    }
+    for (int side = 0; side < 2; side++) {
+        int x = side ? (int)(cx + r + 1) : (int)(cx - r - 10);
+        for (int y = (int)cy; y < Y0 + H; y++) {
+            for (int i = 0; i < 9; i++) Put(x + i, y, ((y - (int)cy) % 16) == 15 ? PL_DARK : PL_STONE, TAG_WALL);
+            Put(side ? x + 8 : x, y, PL_STONEL, TAG_WALL);
+            Put(side ? x : x + 8, y, PL_DEEP, TAG_WALL);
+        }
+    }
+}
+
+static void Pillar(const Feature *f) {
+    // A pilaster, fluted, with a capital of three mouldings and a base of two.
+    int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
+    for (int y = Y0 + 12; y < Y0 + H - 10; y++)
+        for (int x = X0 + 2; x < X0 + W - 2; x++) {
+            int pl = ((x - X0 - 1) % 4) == 0 ? PL_DARK : PL_STONE;
+            if (x == X0 + 2) pl = PL_STONEL;
+            if (x == X0 + W - 3) pl = PL_DEEP;
+            Put(x, y, pl, TAG_WALL);
+        }
+    Fill(X0 - 2, Y0, W + 4, 4, PL_STONE, TAG_WALL);   Fill(X0 - 2, Y0, W + 4, 1, PL_STONEL, TAG_WALL);
+    Fill(X0, Y0 + 4, W, 4, PL_STONE, TAG_WALL);       Fill(X0, Y0 + 7, W, 1, PL_DARK, TAG_WALL);
+    Fill(X0 + 1, Y0 + 8, W - 2, 4, PL_STONEL, TAG_WALL); Fill(X0 + 1, Y0 + 11, W - 2, 1, PL_DARK, TAG_WALL);
+    Fill(X0, Y0 + H - 10, W, 5, PL_STONE, TAG_WALL);  Fill(X0, Y0 + H - 10, W, 1, PL_STONEL, TAG_WALL);
+    Fill(X0 - 2, Y0 + H - 5, W + 4, 5, PL_STONE, TAG_WALL); Fill(X0 - 2, Y0 + H - 5, W + 4, 1, PL_STONEL, TAG_WALL);
+}
+
+static void Cornice(const Feature *f) {
+    int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS;
+    Fill(X0, Y0, W, 5, PL_STONE, TAG_WALL);
+    Fill(X0, Y0 + 4, W, 1, PL_STONEL, TAG_WALL);
+    Fill(X0, Y0 + 5, W, 1, PL_DEEP, TAG_WALL);
+    for (int x = X0 + 1; x < X0 + W - 3; x += 6) { Fill(x, Y0 + 6, 4, 4, PL_STONE, TAG_WALL); Fill(x, Y0 + 9, 4, 1, PL_DARK, TAG_WALL); }
 }
 
 // ---------------------------------------------------------------- the openings
@@ -37,7 +158,7 @@ static int ArchSpan(const Feature *f, int round, int y, int *x0, int *x1) {
     f32 X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
     if (y < Y0 || y >= Y0 + H) return 0;
     f32 r = W * 0.5f, cx = X0 + r, hw = r;
-    if (round && y < Y0 + r) {                   // the head of the arch: a half circle
+    if (round && y < Y0 + r) {
         f32 dy = (Y0 + r) - (y + 0.5f);
         hw = sqrtf(fmaxf(r * r - dy * dy, 0.0f));
     }
@@ -48,181 +169,160 @@ static int ArchSpan(const Feature *f, int round, int y, int *x0, int *x1) {
 int WindowSpan(int y, int *x0, int *x1) { const Feature *f = Find(F_WINDOW); return f && ArchSpan(f, 1, y, x0, x1); }
 int GrilleSpan(int y, int *x0, int *x1) { const Feature *f = Find(F_GRILLE); return f && ArchSpan(f, 0, y, x0, x1); }
 
-// Cut the openings out of the far wall just drawn: subtract-blend transparent black writes
-// zero alpha, and alpha zero is how the composite knows to show what is beyond.
-static void CutOpenings(void) {
-    BeginBlendMode(BLEND_SUBTRACT_COLORS);
-    for (int pass = 0; pass < 2; pass++) {
-        const Feature *f = Find(pass ? F_GRILLE : F_WINDOW);
-        if (!f || !InView(f->x * TS, f->y * TS, f->w * TS, f->h * TS)) continue;
-        for (int y = f->y * TS; y < (f->y + f->h) * TS; y++) {
-            int x0, x1;
-            if (y < camY - 4 || y > camY + GH + 4) continue;
-            if (ArchSpan(f, !pass, y, &x0, &x1)) DrawRectangle(x0, ROOM_Y + y, x1 - x0, 1, (Color){ 0, 0, 0, 0 });
-        }
-    }
-    EndBlendMode();
-}
-
-// The window's frame and tracery, in dressed stone: a moulded edge round the arch, two
-// mullions, and a ring in the head. Stone, so the city behind rims every edge of it.
-static void Stone(int x, int y, int w, int h, int pl) {
-    Color c = PAL[pl]; c.a = TAG_STONE;
-    DrawRectangle(x, ROOM_Y + y, w, h, c);
-}
-static void WindowFrame(void) {
-    const Feature *f = Find(F_WINDOW);
-    if (!f || !InView(f->x * TS, f->y * TS, f->w * TS, f->h * TS)) return;
+static void Window(const Feature *f) {
+    // Cut, then frame: a deep moulded arch round it, and two slender mullions -- the lights
+    // tall and narrow, so the city is seen in three long strips and the eye goes up them.
     int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
     f32 r = W * 0.5f, cx = X0 + r, cy = Y0 + r;
-    // the moulding: two px of lit stone just inside the opening, all the way round
     for (int y = Y0; y < Y0 + H; y++) {
         int x0, x1;
         if (!ArchSpan(f, 1, y, &x0, &x1)) continue;
-        Stone(x0, y, 2, 1, PL_STONEL); Stone(x1 - 2, y, 2, 1, PL_STONE);
+        for (int x = x0; x < x1; x++) Hole(x, y);
     }
-    for (int x = X0; x < X0 + W; x++) {
-        f32 dx = x + 0.5f - cx;
-        if (fabsf(dx) >= r - 1) continue;
-        int y = (int)(cy - sqrtf(r * r - dx * dx));
-        Stone(x, y, 1, 2, PL_STONEL);
-    }
-    // two mullions, the full height of the lights, and a transom where the head begins
-    int m1 = X0 + W / 3, m2 = X0 + 2 * W / 3;
-    Stone(m1 - 1, (int)cy - 20, 3, Y0 + H - ((int)cy - 20), PL_STONE);
-    Stone(m2 - 1, (int)cy - 20, 3, Y0 + H - ((int)cy - 20), PL_STONE);
-    Stone(X0 + 2, (int)cy - 2, W - 4, 3, PL_STONE);
-    // the ring in the head, and its spokes
-    f32 rr = r * 0.42f, ry = cy - r * 0.46f;
-    for (int k = 0; k < 360; k++) {
-        f32 a = k * 0.0174533f;
-        Stone((int)lroundf(cx + rr * cosf(a)), (int)lroundf(ry + rr * sinf(a)), 2, 2, PL_STONE);
-    }
-    for (int k = 0; k < 6; k++) {
-        f32 a = k * 1.0472f + 0.5236f;
-        for (f32 t = 5; t < rr; t += 1.0f) Stone((int)lroundf(cx + t * cosf(a)), (int)lroundf(ry + t * sinf(a)), 1, 1, PL_STONE);
-    }
-    Stone((int)cx - 3, (int)ry - 3, 6, 6, PL_STONEL);
-}
-
-// The fireguard: iron bars close together, bands across them, the foot in the water.
-static void GrilleBars(void) {
-    const Feature *f = Find(F_GRILLE);
-    if (!f || !InView(f->x * TS, f->y * TS, f->w * TS, f->h * TS)) return;
-    int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
-    for (int x = X0 + 2; x < X0 + W - 1; x += 5) {
-        Stone(x, Y0, 2, H, PL_DARK);
-        Stone(x, Y0, 1, H, PL_STONE);
-    }
-    for (int y = Y0 + 6; y < Y0 + H; y += 36) Stone(X0, y, W, 3, PL_DARK);
-    Stone(X0 - 3, Y0 - 4, W + 6, 4, PL_STONE);            // the lintel
-    Stone(X0 - 3, Y0 - 5, W + 6, 1, PL_STONEL);
-}
-
-// ---------------------------------------------------------------- architecture
-// Far wall only: lit as the wall is, never stood on. It is what says the hall was built.
-static void Wall(int x, int y, int w, int h, int pl) {
-    Color c = PAL[pl]; c.a = TAG_WALL;
-    DrawRectangle(x, ROOM_Y + y, w, h, c);
-}
-
-// The colossus sits in a niche: a round-headed recess in the far wall, deeper than the wall
-// and so darker, coursed in long stones, framed by a moulded arch of voussoirs.
-static void Niche(const Feature *f) {
-    int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
-    f32 r = W * 0.5f, cx = X0 + r, cy = Y0 + r;
-    int vy0 = (int)camY - 4, vy1 = (int)camY + GH + 4;
-    for (int y = Y0; y < Y0 + H; y++) {
-        if (y < vy0 || y > vy1) continue;
-        f32 hw = r;
-        if (y < cy) { f32 dy = cy - (y + 0.5f); hw = sqrtf(fmaxf(r * r - dy * dy, 0)); }
-        int x0 = (int)lroundf(cx - hw), x1 = (int)lroundf(cx + hw);
-        if (x1 <= x0) continue;
-        // courses 10 px high, stones of hashed lengths; the joints a shade darker
-        int course = (y - Y0) / 10, cy0 = (y - Y0) % 10;
-        if (cy0 == 9) { Wall(x0, y, x1 - x0, 1, PL_DEEP); continue; }
-        Wall(x0, y, x1 - x0, 1, PL_DARK);
-        int x = x0 - (int)(Hash2(course, 5) % 40);
-        while (x < x1) {
-            int len = 26 + (int)(Hash2(x, course) % 30);
-            if (x + len > x0 && x + len < x1) Wall(x + len, y, 1, 1, PL_DEEP);
-            x += len + 1;
-        }
-    }
-    // the arch round it: a band of stone, lit on its outer edge, its joints radial
-    for (int a = 0; a <= 180 * 4; a++) {
+    for (int a = 0; a <= 180 * 4; a++) {                     // the arch: three orders stepping in
         f32 t = a * 0.25f * 0.0174533f;
-        for (int k = 0; k < 7; k++) {
+        for (int k = 0; k < 12; k++) {
             f32 rr = r + 1 + k;
             int x = (int)lroundf(cx - rr * cosf(t)), y = (int)lroundf(cy - rr * sinf(t));
-            if (y < vy0 || y > vy1) continue;
-            int joint = ((int)(a * 0.25f) % 9) == 0;
-            Wall(x, y, 1, 1, k == 6 ? PL_STONEL : (k == 0 ? PL_DEEP : (joint ? PL_DARK : PL_STONE)));
+            int pl = (k == 0 || k == 4 || k == 8) ? PL_STONEL : ((k == 3 || k == 7) ? PL_DEEP : PL_STONE);
+            if (k == 11) pl = PL_STONEL;
+            if (((int)(a * 0.25f) % 7) == 0 && k > 8) pl = PL_DARK;
+            Put(x, y, pl, TAG_STONE);
         }
     }
-    for (int side = 0; side < 2; side++) {              // and down the jambs
-        int x = side ? (int)(cx + r + 1) : (int)(cx - r - 8);
-        for (int y = (int)cy; y < Y0 + H; y++) {
-            if (y < vy0 || y > vy1) continue;
-            Wall(x, y, 7, 1, ((y - (int)cy) % 12) == 0 ? PL_DARK : PL_STONE);
-            Wall(side ? x + 6 : x, y, 1, 1, PL_STONEL);
-            Wall(side ? x : x + 6, y, 1, 1, PL_DEEP);
+    for (int side = 0; side < 2; side++)                      // the jambs, the same three orders
+        for (int y = (int)cy; y < Y0 + H; y++)
+            for (int k = 0; k < 12; k++) {
+                int x = side ? (int)(cx + r) + k : (int)(cx - r) - 1 - k;
+                int pl = (k == 0 || k == 4 || k == 8) ? PL_STONEL : ((k == 3 || k == 7) ? PL_DEEP : PL_STONE);
+                Put(x, y, pl, TAG_STONE);
+            }
+    int m1 = X0 + W / 3, m2 = X0 + 2 * W / 3;
+    for (int y = Y0; y < Y0 + H; y++) {
+        int x0, x1;
+        if (!ArchSpan(f, 1, y, &x0, &x1)) continue;
+        for (int m = 0; m < 2; m++) {
+            int mx = m ? m2 : m1;
+            if (mx - 1 < x0 || mx + 2 > x1) continue;
+            Put(mx - 1, y, PL_STONEL, TAG_STONE); Put(mx, y, PL_STONE, TAG_STONE); Put(mx + 1, y, PL_DARK, TAG_STONE);
         }
     }
 }
 
-// A pilaster: a flat column in the wall, fluted, with a capital and a base.
-static void Pillar(const Feature *f) {
+static void Grille(const Feature *f) {
+    // The fireguard: cut, then iron bars, bands across them, a lintel over. The foot of it
+    // is in the water.
     int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS, H = f->h * TS;
-    int vy0 = (int)camY - 4, vy1 = (int)camY + GH + 4;
-    for (int y = Y0 + 12; y < Y0 + H - 10; y++) {
-        if (y < vy0 || y > vy1) continue;
-        Wall(X0 + 2, y, W - 4, 1, PL_STONE);
-        for (int x = X0 + 5; x < X0 + W - 4; x += 4) Wall(x, y, 1, 1, PL_DARK);   // the flutes
-        Wall(X0 + 2, y, 1, 1, PL_STONEL);
-        Wall(X0 + W - 3, y, 1, 1, PL_DEEP);
-    }
-    // capital: three mouldings stepping out; base: two
-    Wall(X0 - 2, Y0, W + 4, 4, PL_STONE);   Wall(X0 - 2, Y0, W + 4, 1, PL_STONEL);
-    Wall(X0, Y0 + 4, W, 4, PL_STONE);       Wall(X0, Y0 + 7, W, 1, PL_DARK);
-    Wall(X0 + 1, Y0 + 8, W - 2, 4, PL_STONEL); Wall(X0 + 1, Y0 + 11, W - 2, 1, PL_DARK);
-    Wall(X0, Y0 + H - 10, W, 5, PL_STONE);  Wall(X0, Y0 + H - 10, W, 1, PL_STONEL);
-    Wall(X0 - 2, Y0 + H - 5, W + 4, 5, PL_STONE); Wall(X0 - 2, Y0 + H - 5, W + 4, 1, PL_STONEL);
+    for (int y = Y0; y < Y0 + H; y++) for (int x = X0; x < X0 + W; x++) Hole(x, y);
+    for (int x = X0 + 3; x < X0 + W - 1; x += 7) Fill(x, Y0, 2, H, PL_DARK, TAG_STONE), Fill(x, Y0, 1, H, PL_STONE, TAG_STONE);
+    for (int y = Y0 + 10; y < Y0 + H; y += 40) Fill(X0, y, W, 2, PL_DARK, TAG_STONE), Fill(X0, y, W, 1, PL_STONE, TAG_STONE);
+    Fill(X0 - 4, Y0 - 6, W + 8, 6, PL_STONE, TAG_STONE);
+    Fill(X0 - 4, Y0 - 6, W + 8, 1, PL_STONEL, TAG_STONE);
+    Fill(X0 - 4, Y0 - 1, W + 8, 1, PL_DEEP, TAG_STONE);
+    for (int side = 0; side < 2; side++) Fill(side ? X0 + W : X0 - 4, Y0, 4, H, PL_STONE, TAG_STONE);
 }
 
-// A cornice along the top of the wall: a moulding and a row of dentils under it.
-static void Cornice(const Feature *f) {
-    int X0 = f->x * TS, W = f->w * TS, Y0 = f->y * TS;
-    if (Y0 > camY + GH + 8 || Y0 + 12 < camY) return;
-    Wall(X0, Y0, W, 5, PL_STONE);
-    Wall(X0, Y0 + 4, W, 1, PL_STONEL);
-    Wall(X0, Y0 + 5, W, 1, PL_DEEP);
-    for (int x = X0 + 1; x < X0 + W - 3; x += 6) { Wall(x, Y0 + 6, 4, 4, PL_STONE); Wall(x, Y0 + 9, 4, 1, PL_DARK); }
+static void Colossus(const Feature *f) {
+    Image im = LoadImageFromMemory(".png", ART_COLOSSUS, ART_COLOSSUS_LEN);
+    ImageFormat(&im, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    Color *c = (Color *)im.data;
+    int ox = 36 * TS, oy = TS;          // tools/art/colossus.py: the canvas starts at tile (36, 1)
+    (void)f;
+    for (int y = 0; y < im.height; y++)
+        for (int x = 0; x < im.width; x++) {
+            Color p = c[y * im.width + x];
+            if (!p.a || ox + x >= PW || oy + y >= PH) continue;
+            px[(oy + y) * PW + ox + x] = p;
+        }
+    UnloadImage(im);
 }
 
-// ---------------------------------------------------------------- drawing
+// ---------------------------------------------------------------- the stone
+// Masonry, where the map has the city's stone: the same giant courses as the wall behind,
+// set a course apart so a mass and the wall do not read as one surface, and lighter -- it is
+// nearer. Its open faces edged: a lit cap on top, a shadowed foot, a lit left side.
+static int Solid(int tx, int ty) { u8 t = TileGet(tx, ty); return t == T_ROCK || t == T_VEIN; }
+static void CityStone(int tx, int ty) {
+    int up = Solid(tx, ty - 1), dn = Solid(tx, ty + 1), lf = Solid(tx - 1, ty), rt = Solid(tx + 1, ty);
+    for (int j = 0; j < TS; j++)
+        for (int i = 0; i < TS; i++) {
+            int x = tx * TS + i, y = ty * TS + j, yy = y + COURSE / 2;
+            int c = yy / COURSE, r = yy % COURSE;
+            int jx = -(int)(Hash2(c, 311) % 40), k = 0, len = 0;
+            while (1) { len = 20 + (int)(Hash2(c * 57 + k, 23) % 22); if (jx + len > x) break; jx += len + 1; k++; }
+            int bx = x - jx, pl = PL_STONEL;
+            if (r == COURSE - 1 || bx == len) pl = PL_STONE;
+            else if (r == 0) pl = PL_STONEH;
+            else if ((Hash2(x, y * 3) & 63) == 0) pl = PL_STONE;
+            if (!up && j == 0) pl = PL_STONEH;
+            else if (!up && j == 1) pl = PL_STONEL;
+            if (!dn && j == TS - 1) pl = PL_DEEP;
+            if (!lf && i == 0 && (up || j > 0)) pl = PL_STONEL;
+            if (!rt && i == TS - 1 && (up || j > 0)) pl = PL_DARK;
+            Put(x, y, pl, TAG_STONE);
+        }
+}
+// Raw rock, buried: patches of less dark in the dark, cracks, a pebble now and then -- a great
+// mass of it is still rock and not a hole.
+static void BuriedRock(int tx, int ty) {
+    for (int j = 0; j < TS; j++)
+        for (int i = 0; i < TS; i++) {
+            int x = tx * TS + i, y = ty * TS + j;
+            f32 n = Noise(x, y, 5, 21) * 0.6f + Noise(x, y, 3, 29) * 0.4f;
+            int pl = n > 0.64f ? PL_STONEL : PL_STONE;
+            f32 crack = fabsf(Noise(x, y, 14, 41) - 0.5f);
+            if (crack < 0.025f) pl = PL_DARK;
+            if ((Hash2(x * 7, y) & 511) == 0) pl = PL_STONEH;
+            Put(x, y, pl, TAG_STONE);
+        }
+}
+
+// ---------------------------------------------------------------- build
+void BackdropInit(void) {
+    Image im = GenImageColor(PW, PH, BLANK);
+    ImageFormat(&im, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    px = (Color *)im.data;
+    for (int y = 0; y < PH; y++)
+        for (int x = 0; x < PW; x++) {
+            if (ZoneAt(x / TS, y / TS) == Z_CITY) CityWall(x, y); else CaveWall(x, y);
+        }
+    for (int pass = 0; pass < 3; pass++)          // architecture, then the openings, then the colossus
+        for (int i = 0; ROOM_FEATURES[i].kind != F_NONE; i++) {
+            const Feature *f = &ROOM_FEATURES[i];
+            if (pass == 0 && f->kind == F_NICHE) Niche(f);
+            if (pass == 0 && f->kind == F_PILLAR) Pillar(f);
+            if (pass == 0 && f->kind == F_CORNICE) Cornice(f);
+            if (pass == 1 && f->kind == F_WINDOW) Window(f);
+            if (pass == 1 && f->kind == F_GRILLE) Grille(f);
+            if (pass == 2 && f->kind == F_COLOSSUS) Colossus(f);
+        }
+    for (int ty = 0; ty < RH; ty++)               // and last, the stone in front of all of it
+        for (int tx = 0; tx < RW; tx++) {
+            if (!TileBaked(tx, ty)) continue;
+            if (ZoneAt(tx, ty) == Z_CITY) CityStone(tx, ty); else BuriedRock(tx, ty);
+        }
+    if (wallTex.id) UnloadTexture(wallTex);
+    wallTex = LoadTextureFromImage(im);
+    UnloadImage(im);
+    px = 0;
+}
+
+// The part of the far wall in view, with a tile of margin.
 void BackdropDraw(void) {
-    for (int i = 0; ROOM_FEATURES[i].kind != F_NONE; i++) {
-        const Feature *f = &ROOM_FEATURES[i];
-        if (!InView(f->x * TS, f->y * TS, f->w * TS, f->h * TS)) continue;
-        if (f->kind == F_NICHE) Niche(f);
-        else if (f->kind == F_PILLAR) Pillar(f);
-        else if (f->kind == F_CORNICE) Cornice(f);
-    }
-    CutOpenings();
-    WindowFrame();
-    GrilleBars();
-    const Feature *c = Find(F_COLOSSUS);
-    if (c && InView(36 * TS, TS, (f32)texColossus.width, (f32)texColossus.height))
-        DrawTexture(texColossus, 36 * TS, ROOM_Y + TS, WHITE);
+    int x0 = (int)floorf(camX) - TS, y0 = (int)floorf(camY) - TS;
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    int w = GW + 2 * TS, h = GH + 2 * TS;
+    if (x0 + w > PW) w = PW - x0;
+    if (y0 + h > PH) h = PH - y0;
+    DrawTextureRec(wallTex, (Rectangle){ (f32)x0, (f32)y0, (f32)w, (f32)h }, (Vector2){ (f32)x0, (f32)(ROOM_Y + y0) }, WHITE);
 }
 
 // What gives its own light: the colossus's eye, green glass, and the sliver of the other.
 void BackdropDrawEmis(void) {
-    const Feature *c = Find(F_COLOSSUS);
-    if (!c) return;
+    if (!Find(F_COLOSSUS)) return;
     int ex = 36 * TS + 150, ey = ROOM_Y + TS + 46;
-    if (!InView((f32)ex - 8, (f32)ey - 8, 16, 16)) return;
+    if (ex < camX - 16 || ex > camX + GW + 16 || ey < camY - 16 || ey > camY + GH + 16) return;
     DrawRectangle(ex, ey, 5, 2, PAL[PL_CITY]);
     DrawRectangle(ex + 1, ey - 1, 3, 1, PAL[PL_CITY]);
     DrawRectangle(ex + 1, ey, 2, 1, PAL[PL_CITYH]);
@@ -231,5 +331,5 @@ void BackdropDrawEmis(void) {
 
 void BackdropLights(void) {
     // the eye lights a little of the face round it, in their colour
-    LightAddPointCool(36 * TS + 152, TS + 46, 3.0f, 0.35f);
+    LightAddPointCool(36 * TS + 152, TS + 46, 5.0f, 0.55f);
 }

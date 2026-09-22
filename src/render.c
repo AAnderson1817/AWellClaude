@@ -178,7 +178,7 @@ static const char *COMP_BODY =
 "  float Rq = floor(Rl * uBands + 0.5 + th * 0.7) / uBands;\n"
 "  vec3 lit = alb.rgb * (uAmb + Iq * tint * 1.65) + rt * Rq * 0.8;\n"
 "  lit *= mix(vec3(1.0), vec3(0.55, 0.85, 1.05), bk.b);\n"   // under the water, cold
-"  if (alb.a >= 0.998) lit = max(lit, alb.rgb * 0.30);\n"   // the far wall and the backdrop too, fainter
+"  if (alb.a >= 0.994) lit = max(lit, alb.rgb * 0.30);\n"   // the far wall and the backdrop too, fainter
 "  if (solid > 0.5) {\n"                                     // the dark keeps faint shapes:
 "    vec3 fl = max(uPal[1], alb.rgb * 0.34);\n"              // unlit stone one step above black, its texture a step above that,
 "    if (edge >= 1.0 && n.y < -0.5) fl = uPal[2];\n"          // and a dim line on every standable top,

@@ -312,6 +312,7 @@ void LightStep(void) {
     ItemsLight();
     PropsLight();
     BackdropLights();
+    HallLights();
     // A bulb that has just been landed on throws light for a moment; more, and further,
     // when the landing was timed. That is the only tell there is, and it is enough.
     for (int i = 0; i < bulbCount; i++)
@@ -431,6 +432,7 @@ void RoomEnter(int idx) {
     memset(surfV, 0, sizeof surfV);
     FxInit();
     LifeInit();
+    HallInit();
     AudioAmbience(idx);          // a no-op until the device is up
 }
 
@@ -445,7 +447,7 @@ void RoomLoad(void) {
         if (n != RW) TraceLog(LOG_ERROR, "map row %d is %d wide, expected %d", y, n, RW);
         if (m != RW) TraceLog(LOG_ERROR, "props row %d is %d wide, expected %d", y, m, RW);
     }
-    BackdropInit();
+    ZonesBuild();
     Image im = GenImageColor(RW + 1, RH + 1, WHITE);
     lightTex = LoadTextureFromImage(im);
     glowTex  = LoadTextureFromImage(im);
@@ -462,6 +464,7 @@ void RoomLoad(void) {
     int xs[4], ys[4], n = RoomMarkStones(xs, ys, 4);
     for (int i = 0; i < n; i++) ItemsAdd(IT_STONE, 0, xs[i], ys[i]);
     RoomEnter(0);
+    BackdropInit();                     // the far wall and the stone, painted once, from the tiles
 }
 
 // ---------------------------------------------------------------- the camera
@@ -565,6 +568,17 @@ static void RockQuarter(int x, int y, int px, int py, int right, int bottom) {
     DrawSpriteTag(q, px + right * 4, py + bottom * 4, right, TAG_STONE);
 }
 
+// Stone the far-wall picture already holds (backdrop.c paints it once): all of the city's
+// masonry, and raw rock buried on every side. The room draws only the rest -- the rock's
+// edges, which are pieces chosen by their neighbours.
+int TileBaked(int x, int y) {
+    if (x < 0 || x >= RW || y < 0 || y >= RH) return 0;
+    if (tiles[y][x] != T_ROCK || (tileDeco[y][x] & TD_CARVED)) return 0;
+    if (ZoneAt(x, y) == Z_CITY) return 1;
+    return Massive(x, y - 1) && Massive(x, y + 1) && Massive(x - 1, y) && Massive(x + 1, y)
+        && Massive(x - 1, y - 1) && Massive(x + 1, y - 1) && Massive(x - 1, y + 1) && Massive(x + 1, y + 1);
+}
+
 static void DrawStone(int x, int y, int px, int py) {
     int up = Massive(x, y - 1), dn = Massive(x, y + 1);
     int lf = Massive(x - 1, y), rt = Massive(x + 1, y);
@@ -583,10 +597,10 @@ static void DrawStone(int x, int y, int px, int py) {
     if (up && dn && lf && rt && Massive(x - 1, y - 1) && Massive(x + 1, y - 1) && Massive(x - 1, y + 1) && Massive(x + 1, y + 1)) {
         // Buried: nothing will see its edges, and there is a lot of it. Strata, and a crack
         // or a pebble now and then, so a great mass of it is still rock and not a hole.
-        Color c = PAL[PL_STONE]; c.a = TAG_STONE; DrawRectangle(px, py, TS, TS, c);
+        Color c = PAL[PL_STONEL]; c.a = TAG_STONE; DrawRectangle(px, py, TS, TS, c);
         u32 h = Hash2(x, y);
-        Color k = PAL[PL_DARK]; k.a = TAG_STONE;
-        Color l = PAL[PL_STONEL]; l.a = TAG_STONE;
+        Color k = PAL[PL_STONE]; k.a = TAG_STONE;
+        Color l = PAL[PL_STONEH]; l.a = TAG_STONE;
         int sy = (int)((Hash2(x / 3, y) >> 4) & 7);                       // a stratum line, wandering
         DrawRectangle(px, py + sy, TS, 1, k);
         DrawRectangle(px + (h & 7), py + (h >> 3 & 7), 1 + (h >> 6 & 1), 1, k);
@@ -687,34 +701,28 @@ static void DrawBush(int x, int y, int px, int py) {
 
 
 void RoomDraw(void) {
-    // The far wall, under everything: hewn blocks in the vault, coursed in the city. Barely
-    // a shade off the dark -- invisible until something lights it, which is the point: you
-    // learn the room's depth by carrying light into it.
+    // The far wall, under everything, and the colossus, the window and the rest on it:
+    // painted once (backdrop.c). Barely a shade off the dark where nothing lights it --
+    // you learn the room's depth by carrying light into it.
+    BackdropDraw();
+    PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone
+    HallDrawBack();       // the mural, the dead lamps' recess
+
     int vx0 = (int)floorf(camX / TS) - 1, vx1 = vx0 + SW + 2;
     int vy0 = (int)floorf(camY / TS) - 1, vy1 = vy0 + SH + 2;
     if (vx0 < 0) vx0 = 0;
     if (vx1 > RW - 1) vx1 = RW - 1;
     if (vy0 < 0) vy0 = 0;
     if (vy1 > RH - 1) vy1 = RH - 1;
-    for (int y = vy0; y <= vy1; y++)
-        for (int x = vx0; x <= vx1; x++) {
-            int px = x * TS, py = ROOM_Y + y * TS;
-            if (ZoneAt(x, y) == Z_CITY)
-                DrawSpriteRect(&SPR_WALL_CITY, px, py, (x & 1) * 8, 0, 8, 8, 0, TAG_WALL);
-            else {
-                int shift = Hash2(y >> 1, 77) & 1;          // blocks of alternate rows offset a tile
-                DrawSpriteRect(&SPR_WALL_VAULT, px, py, ((x + shift) & 1) * 8, (y & 1) * 8, 8, 8, 0, TAG_WALL);
-            }
-        }
-    BackdropDraw();       // the colossus, and the openings cut in the wall
-    PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone
 
     for (int y = vy0; y <= vy1; y++) {
         for (int x = vx0; x <= vx1; x++) {
             int px = x * TS, py = ROOM_Y + y * TS;
             if (tileDeco[y][x] & TD_CARVED) continue;       // the backdrop piece draws it
             switch (tiles[y][x]) {
-                case T_ROCK:  DrawStone(x, y, px, py); if (tileDeco[y][x] & TD_DEAD) DrawDeadSeam(x, y, px, py); break;
+                case T_ROCK:  if (!TileBaked(x, y)) DrawStone(x, y, px, py);
+                              if (tileDeco[y][x] & TD_DEAD) DrawDeadSeam(x, y, px, py);
+                              break;
                 case T_VEIN:  DrawVein(x, y, px, py);  break;
                 case T_LEDGE: DrawLedge(x, y, px, py); break;
                 case T_WATER: DrawWater(x, y, px, py); break;

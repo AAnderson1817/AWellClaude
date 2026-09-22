@@ -41,6 +41,9 @@ Image LoadImageFromScreen(void) { return (Image){0}; }
 void UnloadImage(Image i) {}
 Image LoadImageFromMemory(const char *t, const unsigned char *d, int n) { (void)t; (void)d; (void)n; return (Image){0}; }
 void DrawTexture(Texture2D t, int x, int y, Color c) { (void)t; (void)x; (void)y; (void)c; }
+void DrawTextureRec(Texture2D t, Rectangle r, Vector2 p, Color c) { (void)t; (void)r; (void)p; (void)c; }
+void ImageFormat(Image *i, int f) { (void)i; (void)f; }
+void UnloadTexture(Texture2D t) { (void)t; }
 bool ExportImage(Image i,const char *p) { return false; }
 void InitAudioDevice(void) {}
 void CloseAudioDevice(void) {}

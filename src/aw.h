@@ -99,6 +99,7 @@ void CameraStep(void);
 void WorldBegin(void);      // draw in room coordinates through the camera
 void WorldEnd(void);
 void RoomDraw(void);
+int  TileBaked(int x, int y);   // stone the far-wall picture holds, so the room does not draw it
 void WaterStep(void);       // the surface, a 1D wave
 void WaterDisturb(float px, float strength);
 void LightStep(void);       // recompute the moving part of the light
@@ -283,6 +284,7 @@ enum { SFX_STEP_STONE, SFX_STEP_SHELF, SFX_LAND, SFX_JUMP, SFX_SPLASH_IN, SFX_SP
        SFX_RUSTLE, SFX_WING, SFX_CHIRP, SFX_PAD, SFX_CHIRR, SFX_PLANT0, SFX_PLANT1, SFX_PLANT2,
        SFX_PICKUP, SFX_SETDOWN, SFX_STONE, SFX_STONE_UP, SFX_WAKE,
        SFX_CREAK, SFX_CLINK, SFX_POT, SFX_SHATTER, SFX_GRIT, SFX_RATTLE, SFX_CATCH, SFX_CRACKLE, SFX_FLAP,
+       SFX_HUM, SFX_MURMUR, SFX_LEAF,
        SFX_COUNT };
 void  AudioInit(int mute);
 void  AudioStep(void);
@@ -315,6 +317,17 @@ int  LightPoints(float *pos4, float *col4, int max);   // this frame's point lig
 Texture2D LightBakeTexture(void);
 // the far city, room 0, seen through a break in the back wall (city.c)
 void CityDraw(void);        // what shows through the openings, in the back layer
+// hall.c: the antechamber's small lives and signs (claude/LORE.md)
+void HallInit(void);
+void HallStep(void);
+void HallReset(void);
+void HallDrawBack(void);    // on the far wall: the mural's relief, the dead lamps' recess
+void HallDraw(void);        // the hunter, the sitters, the leaves
+void HallDrawEmis(void);    // the prints, the mural's phosphor, the spilled glass, the fish
+void HallLights(void);
+f32  HallDouse(void);       // 0..1: the light beyond the fireguard put out
+int  HallNearer(void);      // how many steps nearer one of them stands
+extern int hallHums, hallLeaves, hallDouses;
 // backdrop.c: the colossus, the great window, the fireguard
 void BackdropInit(void);
 void BackdropDraw(void);    // over the far wall, under the stone

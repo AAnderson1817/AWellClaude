@@ -12,7 +12,7 @@ upper arm, the lap -- are flat on top and sit exactly on the tile rows the map c
 import os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from sculpt import Form, shade, quantise, to_rgba, save, blur, TAG_WALL, TAG_STONE
+from sculpt import Form, shade, quantise, to_rgba, save, blur, TAG_WALL, TAG_THING, TAG_STONE
 
 W, H = 320, 336
 OX, OY = 36, 1                     # tile of the canvas's top-left
@@ -95,7 +95,10 @@ def paint(f):
     ramp = ['deep', 'dark', 'stone', 'stoneL', 'stoneH']
     q = quantise(b * 0.92, ramp, dither=0.18)
     names = [(ramp[i], q == i) for i in range(len(ramp))]
-    rgba = to_rgba(names, m, TAG_WALL)
+    rgba = to_rgba(names, m, TAG_THING)
+    # the hand and its fingers are stone to the composite: they take a rim from whatever
+    # light is near them -- the camp fire, once it is lit (LORE.md section 5)
+    rgba[m & np.isin(f.part, (13, 14)), 3] = TAG_STONE
     # the standing tops: one line of the lit stone, so the climb reads in any light
     for (x0, x1, row) in STANDS:
         lx0, ly = T(x0, row); lx1, _ = T(x1 + 1, row)

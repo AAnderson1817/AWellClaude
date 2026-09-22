@@ -46,7 +46,7 @@ R.fill(33, 7, 39, 7, '#')
 for x, y in ((0, 6), (0, 11), (12, 2), (19, 1), (28, 3)):
     R.at(x, y, '*')
 R.at(12, 17, '*'); R.at(18, 21, '*')    # in the chasm walls, lighting the ropes going down
-R.at(4, 15, ',');
+R.at(4, 13, ',');
 R.stamp(9, 13, ",")
 
 R.at(7, 13, 'P')                        # you, beside the door
@@ -59,7 +59,7 @@ R.clear(18, 26, 33, 26)
 R.clear(30, 22, 39, 26)                 # the mouth rises, and the colossus's hand hangs in
 R.clear(34, 18, 39, 21)
 R.fill(1, 27, 3, 29, '#'); R.fill(1, 30, 1, 31, '#')
-R.at(0, 31, '*'); R.at(5, 26, '*'); R.at(24, 25, '*')
+R.at(0, 31, '*'); R.at(5, 26, '*'); R.at(24, 25, '*'); R.at(10, 25, '*'); R.at(28, 25, '*'); R.at(3, 29, '*')
 R.at(1, 34, ','); R.at(10, 34, ',')
 
 # ------------------------------------------------------------------ B/E/C/F: the hall
@@ -133,7 +133,8 @@ R.feat('F_GRILLE', 81, 24, 15, 18)
 
 # ------------------------------------------------------------------ props
 R.prop(1, 8, 'D')                       # the door, in the left wall
-R.prop(12, 14, 'r'); R.prop(12, 14, 'r')
+R.prop(13, 14, 'r'); R.prop(15, 14, 'r')    # old lines over the chasm's lip: every anchor at the top
+R.prop(44, 16, 'r'); R.prop(52, 16, 'r')    # and from the gallery rail into the hall
 R.prop(29, 8, 'R'); R.prop(21, 3, 'R')
 R.prop(47, 2, 'c')                      # a lamp on a long chain before the colossus's face
 R.prop(68, 16, 'c')                     # and one under the gallery, over its lap
@@ -142,6 +143,9 @@ R.prop(20, 34, 'B')                     # the camp: bedroll, cairn, fire, pack
 R.prop(26, 34, 'C')
 R.prop(33, 34, 'F')
 R.prop(36, 34, 'K')
+R.prop(8, 27, 'R'); R.prop(19, 27, 'R'); R.prop(31, 27, 'R')    # roots through the undercroft's roof
+R.prop(17, 34, 'P')                     # a pot by the bedroll
+R.prop(11, 34, 'X')                     # and an older sleeper, long cold, by the dead lamps
 
 # ------------------------------------------------------------------ the draft
 # In low under the fireguard, across the basin, up past the colossus, out of the window.

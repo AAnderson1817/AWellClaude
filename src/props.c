@@ -178,7 +178,7 @@ void PropsStep(void) {
                 p->phase += 0.21f + Rnd() * 0.06f;
                 AirPush(cx, cy - 5.0f, 0.0f, -0.22f, 4.0f);              // heat rises, and takes smoke with it
                 AirPush(cx, cy - 20.0f, 0.10f * sinf(frameNo * 0.013f), 0.0f, 8.0f);   // and leans in a draft that comes and goes
-                if ((frameNo % 2) == 0) AirPuff(cx, cy - 6.0f, 0.22f, 3.0f, 1.0f);
+                if ((frameNo % 3) == 0) AirPuff(cx, cy - 6.0f, 0.14f, 3.0f, 1.0f);
                 if (--p->timer <= 0) { SfxAt(SFX_CRACKLE, 0.2f + Rnd() * 0.12f, 0.9f + Rnd() * 0.3f, cx, cy); p->timer = 180 + (int)((Rnd() + 0.5f) * 360); }
                 if ((frameNo % 7) == 0 && Rnd() > 0.1f) FxBurst(FX_SPARK, cx + Rnd() * 3, cy - 3, 1, 0.3f, 0.7f);
             }

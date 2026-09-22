@@ -198,6 +198,7 @@ static void Sim(void) {
     FxStep();
     LifeStep();
     PropsStep();
+    HallStep();
     AirStep();
     if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
         && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
@@ -242,6 +243,7 @@ static void Frame(void) {
             BulbsDraw();
             AirDraw();             // dust, smoke, mist: seen only where the light falls
             LifeDraw();
+            HallDraw();
             ItemsDrawBehind();
             PlayerDraw();
             ItemsDrawHeld();
@@ -252,6 +254,7 @@ static void Frame(void) {
                 ItemsDrawCore();
                 BackdropDrawEmis();
                 PropsDrawEmis();
+                HallDrawEmis();
             RenderLayer(RL_BACK);      // the far city
                 CityDraw();
             RenderComposite();
@@ -366,7 +369,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose() && !shotsDone && !PlanExhausted()
            && !(maxFrames && frameNo >= maxFrames)) Frame();
 #endif
-    if (dbgTrace) LifePrintStats();
+    if (dbgTrace) { LifePrintStats(); printf("HALL hums %d, leaves %d, douses %d\n", hallHums, hallLeaves, hallDouses); }
     if (wanderSeed) {
         // Every surface a body could rest on, per room, and whether this bot ever did.
         for (int r = 0; r < ROOM_COUNT; r++) {

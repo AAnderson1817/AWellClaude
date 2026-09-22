@@ -276,6 +276,31 @@ static void Synth(void) {
     n = (int)(SR * 0.16f); Clear(n); Noise(n, 1.0f); LowPass(n, 1600, 600, 0.12f); HighPass(n, 200); Env(n, 0.012f, 0.05f);
     Register(SFX_FLAP, "flap", n, 0.8f, 0.18f, 2);
 
+    // the hunter's hum: a low voice, closed-mouthed, three notes falling and rising, as if
+    // to himself
+    n = (int)(SR * 1.4f); Clear(n);
+    { float ph = 0; static const float NOTE[3] = { 146.8f, 130.8f, 164.8f };
+      for (int i = 0; i < n; i++) { float t = (float)i / SR; int k = t < 0.45f ? 0 : (t < 0.9f ? 1 : 2);
+        float f = NOTE[k] * (1.0f + 0.012f * sinf(2 * PI_F * 5.2f * t));
+        ph += 2 * PI_F * f / SR;
+        float s = sinf(ph) + 0.45f * sinf(2 * ph) + 0.2f * sinf(3 * ph);
+        float seg = fmodf(t, 0.45f) / 0.45f; if (t > 0.9f) seg = (t - 0.9f) / 0.5f;
+        work[i] = s * (0.6f + 0.4f * sinf(PI_F * fminf(seg, 1.0f))); } }
+    LowPass(n, 700, 500, 1.2f); Env(n, 0.08f, 0.55f); Reverb(n, 0.25f, 0.7f, 0.5f);
+    Register(SFX_HUM, "hum", n, 0.9f, 0.20f, 1);
+    // their murmur, behind the bars: many low voices at once, no words in it
+    n = (int)(SR * 1.8f); Clear(n);
+    for (int v = 0; v < 4; v++) { float ph = 0, f0 = 88.0f + v * 13.0f;
+        for (int i = 0; i < n; i++) { float t = (float)i / SR;
+            ph += 2 * PI_F * f0 * (1.0f + 0.05f * sinf(2 * PI_F * (0.7f + v * 0.31f) * t + v)) / SR;
+            float s = sinf(ph); s = s > 0 ? powf(s, 0.5f) : -powf(-s, 0.5f);
+            work[i] += s * 0.25f * (0.5f + 0.5f * sinf(2 * PI_F * (1.3f + v * 0.4f) * t + v * 2.0f)); } }
+    LowPass(n, 520, 380, 1.0f); LowPass(n, 700, 500, 1.0f); Env(n, 0.3f, 0.7f); Reverb(n, 0.35f, 0.8f, 0.5f);
+    Register(SFX_MURMUR, "murmur", n, 0.9f, 0.22f, 1);
+    // a dry leaf, landing: a tick of paper
+    n = (int)(SR * 0.05f); Clear(n); Noise(n, 1.0f); HighPass(n, 2400); Env(n, 0.001f, 0.008f);
+    Register(SFX_LEAF, "leaf", n, 0.7f, 0.10f, 1);
+
     // ambience. Six seconds, looped, ends crossfaded so the seam is not a click.
     for (int r = 0; r < ROOM_COUNT; r++) {
         n = SR * 6; Clear(n);

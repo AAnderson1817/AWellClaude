@@ -53,12 +53,12 @@ static void Far(void) {
     if (!WindowSpan(15 * TS, &wx0, &wx1) || camX + GW < wx0 - 64 || camX > wx1 + 64) return;
     // composed for the view of the great window's screen; the city's (176, 78) -- where its
     // avenues meet the horizon -- is on the window's centre line, at the sill
-    Place((wx0 + wx1) * 0.5f - 176.0f, 15 * TS - 78.0f, 2 * SW * TS, 0, PARALLAX, &OX, &OY);
+    Place((wx0 + wx1) * 0.5f - 176.0f, 13 * TS - 78.0f, 2 * SW * TS, 0, PARALLAX, &OX, &OY);   // the horizon just over the sill
     int X0 = 50, X1 = 296;
     // The glow the city throws up into the air over itself, strongest at the horizon.
-    for (int y = HZ - 38; y < HZ + 8; y++)
+    for (int y = HZ - 50; y < HZ + 8; y++)
         for (int x = X0; x < X1; x++) {
-            float dy = y < HZ ? (HZ - y) / 38.0f : (y - HZ) / 8.0f;
+            float dy = y < HZ ? (HZ - y) / 50.0f : (y - HZ) / 8.0f;
             float dx = fabsf((float)(x - VX)) / 140.0f;
             float a = (1.0f - dy) * (1.0f - dx * dx * 0.7f);
             if (a > 0) Glow(x, y, a * 0.9f);
@@ -109,13 +109,13 @@ static void Far(void) {
     }
     // The ring: a great circle of lights hung over the city, a pulse running round it.
     {
-        float cx = 216.0f, cy = 32.0f, r = 25.0f;
-        int n = 78, pulse = (int)(frameNo / 5) % n;
+        float cx = 176.0f, cy = 12.0f, r = 40.0f;          // centred in the window's head
+        int n = 120, pulse = (int)(frameNo / 4) % n;
         for (int k = 0; k < n; k++) {
             float a = k * 6.2831853f / n;
             int x = (int)lroundf(cx + r * cosf(a)), y = (int)lroundf(cy + r * 0.94f * sinf(a));
             int d = (k - pulse + n) % n;
-            Dot(x, y, d == 0 ? PL_CITYH : (d < 4 ? PL_CITY : ((k % 3) ? PL_COOLM : PL_CITY)));
+            Dot(x, y, d == 0 ? PL_CITYH : (d < 6 ? PL_CITY : ((k % 3) ? PL_CITY : PL_COOLM)));
             if ((k & 1) == 0) {
                 int xi = (int)lroundf(cx + (r - 4) * cosf(a)), yi = (int)lroundf(cy + (r - 4) * 0.94f * sinf(a));
                 Dot(xi, yi, PL_COOLD);
@@ -124,12 +124,12 @@ static void Far(void) {
         for (int t = 0; t < 3; t++) {                              // it hangs from threads of light
             float a = 1.75f + t * 0.42f;
             int xs = (int)(cx + r * cosf(a)), ys = (int)(cy + r * 0.94f * sinf(a));
-            for (int y = ys + 2; y < HZ - 22; y += 2) Dot(xs, y, PL_COOLD);
+            for (int y = ys + 2; y < HZ - 40; y += 2) Dot(xs, y, PL_COOLD);
         }
     }
     // Nearer towers: black against the glow, lit down one edge by it, windows in columns.
     static const int NX[7] = { 78, 106, 136, 168, 199, 243, 270 };
-    static const int NH[7] = { 30, 50, 36, 66, 44, 34, 24 };
+    static const int NH[7] = { 42, 70, 50, 92, 62, 48, 34 };
     static const int NW[7] = { 11, 9, 14, 9, 12, 10, 8 };
     for (int i = 0; i < 7; i++) {
         int x0 = NX[i], w = NW[i], top = HZ + 8 - NH[i], bot = HZ + 16;
@@ -162,12 +162,14 @@ static void Beyond(void) {
     if (!gy || camX + GW < gx0 - 32 || camX > gx1 + 32 || camY + GH < gy - 32) return;
     int w = gx1 - gx0, h = 44 * TS - gy;
     Place((f32)gx0, (f32)gy, 2 * SW * TS, SH * TS, 0.45f, &OX, &OY);
-    // the light, strongest low and in the middle: it comes from further in, under the water
+    // the light, strongest low and in the middle: it comes from further in, under the water.
+    // Bring a lamp near and they put it out.
+    f32 lit = 1.0f - HallDouse();
     for (int y = -8; y < h + 8; y++)
         for (int x = -12; x < w + 12; x++) {
             f32 dy = (f32)y / h, dx = fabsf((x - w * 0.5f) / (w * 0.6f));
-            f32 a = (0.25f + 0.75f * dy) * (1.0f - dx * dx);
-            if (a > 0) Glow(x, y, a * 0.95f);
+            f32 a = (0.25f + 0.75f * dy) * (1.0f - dx * dx) * lit;
+            if (a > 0) Glow(x, y, a * 1.1f);
         }
     // the far wall of that hall: a colonnade, black against the glow
     for (int k = 0; k < 6; k++) {
@@ -178,7 +180,7 @@ static void Beyond(void) {
     // narrow, arms down. One of them is always a step nearer than you remember.
     static const int TX[3] = { 30, 68, 98 }, TH[3] = { 70, 92, 60 };
     for (int i = 0; i < 3; i++) {
-        int x = TX[i] * w / 120, H = TH[i], foot = h - 6 - i * 3, top = foot - H;
+        int x = TX[i] * w / 120, H = TH[i] + (i == 0 ? HallNearer() * 8 : 0), foot = h - 6 - i * 3 + (i == 0 ? HallNearer() * 3 : 0), top = foot - H;
         int hw = 3 + H / 30;
         DrawRectangle(OX + x - hw, OY + top + H / 5, hw * 2, H - H / 5, PAL[PL_VOID]);            // body
         DrawRectangle(OX + x - hw - 1, OY + top + H / 5 + 2, 1, H / 2, PAL[PL_VOID]);              // arm
