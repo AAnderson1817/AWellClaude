@@ -358,7 +358,11 @@ void PropsStep(void) {
 void PropsLight(void) {
     for (int i = 0; i < propCount; i++) {
         Prop *p = &props[i];
-        if (p->kind == PR_FIRE && fireLit[roomIdx]) {
+        if (p->kind == PR_DOOR) {
+            // A small glass lamp of theirs set in the crown of the door: the top of it is lit by
+            // them, the foot by you, and the middle is left to the dark.
+            LightAddPointCool(p->tx * TS + 20.0f, p->ty * TS + 3.0f, 4.2f, 0.85f);
+        } else if (p->kind == PR_FIRE && fireLit[roomIdx]) {
             f32 f = 0.85f + 0.15f * sinf(p->phase) + Rnd() * 0.08f;
             LightAddPoint(p->tx * TS + 4.0f, p->ty * TS + 3.0f, 5.2f, 0.62f * f);
         } else if (p->kind == PR_CHAINLAMP) {
@@ -385,6 +389,8 @@ void PropsDrawBack(void) {
         switch (p->kind) {
         case PR_DOOR: {
             DrawSprite(&DOOR, px, py);
+            DrawRectangle(px + 18, py + 1, 4, 3, palIron);                 // the crown lamp
+            DrawRectangle(px + 19, py + 2, 2, 1, palCityGlassLit);
             if (p->state == 1) {
                 f32 t = p->timer * (14.2f / DOOR_GLINT_STEPS);        // the groove's parameter, 0..14.2
                 f32 r = 2.0f + 0.95f * t;

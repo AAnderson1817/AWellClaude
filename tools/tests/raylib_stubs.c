@@ -52,3 +52,5 @@ void SetSoundPitch(Sound s,float p) {}
 void SetSoundPan(Sound s,float p) {}
 void AttachAudioMixedProcessor(AudioCallback c) {}
 bool ExportWave(Wave w,const char *p) { return false; }
+void SetShaderValueV(Shader s,int l,const void *v,int t,int n) {}
+void SetShaderValueTexture(Shader s,int l,Texture2D t) {}

@@ -115,7 +115,6 @@ void InputPoll(void) {
         in.reset = !!(m & M_H);
         return;
     }
-    if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
     in.reset = IsKeyDown(KEY_R);
     in.left  = IsKeyDown(KEY_LEFT)  || IsKeyDown(KEY_A);
     in.right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
@@ -215,6 +214,13 @@ static void Sim(void) {
 static void Frame(void) {
     frameNo++;
     dbgLastSfx = "-";
+    // Toggles, once per rendered frame. Read inside the physics step they fired once per
+    // tick, and a frame can run several ticks: one press of V flipped the look twice and
+    // did nothing.
+    if (!planLen && !wanderSeed) {
+        if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
+        if (IsKeyPressed(KEY_V)) lookNew = !lookNew;    // the old look, for comparing
+    }
     if (dbgFixedStep) {
         Sim();
     } else {
@@ -236,9 +242,18 @@ static void Frame(void) {
             PlayerDraw();
             ItemsDrawHeld();
             FxDraw();
+        if (LOOK_NEW) {
+            RenderLayer(RL_EMIS);      // what gives its own light
+                LifeDrawEyes();
+                ItemsDrawCore();
+            RenderLayer(RL_BACK);      // the far city
+                CityDraw();
+            RenderComposite();
+        } else {
             LightDraw();
             LifeDrawEyes();
             ItemsDrawCore();
+        }
             ResetDrawLids();
             PlayerDrawEyes();      // over the lids: your own eyes close on their own, last
             DebugLabelsDraw();
@@ -284,6 +299,8 @@ int main(int argc, char **argv) {
             dbgTrace = 1;
         } else if (!strcmp(argv[i], "--nodraw")) {
             noDraw = 1;
+        } else if (!strcmp(argv[i], "--oldlook")) {
+            lookNew = 0;
         } else if (!strcmp(argv[i], "--labels")) {
             dbgLabels = 1;
         } else if (!strcmp(argv[i], "--mute")) {

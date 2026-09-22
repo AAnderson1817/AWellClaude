@@ -176,6 +176,38 @@ runs (`--nodraw`, `--mute`) synthesize everything and count what would have play
 the trace line carries `sfx=<name>`. There is no audio device in this container, so
 nothing here has been listened to -- only measured and looked at.
 
+### The look test (after the user called the game ugly)
+
+The user's verdict: the game is displeasing to the eye, and that is the core problem. The
+diagnosis, against Animal Well's own rendering as its maker describes it (research brief,
+Rendering): our lighting was the smooth gradient he rejected -- one light value per tile,
+blurred bilinear across the frame and multiplied -- so every frame was 23 percent murky
+midtone and about nine thousand colours; we had no rim light, which he calls the
+breakthrough; and everything was drawn by code as rectangles.
+
+The look test rebuilds the renderer for the Vault Mouth only, with no gameplay change. The
+frame is drawn in three layers (what is lit, what gives its own light, the far city) and
+one composite pass puts them together (`render.c`):
+
+- light posterised into four hard bands, dithered only across each band's edge, above a
+  floor below which dark is black rather than noise
+- point lights (your aura, the lamp, the fire, their lamps) lit and shadowed per pixel,
+  marched against the tile grid; the seams' bake read per pixel from the same bake
+- rim light on every stone edge and shelf top that faces a light; stone interiors are
+  silhouettes; stone against the far city is backlit in their green
+- every pixel snapped to one palette of 18 (`PAL` in `render.c`)
+- the vault's back wall broken open over the middle of the room, showing the far city
+  (`city.c`): a glow off the horizon, avenues of light running to a vanishing point, far
+  towers, near towers black against the glow, a great ring of lights with a pulse, one
+  light forever climbing a spire. All self-lit and all theirs
+- a small green lamp in the door's crown: lit at the top by them, the foot by you
+
+V toggles the old look for comparing (`--oldlook` starts in it). The flooded room keeps
+the old look until it is converted: under the new one its water goes black and its lamps
+posterise into rings. Found on the way: L and V were read inside the physics step, which
+can run several ticks per rendered frame, so one press could toggle twice and do nothing.
+They are read once per frame now.
+
 ### Calm (a tuning, after the Vault Mouth was played)
 
 The user heard the rooms as busy. Measured standing still for a minute: 56 unprompted

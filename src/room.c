@@ -136,6 +136,25 @@ static f32 lnowW[RH][RW],  lnowC[RH][RW];    // baked + whatever is moving
 static Color lpix[(RH + 1) * (RW + 1)];   // ambient + light, multiplied over the frame
 static Color gpix[(RH + 1) * (RW + 1)];   // light only, added back on top
 static Texture2D lightTex, glowTex;
+// The new look reads the bake once per room: warm and cool at tile corners, the water, and
+// in the alpha, what each tile is (stone, shelf, air) for the rim and the shadows.
+static Color bpix[(RH + 1) * (RW + 1)];
+static Texture2D bakeTex;
+Texture2D LightBakeTexture(void) { return bakeTex; }
+
+// This frame's moving lights, for the composite: the new look draws them per pixel.
+#define PT_MAX 16
+static struct { f32 x, y, R, peak; int cool; } pts[PT_MAX];
+static int ptCount;
+int LightPoints(float *pos4, float *col4, int max) {
+    int n = ptCount < max ? ptCount : max;
+    for (int i = 0; i < max; i++) {
+        pos4[i*4] = i < n ? pts[i].x : 0; pos4[i*4+1] = i < n ? pts[i].y : 0;
+        pos4[i*4+2] = i < n ? pts[i].R * TS : 0; pos4[i*4+3] = i < n ? pts[i].peak : 0;
+        col4[i*4] = i < n ? (f32)pts[i].cool : 0; col4[i*4+1] = col4[i*4+2] = col4[i*4+3] = 0;
+    }
+    return n;
+}
 
 // Cool where nothing reaches, and a shade less cool near the ceiling, so the room
 // feels like it is under something rather than sealed inside it.
@@ -244,11 +263,41 @@ static void LightBake(void) {
             if (tileFlags[tiles[y][x]] & TF_EMIT) {
                 if (ZoneAt(x, y) == Z_CITY) lstatC[y][x] = 1.0f; else lstatW[y][x] = 1.0f;
             }
+    // the bake for the new look, at tile corners, with the tile codes in the alpha
+    for (int j = 0; j <= RH; j++)
+        for (int i = 0; i <= RW; i++) {
+            f32 aw = 0, ac = 0; int n = 0, wn = 0;
+            for (int dy = -1; dy <= 0; dy++)
+                for (int dx = -1; dx <= 0; dx++) {
+                    int x = i + dx, y = j + dy;
+                    if (x < 0 || x >= RW || y < 0 || y >= RH) continue;
+                    aw += lstatW[y][x]; ac += lstatC[y][x]; n++;
+                    if (TileWater(tiles[y][x])) wn++;
+                }
+            f32 w = n ? aw / n : 0, c = n ? ac / n : 0, wf = n ? (f32)wn / n : 0;
+            u8 code = 0;
+            if (i < RW && j < RH) code = (tileFlags[tiles[j][i]] & TF_OPAQUE) ? 255 : (TileOneWay(tiles[j][i]) ? 128 : 0);
+            bpix[j * (RW + 1) + i] = (Color){ (u8)(fminf(w * 0.5f, 1.0f) * 255), (u8)(fminf(c * 0.5f, 1.0f) * 255),
+                                              (u8)(wf * 255), code };
+        }
+    UpdateTexture(bakeTex, bpix);
 }
 
 // The body carries a little light of its own -- enough to find yourself by, not
 // enough to see the room with. Occluded properly, or it shines through walls.
 static void AddPoint(f32 px, f32 py, f32 R, f32 PEAK, int cool) {
+    if (LOOK_NEW) {
+        // Kept whole for the composite, which lights and shadows it per pixel. If there are
+        // too many, the weakest goes.
+        int k = ptCount;
+        if (k >= PT_MAX) {
+            k = 0;
+            for (int i = 1; i < PT_MAX; i++) if (pts[i].peak * pts[i].R < pts[k].peak * pts[k].R) k = i;
+            if (pts[k].peak * pts[k].R >= PEAK * R) return;
+        } else ptCount++;
+        pts[k].x = px; pts[k].y = py; pts[k].R = R; pts[k].peak = PEAK; pts[k].cool = cool;
+        return;
+    }
     f32 (*lnow)[RW] = cool ? lnowC : lnowW;
     f32 cx = px / TS, cy = py / TS;
     int x0 = (int)(cx - R) - 1, x1 = (int)(cx + R) + 1;
@@ -284,6 +333,7 @@ void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak) { AddPoint(px, py, R, pe
 void LightStep(void) {
     memcpy(lnowW, lstatW, sizeof lnowW);
     memcpy(lnowC, lstatC, sizeof lnowC);
+    ptCount = 0;
     AddAura();
     LifeLights();
     ItemsLight();
@@ -296,6 +346,7 @@ void LightStep(void) {
             AddPoint((f32)bulbs[i].x, (f32)bulbs[i].y - 3.0f,
                      bulbs[i].timed ? 5.4f : 4.2f, t * (bulbs[i].timed ? 0.90f : 0.55f), 0);
         }
+    if (LOOK_NEW) return;             // the composite does the rest, per pixel
     // The grid is sampled at tile CORNERS: (RW+1) x (RH+1) values, drawn back over
     // the room half a tile out on every side so each texel centre lands exactly on
     // its corner. Bilinear does the rest, and the falloff comes out smooth.
@@ -416,6 +467,9 @@ void RoomLoad(void) {
     Image im = GenImageColor(RW + 1, RH + 1, WHITE);
     lightTex = LoadTextureFromImage(im);
     glowTex  = LoadTextureFromImage(im);
+    bakeTex  = LoadTextureFromImage(im);
+    SetTextureFilter(bakeTex, TEXTURE_FILTER_BILINEAR);
+    SetTextureWrap(bakeTex, TEXTURE_WRAP_CLAMP);
     UnloadImage(im);
     SetTextureFilter(lightTex, TEXTURE_FILTER_BILINEAR);
     SetTextureWrap(lightTex, TEXTURE_WRAP_CLAMP);
@@ -661,10 +715,20 @@ void RoomDraw(void) {
                 DrawRectangle(x * TS + ((y & 1) ? 4 : 0), ROOM_Y + y * TS, 1, TS - 1, palBackLit);
                 continue;
             }
+            if (LOOK_NEW) {
+                // Hewn rock, mottled: a lighter block and a darker crack in every tile, so a
+                // band of light falling on the wall reveals stone instead of filling a shape.
+                int bx = x * TS + (h >> 3 & 3), by = ROOM_Y + y * TS + (h >> 6 & 3);
+                DrawRectangle(bx, by, 3 + (h >> 9 & 3), 2 + (h >> 11 & 1), (h >> 12 & 1) ? palBackLit : (Color){ 58, 54, 80, 255 });
+                if ((h >> 13 & 3) == 0) DrawRectangle(x * TS + (h >> 15 & 7), ROOM_Y + y * TS + (h >> 18 & 3) + 3, 1, 3, palRockDeep);
+                if ((h >> 20 & 3) == 0) DrawRectangle(x * TS + (h >> 22 & 3) + 2, ROOM_Y + y * TS + 7, 4, 1, palRockDeep);
+                continue;
+            }
             if ((h & 7) == 0)
                 DrawRectangle(x * TS + (h >> 3 & 7), ROOM_Y + y * TS + (h >> 6 & 7), 1, 1,
                               (Color){ 30, 29, 44, 255 });
         }
+    if (LOOK_NEW) CityErase();   // the break in the wall, where the far city shows
     PropsDrawBack();      // the door, the camp: in the wall and on the floor, behind the stone
 
     for (int y = 0; y < RH; y++) {

@@ -247,10 +247,33 @@ extern const char *dbgLastSfx;
 extern int sfxCount[SFX_COUNT];
 
 // ---------------------------------------------------------------- render
+// Two looks. The new one (the default; V toggles, --oldlook starts in the old) draws the
+// frame in layers and puts them together in one pass: light posterised into hard bands
+// with dithering, rim light on edges that face a light, one palette. The old one is the
+// blurred multiply it replaces, kept for comparing.
+extern int lookNew;
+// The look test covers the Vault Mouth only; the flooded room keeps the old look until it
+// is converted (under the new one its water goes black and its lamps ring).
+#define LOOK_NEW (lookNew && roomIdx == 0)
+enum { RL_EMIS = 1, RL_BACK };
 void RenderInit(void);
 void RenderBegin(void);
+void RenderLayer(int which);
+void RenderComposite(void);
 void RenderPresent(void);
 extern RenderTexture2D screenRT;
+int  LightPoints(float *pos4, float *col4, int max);   // this frame's point lights, for the composite
+Texture2D LightBakeTexture(void);
+// the far city, room 0, seen through a break in the back wall (city.c)
+int  CityBreachSpan(int y, int *x0, int *x1);
+void CityErase(void);
+void CityDraw(void);
+
+// ---------------------------------------------------------------- the palette of the new look
+enum { PL_VOID, PL_DEEP, PL_DARK, PL_STONE, PL_STONEL, PL_STONEH, PL_WARMD, PL_WARM, PL_AMBER,
+       PL_AMBERH, PL_COOLD, PL_COOLM, PL_CITY, PL_CITYH, PL_BONE, PL_WATER, PL_WATERL, PL_ACCENT,
+       PL_COUNT };
+extern const Color PAL[PL_COUNT];
 
 // ---------------------------------------------------------------- palette
 extern Color palVoid, palBack, palBackLit, palRock, palRockDeep, palRockLit;
