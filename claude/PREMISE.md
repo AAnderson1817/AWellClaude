@@ -38,9 +38,12 @@ native) and things that answer a stone set down (the hunter's cairn, the face).
 Not designed until the two rooms are dense and played. The candidate is Call.
 
 ## The world
-25 rooms is the ceiling (L1). Two exist: the Vault Mouth and the Drowned Quarter, designed
-in `claude/ROOMS.md` as response tables. Massive is conveyed, not built: windows onto
-spaces you cannot enter, lights behind grilles, a face too large for its room.
+25 rooms is the ceiling (L1). One exists: the antechamber, six screens of it, designed in
+`claude/ANTECHAMBER.md` from the lore in `claude/LORE.md` (the city is cold and cannot make
+fire; the hall is its hearth; the hunters are the fire). Massive is conveyed, not built:
+windows onto spaces you cannot enter, lights behind grilles, a figure too large for its
+hall. The two earlier rooms are parked in `parked/rooms-2/`; `claude/ROOMS.md` is their
+design, kept for its response tables.
 
 ## Layer 2 hook
 Not yet. Whatever it is, it is visible in the first two minutes and usable by the end and
@@ -55,3 +58,9 @@ its place. The reset puts it out, because the reset is everything as it began.
 **D7 — Geometry is frozen through the redesign.** Platforms, the shaft, the water and
 the bulbs are played and signed off; `tools/route.py` and `tools/escape.py` guard them.
 Dressing that needs a one-tile change is allowed if both stay green.
+*Superseded:* the user asked for a complete redesign as one giant room. The new
+geometry is guarded the same way.
+**D8 — One room, six screens, a sliding view.** The antechamber is 3 x 2 screens. The
+view is one screen and slides to the next when you cross an edge (L11 amended).
+**D9 — The camp moves to the undercroft.** The hunter, his cairn and the cold fire are in
+the undercroft (screen D); the door and the step are the entry (A), alone.

@@ -1,3 +1,6 @@
+> Superseded by `claude/ANTECHAMBER.md`: the two rooms were replaced by one room of six
+> screens. These tables are kept for the responses they define (several carried over).
+
 # The two rooms: response tables
 
 This is the design for the redesign. The unit is a *response*: a thing on the screen,

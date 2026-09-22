@@ -58,7 +58,7 @@ R.clear(2, 26, 12, 26)
 R.clear(18, 26, 33, 26)
 R.clear(30, 22, 39, 26)                 # the mouth rises, and the colossus's hand hangs in
 R.clear(34, 18, 39, 21)
-R.fill(1, 27, 3, 29, '#'); R.fill(1, 30, 1, 31, '#')
+R.fill(1, 26, 3, 29, '#'); R.fill(1, 30, 1, 31, '#')    # no pocket too low to stand in
 R.at(0, 31, '*'); R.at(5, 26, '*'); R.at(24, 25, '*'); R.at(10, 25, '*'); R.at(28, 25, '*'); R.at(3, 29, '*')
 R.at(1, 34, ','); R.at(10, 34, ',')
 

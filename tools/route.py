@@ -71,6 +71,7 @@ RESET = [
 #  target cols, direction)
 ROUTE = [
  ("T0 the step     -> over the chasm",        range(8, 13), 13, 14, range(18, 24), +1),
+ ("T0b the passage -> back over it",          range(18, 23), 13, 14, range(8, 13), -1),
  ("T1 the long walk, passage to sill",        the_long_walk),
  ("T2 the chasm, down to the undercroft",     the_chasm),
  ("U1 hall floor   -> the low corbel",        range(40, 46), 34, 32, range(41, 45),  0),

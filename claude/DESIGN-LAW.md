@@ -59,6 +59,10 @@ a reassuring cartoon vocabulary that kills the uncanny. Use procedural animation
 frame is a reading instruction: it invites the player to examine the whole composition
 and ask where something could be hidden. Room = 40×22 tiles of 8×8 px = 320×176 inside
 a 320×180 frame.
+*Amended at the user's direction (the antechamber):* a room may be larger than one
+screen. The view is still always exactly one screen, composed as one, and never follows
+the player inside it; crossing a screen's edge slides the view to the next screen and
+stops. Continuous scrolling stays forbidden. See `claude/ANTECHAMBER.md`.
 
 **L12 — The unifying test.** "I like to try to guide the player into thinking they
 fully understand something, and then reveal that they don't." Apply this to verbs, to

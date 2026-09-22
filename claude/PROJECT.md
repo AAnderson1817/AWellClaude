@@ -2,7 +2,32 @@
 
 ## Where this is
 
-**Two rooms now: the chamber, and a flooded chamber under it.** Running, jumping,
+**One room now: the antechamber, six screens of it** (three across, two down), with a
+view that slides a screen at a time. The design is `claude/ANTECHAMBER.md`, the lore
+`claude/LORE.md`. What follows below the next section is the history that got here; the
+two rooms it describes are parked in `parked/rooms-2/`.
+
+### The antechamber (this build)
+
+- **Engine.** The room is 120 x 44 tiles. `CameraStep` keeps the view on one screen and
+  slides it (22 frames, eased) when your centre crosses an edge, with hysteresis; the
+  composite reads the camera (`uCam`) and the room's size (`uWorld`). Drawing, motes, air
+  and lights are culled to the view; sounds from a place in the room pan by the view and
+  fade off it (`SfxAt`).
+- **The far wall is painted once** (`src/backdrop.c`) into a picture of the whole room:
+  the tall ones' masonry in blocks bigger than a person, raw rock in strata, the niche,
+  pilasters, cornice, the great window, the fireguard, the colossus (sculpted as a height
+  field by `tools/art/colossus.py`), and every tile of the city's stone and of buried
+  rock. The room draws only raw rock's edges and the small things each frame.
+- **The hall's lives** (`src/hall.c`): the hunter, the sitters, the prints, the leaves,
+  the mural, the dead lamps, the spilled glass, the fish, the draft's dust, the tall ones
+  dousing. Three new sounds: hum, murmur, leaf.
+- **Lighting** (the pass before this): a 27-colour palette, nearest colour by eye (Oklab),
+  higher exposure; mean luminance 18 -> 29, vivid pixels under 1% -> 12-17%.
+- **Checks**: `tools/route.py` (every hop of the new climb, the three reset cases),
+  `tools/escape.py` (every surface back to the entry's level), `tools/check.sh`.
+
+**Two rooms, before this: the chamber, and a flooded chamber under it.** Running, jumping,
 two bulbs, and the water.
 
 The user played the from-scratch room and asked to keep it as the base. First addition

@@ -200,8 +200,11 @@ static void Sim(void) {
     PropsStep();
     HallStep();
     AirStep();
-    if (wanderSeed && !homeFrame && frameNo > 60 && roomIdx == 0 && player.onGround
-        && fabsf(player.x - homeX) < 12.0f && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
+    // Home is the entry's level: the step at the door or the passage beside it, which one
+    // verified jump joins (tools/route.py T0, both ways). A bot that gets back up there out of
+    // the undercroft or the hall has found the way the room gives back.
+    if (wanderSeed && !homeFrame && frameNo > 60 && player.onGround
+        && player.x < SW * TS && fabsf(player.y - homeY) < 4.0f) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
         // a fraction past the tile top; landing on a shelf stops them a fraction
