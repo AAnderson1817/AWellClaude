@@ -9,6 +9,12 @@
 #include "aw.h"
 #include <math.h>
 
+// Which room has the view. None, for now: the user found the break in the Vault Mouth's
+// wall unreadable -- a cut-out with platforms floating in it, in a room not built around a
+// view -- and it muddied the look test, which is about the renderer. It comes back only in a
+// room composed around it, with the climb kept to the edges.
+#define CITY_ROOM (-1)
+
 // The break in the wall, room 0 only: a ragged ellipse over the open middle of the room.
 #define BR_CX 172.0f
 #define BR_CY  56.0f
@@ -24,7 +30,7 @@ static float Ragged(int y, int side) {
 }
 // The span of room row y that is open to the far city, or 0.
 int CityBreachSpan(int y, int *x0, int *x1) {
-    if (roomIdx != 0) return 0;
+    if (roomIdx != CITY_ROOM) return 0;
     float dy = (y - BR_CY) / BR_RY;
     if (dy <= -1.0f || dy >= 1.0f) return 0;
     float hw = BR_RX * powf(1.0f - dy * dy, 0.38f) * (1.0f + 0.05f * sinf(y * 0.11f));
@@ -37,7 +43,7 @@ int CityBreachSpan(int y, int *x0, int *x1) {
 // Cut the break out of the back wall that was just drawn: subtract blend of transparent
 // black writes zeros, and alpha zero is how the composite knows to show the city there.
 void CityErase(void) {
-    if (roomIdx != 0) return;
+    if (roomIdx != CITY_ROOM) return;
     BeginBlendMode(BLEND_SUBTRACT_COLORS);
     for (int y = 0; y < RH * TS; y++) {
         int x0, x1;
@@ -75,7 +81,7 @@ static void Glow(int x, int y, float a) {
 }
 
 void CityDraw(void) {
-    if (roomIdx != 0) return;
+    if (roomIdx != CITY_ROOM) return;
     int X0 = 50, X1 = 296;
     // The glow the city throws up into the air over itself, strongest at the horizon.
     for (int y = HZ - 38; y < HZ + 8; y++)

@@ -196,10 +196,13 @@ one composite pass puts them together (`render.c`):
 - rim light on every stone edge and shelf top that faces a light; stone interiors are
   silhouettes; stone against the far city is backlit in their green
 - every pixel snapped to one palette of 18 (`PAL` in `render.c`)
-- the vault's back wall broken open over the middle of the room, showing the far city
-  (`city.c`): a glow off the horizon, avenues of light running to a vanishing point, far
-  towers, near towers black against the glow, a great ring of lights with a pulse, one
-  light forever climbing a spire. All self-lit and all theirs
+- the far city (`city.c`): a glow off the horizon, avenues of light running to a vanishing
+  point, far towers, near towers black against the glow, a great ring of lights with a
+  pulse, one light forever climbing a spire, all self-lit and all theirs. First shown
+  through a break in the Vault Mouth's back wall; the user found it unreadable (a cut-out
+  with platforms floating in it, in a room not built around a view) and it muddied a test
+  meant to judge the renderer. Taken out; parked (`CITY_ROOM -1`) until a room is composed
+  around the view
 - a small green lamp in the door's crown: lit at the top by them, the foot by you
 
 V toggles the old look for comparing (`--oldlook` starts in it). The flooded room keeps
