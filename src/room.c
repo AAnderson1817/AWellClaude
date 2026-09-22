@@ -661,22 +661,16 @@ static void DrawWater(int x, int y, int px, int py) {
 }
 
 static void DrawBush(int x, int y, int px, int py) {
-    // A clump on whatever it grows from. Leans away from a body passing, shakes after.
+    // A clump on whatever it grows from. Leans away from a body passing, shakes after:
+    // the crown moves, the base where it grows does not.
     float dx = (player.x + player.w * 0.5f) - (px + 4.0f);
     int lean = 0;
     if (dx > -12.0f && dx < 12.0f) lean = (dx > 0) ? -1 : 1;
     int shake = bushShake[y][x] ? (((bushShake[y][x] / 2) & 1) ? 1 : -1) : 0;
-    int l = lean + shake;
-    u32 h = Hash2(x * 5 + 3, y * 9 + 1);
-    DrawRectangle(px, py + 5, TS, 3, palBush);
-    DrawRectangle(px + 1 + l, py + 3, 6, 2, palBush);
-    DrawRectangle(px + 2 + l, py + 2, 4, 1, palBush);
-    DrawRectangle(px + 3 + l + (h & 1), py + 1, 2, 1, palBush);
-    DrawRectangle(px + 2 + l, py + 3, 1, 1, palBushLit);
-    DrawRectangle(px + 5 + l, py + 2, 1, 1, palBushLit);
-    DrawRectangle(px + 1, py + 5, 1, 1, palBushLit);
-    DrawRectangle(px + 1 + (h >> 2 & 3) + l, py + 4, 1, 1, palBerry);
-    DrawRectangle(px + 3 + (h >> 4 & 3), py + 6, 1, 1, palBerry);
+    int l = lean + shake, flip = Hash2(x * 5 + 3, y * 9 + 1) & 1;
+    DrawSpriteRows(&SPR_BUSH, px + l, py, flip, 0, 3, -1);
+    DrawSpriteRows(&SPR_BUSH, px + (l > 0 ? (l + 1) / 2 : l / 2), py, flip, 3, 6, -1);
+    DrawSpriteRows(&SPR_BUSH, px, py, flip, 6, 8, -1);
 }
 
 static void DrawMoss(int x, int y, int px, int py) {
@@ -786,14 +780,14 @@ void BulbsDraw(void) {
             int half = (int)(hw * sqrtf(q > 0 ? q : 0) + 0.5f);
             if (half < 1) half = 1;
             int y = base - 1 - r;
-            Color c = palBulb;
-            if (r == H - 1) c = palBulbLit;             // the crown catches everything
-            if (r == 0)     c = palBulbDeep;
+            Color c = PAL[PL_ACCENT];
+            if (r == H - 1) c = PAL[PL_ACCENT];         // the crown
+            if (r == 0)     c = PAL[PL_WARMD];
             DrawRectangle(b->x - half, y, half * 2, 1, c);
         }
         // a lit fleck near the crown, offset to one side: it is round, not flat
-        DrawRectangle(b->x - 2, base - H + 1, 2, 1, palBulbLit);
-        DrawRectangle(b->x + 1, base - 2, 1, 1, palBulbDeep);
+        DrawRectangle(b->x - 2, base - H + 1, 2, 1, PAL[PL_BONE]);
+        DrawRectangle(b->x + 1, base - 2, 1, 1, PAL[PL_WARMD]);
     }
 }
 

@@ -175,19 +175,13 @@ static void BirdsDraw(void) {
         Bird *b = &birds[i];
         if (!b->alive) continue;
         int x = (int)floorf(b->x), y = ROOM_Y + (int)floorf(b->y);
+        int flip = b->facing < 0;
         if (b->state == B_PERCH) {
-            // a small dark shape with its breast to the light and its tail to the wind
-            DrawRectangle(x - 1, y - 4, 3, 3, palBird);
-            DrawRectangle(x - 1, y - 2, 3, 1, palBirdLight);
-            DrawRectangle(x + (b->facing > 0 ? -2 : 2), y - 3, 1, 1, palBird);          // tail
-            DrawRectangle(x + (b->facing > 0 ? 2 : -2), y - 4, 1, 1, palBirdLight);     // beak
+            // mostly still; now and then it drops its head to look at something
+            int look = ((frameNo + i * 53) / 70) % 7 == 0;
+            DrawSpriteEx(look ? &SPR_BIRD_LOOK : &SPR_BIRD_PERCH, x - 4, y - 6, flip);
         } else {
-            int up = (b->flap / 4) & 1;
-            DrawRectangle(x - 1, y - 2, 3, 2, palBird);
-            DrawRectangle(x - 3, y - (up ? 4 : 1), 2, 1, palBird);                    // wings
-            DrawRectangle(x + 2, y - (up ? 4 : 1), 2, 1, palBird);
-            DrawRectangle(x - 2, y - (up ? 3 : 2), 1, 1, palBird);
-            DrawRectangle(x + 2, y - (up ? 3 : 2), 1, 1, palBird);
+            DrawSpriteEx(((b->flap / 4) & 1) ? &SPR_BIRD_UP : &SPR_BIRD_DOWN, x - 3, y - 3, flip);
         }
     }
 }
@@ -196,7 +190,9 @@ static void BirdsDrawEyes(void) {
     for (int i = 0; i < BIRD_MAX; i++) {
         Bird *b = &birds[i];
         if (!b->alive || b->state != B_PERCH) continue;
-        DrawRectangle((int)floorf(b->x) + (b->facing > 0 ? 1 : -1), ROOM_Y + (int)floorf(b->y) - 4, 1, 1, palEye);
+        int look = ((frameNo + i * 53) / 70) % 7 == 0;
+        int x = (int)floorf(b->x), y = ROOM_Y + (int)floorf(b->y);
+        DrawRectangle(x - 4 + (b->facing < 0 ? 1 : 6), y - 6 + (look ? 2 : 1), 1, 1, PAL[PL_BONE]);
     }
 }
 
@@ -289,43 +285,36 @@ static void BeastStep(void) {
     if (--beast.blink < 0) beast.blink = 80 + (int)(Rnd() * 200);
 }
 
+// Where its head is: at the front of the body, lifted when it watches, lower when it sits.
+static void BeastHead(int *hx, int *hy) {
+    int x = (int)floorf(beast.x), y = ROOM_Y + (int)floorf(beast.y);
+    int sit = beast.state == M_SIT;
+    *hx = beast.dir > 0 ? x + 9 : x - 4;
+    *hy = y - 7 + (sit ? 2 : 0) - (int)floorf(beast.headLift + 0.5f);
+}
 static void BeastDraw(void) {
     if (!beast.alive) return;
     int x = (int)floorf(beast.x), y = ROOM_Y + (int)floorf(beast.y);
+    int flip = beast.dir < 0;
+    const Sprite *s = &SPR_BEAST_STAND;
+    if (beast.state == M_SIT) s = &SPR_BEAST_SIT;
+    else if (beast.state == M_WALK) s = (((int)(beast.legT * 2)) & 1) ? &SPR_BEAST_WALK1 : &SPR_BEAST_WALK2;
+    // tail first, behind the body: a lag chain, ringed dark and light
     int sit = beast.state == M_SIT;
-    int bodyY = y - (sit ? 5 : 6);
-    int walking = beast.state == M_WALK;
-    int phase = ((int)(beast.legT * 2)) & 1;
-    // legs: four, the near pair and the far pair out of step
-    for (int l = 0; l < 4; l++) {
-        int lx = x + 1 + l * 3 - (l >= 2 ? 1 : 0);
-        int off = walking ? ((l & 1) == phase ? 1 : -1) * beast.dir : 0;
-        if (sit && l >= 2) continue;
-        DrawRectangle(lx + (walking ? off : 0), bodyY + 3, 1, sit ? 2 : 3, palFur);
+    int tx = beast.dir > 0 ? x : x + BEAST_W - 1;
+    for (int i = 0; i < 6; i++) {
+        int ty = y - (sit ? 3 : 4) - (int)floorf(beast.tail[i < 5 ? i : 4] * 0.6f + i * 0.55f);
+        DrawRectangle(tx - (beast.dir > 0 ? i : -i), ty, 1, 1, PAL[(i & 1) ? PL_WARMD : PL_WARM]);
     }
-    DrawRectangle(x, bodyY, BEAST_W, 4, palFur);                       // body
-    DrawRectangle(x + 1, bodyY + 3, BEAST_W - 2, 1, palFurLight);      // underside
-    // head, forward and a little up when it is watching
-    int hx = beast.dir > 0 ? x + BEAST_W - 1 : x - 2;
-    int hy = bodyY - 1 - (int)floorf(beast.headLift + 0.5f);
-    DrawRectangle(hx, hy, 3, 3, palFur);
-    DrawRectangle(hx + (beast.dir > 0 ? 0 : 2), hy - 1, 1, 1, palFur);                // ear
-    DrawRectangle(hx + (beast.dir > 0 ? 2 : 0), hy + 2, 1, 1, palFurLight);           // muzzle
-    // tail
-    int tx = beast.dir > 0 ? x - 1 : x + BEAST_W;
-    for (int i = 0; i < 5; i++) {
-        int ty = bodyY + 1 - (int)floorf(beast.tail[i] * 0.6f + i * 0.5f);
-        DrawRectangle(tx - (beast.dir > 0 ? i : -i), ty, 1, 1, i < 4 ? palFur : palFurLight);
-    }
+    DrawSpriteEx(s, x - 1, y - 7, flip);
+    int hx, hy; BeastHead(&hx, &hy);
+    DrawSpriteEx(&SPR_BEAST_HEAD, hx, hy, flip);
 }
 
 static void BeastDrawEyes(void) {
     if (!beast.alive || beast.blink < 4) return;
-    int x = (int)floorf(beast.x), y = ROOM_Y + (int)floorf(beast.y);
-    int bodyY = y - (beast.state == M_SIT ? 5 : 6);
-    int hx = beast.dir > 0 ? x + BEAST_W - 1 : x - 2;
-    int hy = bodyY - 1 - (int)floorf(beast.headLift + 0.5f);
-    DrawRectangle(hx + (beast.dir > 0 ? 1 : 1), hy + 1, 1, 1, palEyeGreen);
+    int hx, hy; BeastHead(&hx, &hy);
+    DrawRectangle(hx + 2, hy + 1, 1, 1, PAL[PL_CITYH]);    // one green eye: it is of this place
 }
 
 // ---------------------------------------------------------------- the plant
@@ -408,22 +397,18 @@ static void PlantsDraw(void) {
         // stalk, in three lengths that lean progressively
         for (int s = 0; s < 14; s++) {
             int sx = bx + (int)floorf(p->sway * (s / 14.0f) + 0.5f);
-            DrawRectangle(sx, by - 1 - s, 1, 1, palStalk);
+            DrawRectangle(sx, by - 1 - s, 1, 1, PAL[PL_COOLM]);
         }
         // leaves at the base and the middle
-        DrawRectangle(bx - 3, by - 3, 3, 1, palLeaf); DrawRectangle(bx + 1, by - 2, 3, 1, palLeaf);
-        DrawRectangle(bx - 2 + (int)floorf(p->sway * 0.5f), by - 8, 2, 1, palLeaf);
+        DrawRectangle(bx - 3, by - 3, 3, 1, PAL[PL_COOLM]); DrawRectangle(bx + 1, by - 2, 3, 1, PAL[PL_COOLM]);
+        DrawRectangle(bx - 3, by - 2, 1, 1, PAL[PL_COOLD]); DrawRectangle(bx + 3, by - 1, 1, 1, PAL[PL_COOLD]);
+        DrawRectangle(bx - 2 + (int)floorf(p->sway * 0.5f), by - 8, 2, 1, PAL[PL_COOLM]);
         for (int k = 0; k < 3; k++) {
             int ox, oy; PodPos(p, k, &ox, &oy); oy += ROOM_Y;
-            DrawRectangle(ox, oy - 1, 1, 1, palStalk);                                  // stem
-            DrawRectangle(ox - 1, oy, 3, 3, palPod);
-            DrawRectangle(ox, oy - 1 + 1, 1, 1, palPodLit);                              // a highlight
-            DrawRectangle(ox - 1, oy + 2, 3, 1, palPodDeep);
-            if (p->state == P_SPEAK && p->pod == k && p->mouth > 0) {
-                // the mouth: a slit that opens for the syllable
-                int open = p->mouth > 3 ? 2 : 1;
-                DrawRectangle(ox - 1 + (p->lean < 0 ? 0 : 1), oy + 1, 2, open, palPodDeep);
-            }
+            DrawRectangle(ox, oy - 2, 1, 1, PAL[PL_COOLM]);                             // stem
+            // the fruit; its mouth opens for the syllable
+            int open = p->state == P_SPEAK && p->pod == k && p->mouth > 0;
+            DrawSprite(open ? &SPR_POD_OPEN : &SPR_POD, ox - 1, oy - 1);
         }
     }
 }

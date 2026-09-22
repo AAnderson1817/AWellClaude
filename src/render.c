@@ -132,7 +132,7 @@ static const char *COMP_BODY =
 "  w *= k; c *= k;\n"
 "  vec3 warm = vec3(1.0, 0.80, 0.52), cool = vec3(0.55, 1.0, 0.80);\n"
 "  float I = w + c; vec3 tint = I > 0.001 ? (warm * w + cool * c) / I : warm;\n"
-"  float th = bayer(p) - 0.5;\n"
+"  float th = alb.a < 0.998 ? 0.0 : bayer(p) - 0.5;\n"      // no dither on drawn things: a clean edge
 "  I = max(I - 0.11, 0.0) * 1.2;\n"                          // below a floor, dark is black, not noise
 "  float Iq = floor(I * uBands + 0.5 + th * 0.7) / uBands;\n"    // hard bands; dither only across each edge
 "  float Rl = max(rw + rc - 0.16, 0.0) * 1.3; vec3 rt = (rw + rc) > 0.001 ? (warm * rw + cool * rc) / (rw + rc) : warm;\n"

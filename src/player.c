@@ -313,34 +313,33 @@ void PlayerStep(void) {
 // Drawn before the light pass, so the body is as dark as wherever it is standing.
 void PlayerDraw(void) {
     int px = (int)floorf(player.x), py = (int)floorf(player.y) + ROOM_Y;
-    int bob = (player.onGround && fabsf(player.vx) > 0.05f) ? ((int)player.animT & 1) : 0;
+    int moving = player.onGround && fabsf(player.vx) > 0.05f;
+    int bob = moving ? ((int)player.animT & 1) : 0;
     py += bob;
 
     int lean = (int)floorf(player.leanX * 0.9f);
     if (lean >  1) lean =  1;
     if (lean < -1) lean = -1;
 
-    // A rounded body: two overlapping rectangles take the corners off at 6x11.
-    DrawRectangle(px,     py + 1, player.w,     player.h - 2, palSkin);
-    DrawRectangle(px + 1, py,     player.w - 2, player.h,     palSkin);
-    DrawRectangle(px + 1, py + player.h - 1, player.w - 2, 1, palSkinDeep);
-    DrawRectangle(px,     py + player.h - 3, 1, 2, palSkinDeep);
-    DrawRectangle(px + player.w - 1, py + player.h - 3, 1, 2, palSkinDeep);
+    // Which pose. Poses, not squash: the body is the same shape in every one of them,
+    // only the feet and where it hangs change (L10).
+    const Sprite *s = &SPR_PLAYER_IDLE;
+    if (!player.onGround && !player.submerged) s = player.vy < 0 ? &SPR_PLAYER_JUMP : &SPR_PLAYER_FALL;
+    else if (moving) s = ((int)player.animT & 2) ? &SPR_PLAYER_WALK1 : &SPR_PLAYER_WALK2;
+    int flip = player.facing < 0;
+    DrawSpriteEx(s, px, py, flip);
 
     // The surface cuts the body. Without this a floating body reads as standing on
     // the water, because only a quarter of it is under.
     if (player.waterY >= 0) {
-        int wy = ROOM_Y + player.waterY, bot = py + player.h;
-        if (wy < bot) {
-            int top = wy > py ? wy : py;
-            DrawRectangle(px, top, player.w, bot - top, palSkinWet);
-        }
+        int wy = ROOM_Y + player.waterY;
+        DrawSpriteRows(s, px, py, flip, wy - py, s->h, PL_WATERL);
     }
 
     // Two nubs on the head that lag the turn. They are the only thing on the body
     // that reads which way it is going, and they are late about it.
-    DrawRectangle(px + 1 + lean, py - 1, 1, 1, palSkin);
-    DrawRectangle(px + player.w - 2 + lean, py - 1, 1, 1, palSkin);
+    DrawRectangle(px + 1 + lean, py - 1, 1, 1, PAL[PL_BONE]);
+    DrawRectangle(px + player.w - 2 + lean, py - 1, 1, 1, PAL[PL_BONE]);
 }
 
 // Drawn AFTER the light pass. Everything else in the room goes dark where nothing
@@ -356,12 +355,12 @@ void PlayerDrawEyes(void) {
     // Dark eyes with a lit point in each. In a corner nothing reaches, the two points
     // are the only thing left of you, which is the reason they are drawn out here.
     if (resetFade > 0.45f) {                            // half shut: the lid is down over the light
-        DrawRectangle(ex,     ey + 1, 1, 1, palPupil);
-        DrawRectangle(ex + 3, ey + 1, 1, 1, palPupil);
+        DrawRectangle(ex,     ey + 1, 1, 1, PAL[PL_VOID]);
+        DrawRectangle(ex + 3, ey + 1, 1, 1, PAL[PL_VOID]);
         return;
     }
-    DrawRectangle(ex,     ey, 1, 2, palPupil);
-    DrawRectangle(ex + 3, ey, 1, 2, palPupil);
-    DrawRectangle(ex,     ey, 1, 1, palEye);
-    DrawRectangle(ex + 3, ey, 1, 1, palEye);
+    DrawRectangle(ex,     ey, 1, 2, PAL[PL_VOID]);
+    DrawRectangle(ex + 3, ey, 1, 2, PAL[PL_VOID]);
+    DrawRectangle(ex,     ey, 1, 1, PAL[PL_BONE]);
+    DrawRectangle(ex + 3, ey, 1, 1, PAL[PL_BONE]);
 }

@@ -180,18 +180,8 @@ void ItemsLight(void) {
 
 static void DrawOne(const Item *it) {
     int x = (int)floorf(it->x), y = ROOM_Y + (int)floorf(it->y);
-    if (it->kind == IT_LAMP) {
-        DrawRectangle(x + 1, y - 1, 2, 1, palLampIron);            // the loop you hold it by
-        DrawRectangle(x, y, 4, 5, palLampIron);
-        DrawRectangle(x + 1, y + 1, 2, 3, palLampGlass);
-    } else {
-        // a stone: a lump with a lit top and a dark underside, wider at the bottom
-        DrawRectangle(x + 1, y, 3, 1, palStone);
-        DrawRectangle(x, y + 1, 5, 3, palStone);
-        DrawRectangle(x + 1, y, 2, 1, palStoneLit);
-        DrawRectangle(x, y + 3, 5, 1, palStoneDeep);
-        DrawRectangle(x + 3, y + 2, 1, 1, palStoneDeep);
-    }
+    if (it->kind == IT_LAMP) DrawSprite(&SPR_LAMP, x, y - 1);     // the loop you hold it by sits above
+    else                     DrawSprite(&SPR_STONE, x, y);
 }
 void ItemsDrawBehind(void) { for (int i = 0; i < itemCount; i++) if (i != heldItem && items[i].room == roomIdx) DrawOne(&items[i]); }
 void ItemsDrawHeld(void)   { if (heldItem >= 0) DrawOne(&items[heldItem]); }
@@ -202,7 +192,8 @@ void ItemsDrawCore(void) {
         Item *it = &items[i];
         if (it->kind != IT_LAMP || (i != heldItem && it->room != roomIdx)) continue;
         int x = (int)floorf(it->x), y = ROOM_Y + (int)floorf(it->y);
-        DrawRectangle(x + 1, y + 1, 2, 3, palLampGlass);
-        DrawRectangle(x + 1 + (it->flick > 0.05f ? 1 : 0), y + 2, 1, 1, palLampHot);
+        DrawRectangle(x + 1, y + 1, 2, 2, PAL[PL_AMBERH]);
+        DrawRectangle(x + 1, y + 3, 2, 1, PAL[PL_AMBER]);
+        DrawRectangle(x + 1 + (it->flick > 0.05f ? 1 : 0), y + 1, 1, 1, PAL[PL_BONE]);
     }
 }

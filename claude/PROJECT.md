@@ -223,6 +223,34 @@ from stone and water from air. Found on the way: L and V were read inside the ph
 can run several ticks per rendered frame, so one press could toggle twice and do nothing.
 They are read once per frame now.
 
+### The drawn things, redrawn
+
+Every drawn thing that was programmer art -- rectangles placed by code -- is now a sprite
+of hand-placed pixels in the palette, in one file, `src/sprites.c`, as rows of palette
+letters like the door. Code chooses the pose and where; it no longer draws shapes.
+
+- **You**: a small creature with a head and a narrower neck, not a capsule; poses for
+  standing, two walking steps, rising and falling (poses, not squash: the body is the same
+  shape in each). The ears still lag the turn, the eyes are still drawn over the light, the
+  part under the surface still goes cold.
+- **The animal**: an arched back, a darker belly and spots, two walking steps, sitting; a
+  head that lifts when it watches you, with its one green eye; a ringed tail on the lag chain.
+- **Birds**: perched with a tail and breast, and now and then a head dropped to look at
+  something; wings up and down in flight. **The plant's fruit**, closed and speaking.
+  **Bushes**, whose crown leans and shakes over a base that stays put.
+- **The lamp, the stone, the pots, the bedroll, the pack and its dead lamp, the cairn, the
+  bones, the fire ring, the balustrade**; and in palette colours now, the ropes, roots (brown,
+  mossed), the chain lamp, the banner, the capital and base, the grate, the bulbs, the fire,
+  and the specks in the air.
+
+One rule in the composite came out of looking at it: drawn things are written with alpha
+254 instead of 255, and get a clean band edge instead of dither. Dither is right on a wall;
+on a body crossing the edge of a lamp's band it was a checkerboard.
+
+`tools/sprites.py` renders every sprite to a sheet three ways (as drawn, in a lamp's band,
+in a dim one, snapped to the palette), and `tools/sprite_set.py NAME` replaces one sprite's
+rows -- the loop the art was made in.
+
 ### Calm (a tuning, after the Vault Mouth was played)
 
 The user heard the rooms as busy. Measured standing still for a minute: 56 unprompted

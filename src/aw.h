@@ -108,7 +108,14 @@ void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak);   // the city's colour 
 // text sprites, rows of palette letters. Nothing here is read by a rule.
 typedef struct { int w, h; const char *const *rows; } Sprite;
 void  DrawSprite(const Sprite *s, int px, int py);
-Color SpriteInk(char c);
+void  DrawSpriteEx(const Sprite *s, int px, int py, int flip);
+// rows y0..y1-1 only; ink >= 0 draws every pixel in that palette colour (a silhouette)
+void  DrawSpriteRows(const Sprite *s, int px, int py, int flip, int y0, int y1, int ink);
+extern const Sprite SPR_PLAYER_IDLE, SPR_PLAYER_WALK1, SPR_PLAYER_WALK2, SPR_PLAYER_JUMP, SPR_PLAYER_FALL;
+extern const Sprite SPR_BIRD_PERCH, SPR_BIRD_LOOK, SPR_BIRD_UP, SPR_BIRD_DOWN;
+extern const Sprite SPR_BEAST_STAND, SPR_BEAST_WALK1, SPR_BEAST_WALK2, SPR_BEAST_SIT, SPR_BEAST_HEAD;
+extern const Sprite SPR_POD, SPR_POD_OPEN, SPR_BUSH, SPR_LAMP, SPR_STONE;
+extern const Sprite SPR_POT, SPR_BEDROLL, SPR_PACK, SPR_CAIRN, SPR_BONES, SPR_FIRE_RING, SPR_BALUSTRADE, SPR_DOOR;
 void PropsInit(void);        // per room, after the tiles are known
 void PropsStep(void);
 void PropsDrawBack(void);    // after the back wall, before the tiles

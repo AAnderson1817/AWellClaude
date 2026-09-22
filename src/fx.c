@@ -125,7 +125,7 @@ void FxDraw(void) {
         // and they only appear where something is lighting the air.
         int x = (int)motes[i].x, y = ROOM_Y + (int)motes[i].y;
         if (TileSolid(TileAtPx(motes[i].x, motes[i].y))) continue;
-        DrawRectangle(x, y, 1, 1, (Color){ 128, 124, 150, 255 });
+        DrawRectangle(x, y, 1, 1, PAL[PL_STONEL]);
     }
     for (int i = 0; i < FX_MAX; i++) {
         Particle *p = &pool[i];
@@ -134,21 +134,21 @@ void FxDraw(void) {
         float t = (float)p->life / (float)p->maxLife;
         switch (p->kind) {
             case FX_DRIP:
-                DrawRectangle(x, y, 1, 2, palDrop);
+                DrawRectangle(x, y, 1, 2, PAL[PL_WATERL]);
                 break;
             case FX_SPLASH:
-                DrawRectangle(x, y, 1, 1, palDrop);
+                DrawRectangle(x, y, 1, 1, PAL[PL_WATERL]);
                 break;
             case FX_DUST: {
-                Color c = { 92, 88, 104, 255 };
-                if (t > 0.6f) c = (Color){ 118, 112, 130, 255 };
+                Color c = PAL[PL_STONE];
+                if (t > 0.6f) c = PAL[PL_STONEL];
                 DrawRectangle(x, y, 1, 1, c);
             } break;
             case FX_SPARK:
-                DrawRectangle(x, y, 1, 1, t > 0.45f ? palFlameHot : palEmber);
+                DrawRectangle(x, y, 1, 1, PAL[t > 0.45f ? PL_AMBERH : PL_WARM]);
                 break;
             case FX_SHARD:
-                DrawRectangle(x, y, 1, 1, t > 0.3f ? palClay : palClayLit);
+                DrawRectangle(x, y, 1, 1, PAL[t > 0.3f ? PL_WARM : PL_AMBER]);
                 break;
             default: break;
         }

@@ -90,84 +90,9 @@ int  PropsAge(void) { return (int)age; }
 int  PropFireLit(int room) { return room >= 0 && room < ROOM_COUNT ? fireLit[room] : 0; }
 void PropsReset(void) { memset(fireLit, 0, sizeof fireLit); }
 
-// ---------------------------------------------------------------- sprites
-// Rows of palette letters. '.' is nothing.
-Color SpriteInk(char c) {
-    switch (c) {
-        case 'l': return palAshlarLit;  case 's': return palAshlar;   case 'k': return palRockDeep;
-        case 'd': return palDoor;       case 'g': return palDoorGroove; case 'G': return palCityGlass;
-        case 'i': return palIron;       case 'w': return palBone;     case 'b': return palRockDeep;
-        default:  return (Color){ 0, 0, 0, 0 };
-    }
-}
-void DrawSprite(const Sprite *s, int px, int py) {
-    for (int y = 0; y < s->h; y++) {
-        const char *row = s->rows[y];
-        int x = 0;
-        while (x < s->w) {
-            char c = row[x];
-            if (c == '.') { x++; continue; }
-            int x0 = x;
-            while (x < s->w && row[x] == c) x++;          // runs, so a 40x48 door is not 1920 quads
-            DrawRectangle(px + x0, py + y, x - x0, 1, SpriteInk(c));
-        }
-    }
-}
-
-// The door: a round-headed portal of the city's making, five tiles wide, six tall. Its face
-// is a spiral groove crossing six petal veins, with a glass hub. The spiral is the same
-// formula the glint follows below, so the glint rides the groove.
-static const char *const DOOR_ROWS[48] = {
-    "........................................",
-    "..............llllllllllll..............",
-    "...........lllsssssssssssslll...........",
-    "..........llssssssssssssssssll..........",
-    "........llsssskkkkkkkkkkkkssssll........",
-    ".......llssskkkddddddddddkkksssll.......",
-    "......lsssskddddddddddddddddkssssl......",
-    ".....lssskkddddddddddddddddddkksssl.....",
-    "....llsskkddddddddddddddddddddkkssll....",
-    "....lsskkddddddddddddddddddddddkkssl....",
-    "...lssskdddddddddddgggggddddddddksssl...",
-    "..llsskddddddddddddgddddggdddddddkssll..",
-    "..lsskdddddddddddddgddddddgdddddddkssl..",
-    "..lsskdddddddddddddgdddddddggdddddkssl..",
-    ".lsskkdddddddddddddgddddddddggddddkkssl.",
-    ".lsskdddddddddddddggddddddddddgddddkssl.",
-    ".lsskdddddddddggggdggggdddddddggdddkssl.",
-    ".lsskdddddddggdddddgdddggddddddgdddkssl.",
-    ".lsskddggddggddddddgddddggdddddggddkssl.",
-    ".lsskddddgggdddddddgdddddgdddggdgddkssl.",
-    "lsskddddddggdddddddgddddddgdggddgdddkssl",
-    "lsskdddddgddggdddgggddddddggdddddgddkssl",
-    "liskdddddgddddggggdgggddggdgdddddgddksil",
-    "lsskddddgddddddggddddgggdddgdddddgddkssl",
-    "lsskddddgdddddggddGGGgdddddgdddddgddkssl",
-    "lsskddddgdddddgdddGGGgdddddgdddddgddkssl",
-    "lsskddddgdddddgdddGGGddddddgdddddgddkssl",
-    "lsskddddgdddddgdgdddddgdddggdddddgddkssl",
-    "liskddddgdddddggdddddddggggdddddgdddksil",
-    "lsskddddgddgggdgdddgdddddgggddddgdddkssl",
-    "lsskdddddggdddddgddgddddggddggddgdddkssl",
-    "lsskddddggdddddddgggdggggddddgggddddkssl",
-    "lsskdddgddgddddddddggdddddddddggddddkssl",
-    "lsskddddddggdddddddgdddddddddggdddddkssl",
-    "liskdddddddggddddddgdddddddddgddddddksil",
-    "lsskddddddddggdddddgdddddddggdddddddkssl",
-    "lsskdddddddddgggdddgdddddggdddddddddkssl",
-    "lsskdddddddddddgggggggggggddddddddddkssl",
-    "lsskdddddddddddddddgddddddddddddddddkssl",
-    "lsskdddddddddddddddgddddddddddddddddkssl",
-    "liskddddddddddddddddddddddddddddddddksil",
-    "lsskddddddddddddddddddddddddddddddddkssl",
-    "lsskddddddddddddddddddddddddddddddddkssl",
-    "lsskddddddddddddddddddddddddddddddddkssl",
-    "lsskddddddddddddddddddddddddddddddddkssl",
-    "lsskddddddddddddddddddddddddddddddddkssl",
-    "lsskkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkssl",
-    "llllllllllllllllllllllllllllllllllllllll",
-};
-static const Sprite DOOR = { 40, 48, DOOR_ROWS };
+// The door is SPR_DOOR in sprites.c: a round-headed portal of the city's making, five tiles
+// wide, six tall, its face a spiral groove crossing six petal veins, with a glass hub. The
+// spiral is the same formula the glint follows below, so the glint rides the groove.
 #define DOOR_HUB_X 19.5f
 #define DOOR_HUB_Y 25.5f
 #define DOOR_GLINT_STEPS 240
@@ -375,11 +300,8 @@ void PropsLight(void) {
 
 // ---------------------------------------------------------------- draw
 static void DrawPot(int x, int y, int tilt) {
-    DrawRectangle(x + 1 + tilt, y, 3, 1, palClayLit);          // rim
-    DrawRectangle(x + 1 + tilt, y + 1, 3, 1, palRockDeep);     // the dark mouth
-    DrawRectangle(x, y + 2, 5, 3, palClay);
-    DrawRectangle(x + 1, y + 5, 3, 1, palClay);
-    DrawRectangle(x, y + 2, 1, 2, palClayLit);
+    DrawSpriteRows(&SPR_POT, x + tilt, y, 0, 0, 2, -1);      // the rim tips first when it rocks
+    DrawSpriteRows(&SPR_POT, x, y, 0, 2, SPR_POT.h, -1);
 }
 
 void PropsDrawBack(void) {
@@ -388,58 +310,36 @@ void PropsDrawBack(void) {
         int px = p->tx * TS, py = ROOM_Y + p->ty * TS;
         switch (p->kind) {
         case PR_DOOR: {
-            DrawSprite(&DOOR, px, py);
-            DrawRectangle(px + 18, py + 1, 4, 3, palIron);                 // the crown lamp
-            DrawRectangle(px + 19, py + 2, 2, 1, palCityGlassLit);
+            DrawSprite(&SPR_DOOR, px, py);
+            DrawRectangle(px + 18, py + 1, 4, 3, PAL[PL_STONE]);           // the crown lamp
+            DrawRectangle(px + 19, py + 2, 2, 1, PAL[PL_CITYH]);
             if (p->state == 1) {
                 f32 t = p->timer * (14.2f / DOOR_GLINT_STEPS);        // the groove's parameter, 0..14.2
                 f32 r = 2.0f + 0.95f * t;
                 int gx = (int)(DOOR_HUB_X + r * cosf(t)), gy = (int)(DOOR_HUB_Y - r * sinf(t));
-                DrawRectangle(px + gx, py + gy, 1, 1, palCityGlassLit);
-                DrawRectangle(px + gx - 1, py + gy, 3, 1, (Color){ palCityGlass.r, palCityGlass.g, palCityGlass.b, 110 });
+                DrawRectangle(px + gx - 1, py + gy, 3, 1, PAL[PL_CITY]);
+                DrawRectangle(px + gx, py + gy, 1, 1, PAL[PL_CITYH]);
             }
         } break;
-        case PR_BEDROLL: {
-            // canvas, not their dyed cloth: the hunters' things are brown and grey
-            int dent = p->state ? 1 : 0;
-            DrawRectangle(px, py + 4 + dent, 16, 4 - dent, palLedge);
-            DrawRectangle(px + 1, py + 4 + dent, 14, 1, palLedgeLit);
-            DrawRectangle(px + 4, py + 5 + dent, 1, 2, palLedgeLit);
-            DrawRectangle(px + 11, py + 5 + dent, 1, 2, palLedgeLit);
-            DrawRectangle(px, py + 7, 16, 1, palRockDeep);
-        } break;
+        case PR_BEDROLL:                                                  // canvas, dented where you stand
+            DrawSpriteRows(&SPR_BEDROLL, px, py + 4 + (p->state ? 1 : 0), 0, p->state ? 1 : 0, 4, -1);
+            break;
         case PR_PACK: {
-            DrawRectangle(px, py + 2, 5, 6, palRope);                  // the pack: oiled canvas
-            DrawRectangle(px + 1, py + 1, 3, 1, palRope);
-            DrawRectangle(px + 1, py + 3, 3, 1, palRockDeep);          // the strap
-            DrawRectangle(px + 5, py + 4, 3, 4, palIron);              // the dead lamp beside it
-            DrawRectangle(px + 6, py + 5, 1, 2, palRockDeep);          // dark glass
+            DrawSprite(&SPR_PACK, px - 1, py + 2);
             f32 lx, ly;
             if (LampPos(&lx, &ly) && fabsf(lx - (px + 6)) < 40 && fabsf(ly - (p->ty * TS + 5)) < 24 && ((frameNo / 3) & 3) == 0)
-                DrawRectangle(px + 6, py + 5, 1, 1, palLampGlass);    // a glint in the glass, your light in it
+                DrawRectangle(px + 5, py + 5, 1, 1, PAL[PL_AMBERH]);   // a glint in the dead glass: your light in it
         } break;
         case PR_CAIRN:
-            DrawRectangle(px + 1, py + 6, 6, 2, palStone);
-            DrawRectangle(px + 2, py + 4, 5, 2, palStone);
-            DrawRectangle(px + 2, py + 2, 4, 2, palStone);
-            DrawRectangle(px + 3, py + 1, 2, 1, palStoneLit);
-            DrawRectangle(px + 2, py + 4, 5, 1, palStoneLit);
-            DrawRectangle(px + 1, py + 7, 6, 1, palStoneDeep);
+            DrawSprite(&SPR_CAIRN, px, py + 1);
             break;
         case PR_BONES: {
             int tip = p->timer > 0 ? (((p->timer / 3) & 1) ? 1 : 0) : 0;
-            DrawRectangle(px + 5 - tip, py, 3, 3, palBone);            // the skull, against the wall
-            DrawRectangle(px + 6 - tip, py + 1, 1, 1, palRockDeep);
-            DrawRectangle(px + 5, py + 3, 2, 3, palBone);              // ribs
-            DrawRectangle(px + 4, py + 4, 1, 1, palBone);
-            DrawRectangle(px + 1, py + 6, 6, 1, palBone);              // legs, stretched out
-            DrawRectangle(px, py + 7, 2, 1, palBone);
+            DrawSprite(&SPR_BONES, px - 1, py + 1);
+            if (tip) DrawRectangle(px + 5, py + 1, 2, 1, PAL[PL_DARK]);     // the skull rocks off its seat
         } break;
         case PR_BALUSTRADE:
-            DrawRectangle(px, py, 8, 1, palAshlarLit);
-            DrawRectangle(px + 1, py + 1, 1, 6, palRockDeep);
-            DrawRectangle(px + 3, py + 1, 2, 6, palRockDeep);
-            DrawRectangle(px + 6, py + 1, 1, 6, palRockDeep);
+            DrawSprite(&SPR_BALUSTRADE, px, py);
             break;
         default: break;
         }
@@ -455,40 +355,38 @@ void PropsDrawFront(void) {
             f32 L = p->len * (f32)TS, ax = px + 4, ay = py;
             f32 s = sinf(p->a), c = cosf(p->a);
             if (p->kind == PR_ROPE) {
-                DrawRectangle((int)ax - 1, (int)ay, 3, 2, palRope);                     // the knot
-                for (int k = 2; k < (int)L; k++) DrawRectangle((int)(ax + s * k), (int)(ay + c * k), 1, 1, palRope);
+                DrawRectangle((int)ax - 1, (int)ay, 3, 2, PAL[PL_WARM]);                     // the knot
+                for (int k = 2; k < (int)L; k++) DrawRectangle((int)(ax + s * k), (int)(ay + c * k), 1, 1, PAL[PL_WARM]);
                 int tx = (int)(ax + s * L), ty = (int)(ay + c * L);
-                DrawRectangle(tx - 1, ty - 1, 1, 1, palRope); DrawRectangle(tx + 1, ty - 1, 1, 1, palRope);   // frayed
+                DrawRectangle(tx - 1, ty - 1, 1, 1, PAL[PL_WARM]); DrawRectangle(tx + 1, ty - 1, 1, 1, PAL[PL_WARM]);   // frayed
             } else if (p->kind == PR_ROOT) {
                 u32 h = Hash2(p->tx * 5, p->ty * 3);
                 for (int k = 0; k < (int)L; k++) {
                     f32 f = (f32)k / L;
                     int x = (int)(ax + s * k * (0.4f + 0.6f * f)) + (((h >> (k & 15)) & 1) ? 0 : 0);
-                    DrawRectangle(x, (int)(ay + k), 1, 1, palMoss);
-                    if (((h >> ((k * 5) & 31)) & 7) == 0) DrawRectangle(x + (((h >> k) & 1) ? 1 : -1), (int)(ay + k), 1, 1, palRope);
+                    DrawRectangle(x, (int)(ay + k), 1, 1, PAL[PL_WARMD]);          // a root, with moss on it
+                    if (((h >> ((k * 5) & 31)) & 7) == 0) DrawRectangle(x + (((h >> k) & 1) ? 1 : -1), (int)(ay + k), 1, 1, PAL[PL_COOLM]);
                 }
             } else {
-                for (int k = 0; k < (int)L - 4; k += 2) DrawRectangle((int)(ax + s * k), (int)(ay + c * k), 1, 1, palIron);
+                for (int k = 0; k < (int)L - 4; k += 2) DrawRectangle((int)(ax + s * k), (int)(ay + c * k), 1, 1, PAL[PL_STONE]);
                 int gx = (int)(ax + s * (L - 3)) - 2, gy = (int)(ay + c * (L - 3)) - 2;
-                DrawRectangle(gx, gy, 4, 1, palIron);
-                DrawRectangle(gx, gy + 1, 4, 3, palCityGlass);
-                DrawRectangle(gx + 1 + ((frameNo / 9) & 1), gy + 2, 1, 1, palCityGlassLit);
-                DrawRectangle(gx, gy + 4, 4, 1, palIron);
+                DrawRectangle(gx, gy, 4, 1, PAL[PL_STONE]);
+                DrawRectangle(gx, gy + 1, 4, 3, PAL[PL_CITY]);
+                DrawRectangle(gx + 1 + ((frameNo / 9) & 1), gy + 2, 1, 1, PAL[PL_CITYH]);
+                DrawRectangle(gx, gy + 4, 4, 1, PAL[PL_STONE]);
             }
         } break;
         case PR_FIRE: {
             // a ring of stones with charcoal in it; lit, three tongues that never hold still
-            DrawRectangle(px, py + 6, 2, 2, palStone); DrawRectangle(px + 6, py + 6, 2, 2, palStone);
-            DrawRectangle(px + 3, py + 7, 3, 1, palStone);
-            DrawRectangle(px + 2, py + 6, 4, 1, palRockDeep);
+            DrawSprite(&SPR_FIRE_RING, px, py + 6);
             if (fireLit[roomIdx]) {
                 for (int k = 0; k < 3; k++) {
                     int h = 2 + (int)(1.6f + 1.4f * sinf(p->phase * (1.0f + 0.3f * k) + k * 2.1f));
                     int x = px + 2 + k * 2 + (((int)(p->phase * 3) + k) & 1 ? 0 : 0);
-                    DrawRectangle(x, py + 6 - h, 1, h, palFlame);
-                    if (h > 2) DrawRectangle(x, py + 6 - h + 1, 1, h - 2, palFlameHot);
+                    DrawRectangle(x, py + 6 - h, 1, h, PAL[PL_AMBER]);
+                    if (h > 2) DrawRectangle(x, py + 6 - h + 1, 1, h - 2, PAL[PL_AMBERH]);
                 }
-                DrawRectangle(px + 2, py + 5, 4, 1, palEmber);
+                DrawRectangle(px + 2, py + 5, 4, 1, PAL[PL_WARM]);
             }
         } break;
         case PR_POT:
@@ -496,25 +394,25 @@ void PropsDrawFront(void) {
             else if (p->state == POT_FALLING) DrawPot((int)p->x, ROOM_Y + (int)p->y, ((frameNo / 3) & 1) ? 1 : -1);
             break;
         case PR_BANNER: {
-            DrawRectangle(px + 1, py, 5, 1, palIron);                                  // the peg
+            DrawRectangle(px + 1, py, 5, 1, PAL[PL_STONE]);                                  // the peg
             for (int r = 1; r < p->len * TS - 2; r++) {
                 int dx = (int)lroundf(sinf(p->phase + r * 0.42f) * p->a * (0.3f + 0.7f * r / (p->len * TS)));
-                DrawRectangle(px + 1 + dx, py + r, 5, 1, (r % 5 == 2) ? palClothLit : palCloth);
+                DrawRectangle(px + 1 + dx, py + r, 5, 1, (r % 5 == 2) ? PAL[PL_CITY] : PAL[PL_COOLM]);
             }
         } break;
         case PR_CAPITAL:
-            DrawRectangle(px - 1, py, p->len * TS + 2, 2, palAshlarLit);
-            DrawRectangle(px - 1, py + 2, p->len * TS + 2, 1, palAshlar);
-            DrawRectangle(px, py + 4, p->len * TS, 1, palRockDeep);
+            DrawRectangle(px - 1, py, p->len * TS + 2, 2, PAL[PL_STONEH]);
+            DrawRectangle(px - 1, py + 2, p->len * TS + 2, 1, PAL[PL_STONEL]);
+            DrawRectangle(px, py + 4, p->len * TS, 1, PAL[PL_DARK]);
             break;
         case PR_BASE:
-            DrawRectangle(px - 1, py + 5, p->len * TS + 2, 1, palAshlarLit);
-            DrawRectangle(px - 1, py + 6, p->len * TS + 2, 2, palAshlar);
+            DrawRectangle(px - 1, py + 5, p->len * TS + 2, 1, PAL[PL_STONEH]);
+            DrawRectangle(px - 1, py + 6, p->len * TS + 2, 2, PAL[PL_STONEL]);
             break;
         case PR_GRATE:
-            DrawRectangle(px, py, 8, 3, palRockDeep);
-            DrawRectangle(px, py, 8, 1, palIron);
-            DrawRectangle(px + 1, py, 1, 3, palIron); DrawRectangle(px + 4, py, 1, 3, palIron); DrawRectangle(px + 7, py, 1, 3, palIron);
+            DrawRectangle(px, py, 8, 3, PAL[PL_DARK]);
+            DrawRectangle(px, py, 8, 1, PAL[PL_STONE]);
+            DrawRectangle(px + 1, py, 1, 3, PAL[PL_STONE]); DrawRectangle(px + 4, py, 1, 3, PAL[PL_STONE]); DrawRectangle(px + 7, py, 1, 3, PAL[PL_STONE]);
             break;
         default: break;
         }
