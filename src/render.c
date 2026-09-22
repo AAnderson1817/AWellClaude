@@ -132,6 +132,11 @@ static const char *COMP_BODY =
 "  float Rq = floor(Rl * uBands + 0.5 + th * 0.7) / uBands;\n"
 "  vec3 lit = alb.rgb * (uAmb + Iq * tint * 1.25) + rt * Rq * 0.6;\n"
 "  lit *= mix(vec3(1.0), vec3(0.55, 0.85, 1.05), bk.b);\n"   // under the water, cold
+"  if (solid > 0.5) {\n"                                     // the dark keeps faint shapes:
+"    vec3 fl = uPal[1];\n"                                    // unlit stone one step above black,
+"    if (edge >= 1.0 && n.y < -0.5) fl = uPal[2];\n"          // and a dim line on every standable top,
+"    lit = max(lit, fl);\n"                                   // so the climb reads without a light
+"  }\n"
 "  OUT(nearest(lit));\n"
 "}\n";
 

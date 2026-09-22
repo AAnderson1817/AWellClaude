@@ -204,6 +204,9 @@ one composite pass puts them together (`render.c`):
   meant to judge the renderer. Taken out; parked (`CITY_ROOM -1`) until a room is composed
   around the view
 - a small green lamp in the door's crown: lit at the top by them, the foot by you
+- the dark keeps faint shapes (the user's call, after the floor made unlit shelves vanish):
+  unlit stone sits one palette step above black and every standable top keeps a dim line,
+  against a back wall that stays black, so the climb reads without a light
 
 V toggles the old look for comparing (`--oldlook` starts in it). The flooded room keeps
 the old look until it is converted: under the new one its water goes black and its lamps
