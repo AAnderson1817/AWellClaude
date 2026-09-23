@@ -2,9 +2,10 @@
 // miles across, seen past the keeper through the great opening and through the window.
 //
 // It is a multiplane (tools/art/vista.py paints it): five layers, each a picture at its own
-// distance, far to near -- the haze and the pillar of light where the chamber's heart is;
-// the constructs on the horizon; the city on the plain; the temples of the middle distance;
-// the near towers and the bridge where the tall ones stand. Each layer follows the camera
+// distance, far to near -- the haze and the pillar of light where the chamber's heart is,
+// with the tower it rises from (one glass: a beam and its tower must never part); the
+// constructs on the horizon; the city on the plain; the temples of the middle distance; the
+// near towers and the bridge where the tall ones stand. Each layer follows the camera
 // by its depth, so when the view slides the near ones cross the frame and the far ones
 // hardly move: that is most of what says how far it goes.
 //

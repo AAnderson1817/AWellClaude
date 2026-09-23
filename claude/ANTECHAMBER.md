@@ -5,16 +5,17 @@ behind you. The lore is `claude/LORE.md` (the city is cold and cannot make fire;
 is its hearth; you are the fire). This file is where things are and why they are there.
 Geometry lives in `tools/antechamber.py`, which writes `src/antechamber.c`.
 
-## Size, and the camera (L11, amended, and under trial)
+## Size, and the camera (L11, amended twice)
 
 120 x 44 tiles: three screens across, two down. The user asked for one giant room that
 is larger than a screen, where running to the edge brings more of it into the same
 window. That conflicted with L11 as written (one room is one screen, the camera locks),
-so the law was amended rather than quietly broken -- and then, when the slide between
-screens read as entering a new room inside the same one, a following camera was put on
-trial beside it. C switches between the two; the following one is the default.
+so the law was amended rather than quietly broken: first to a view that was always one
+screen and slid to the next when you crossed an edge. The slide read as entering a new
+room inside the same one, so a following camera was tried beside it, and the user kept
+the following one. Cuts are for real thresholds, a door between areas.
 
-**Following** (`CameraStep`, `src/room.c`):
+**The camera** (`CameraStep`, `src/room.c`):
 - Across, the view keeps about 34 px ahead of the way you are running, so you see the
   next thing before you reach it; it keeps that lead when you stop, and a 10 px dead zone
   means a step back and forth does not rock it.
@@ -25,16 +26,12 @@ trial beside it. C switches between the two; the following one is the default.
 - It never shows past the room's edges, and everything draws from it in whole pixels.
   The composite's dither is held to the room, not the screen, so shading does not crawl
   as the view moves.
-- The view past the parapet (the multiplane) moves with every step now, not only during
-  a slide.
+- The view past the parapet (the multiplane) moves with every step.
 
-**Screen by screen** (L11 as first amended): the view is always exactly one screen of the
-room, composed as a screen. When your centre crosses a screen's edge the view slides to
-the next in 22 frames, eased at both ends, the world running under it; going back needs
-a little more than crossing the line (5 px at the sides, 18 px at the top).
-
-The tools shoot the six screens with the camera screen by screen (`tools/screens.py`
-passes `--camera screens`); `tools/slide.py` records whichever the game is set to.
+The six screens are still each composed as a screen. The tools shoot them that way:
+`tools/screens.py` passes `--camera screens`, which holds the view to whichever screen
+you are in (a tool's view only; the game has no key for it). `tools/slide.py` records
+the camera as it plays.
 
 ## The six screens: a balcony on the archive
 
@@ -64,13 +61,15 @@ door. The window, the one portal left, looks into the same chamber from the righ
 
 **The view is a multiplane** (`tools/art/vista.py` paints it, `src/city.c` moves it): five
 layers, each at its own distance, drawn behind the far wall wherever the wall is cut away.
-Each follows the camera by its depth p (0 the wall, 1 the screen), so when the view slides
-the near ones cross the frame and the far ones hardly move:
+Each follows the camera by its depth p (0 the wall, 1 the screen), so when the view moves
+the near ones cross the frame and the far ones hardly move. One rule: a thing and what
+comes out of it go on one glass. The beam and its tower were on two, and slid apart as
+you walked; they are one object now, on the haze.
 
 | layer | p | what is on it |
 |---|---|---|
-| 0 the haze | 0.80 | the chamber's air, dark overhead and glowing blue-teal at the horizon; shafts of light down through it; the far ceiling's courses of lights; falls of water; the pillar of light, the chamber's heart |
-| 1 the horizon | 0.72 | constructs the size of mountains: domes, stepped mesas, an aqueduct, the tower the pillar rises from; another keeper, seated as ours is, a mile off |
+| 0 the haze | 0.80 | the chamber's air, dark overhead and glowing blue-teal at the horizon; shafts of light down through it; the far ceiling's courses of lights; falls of water; the pillar of light, the chamber's heart, and the tower it rises from |
+| 1 the horizon | 0.72 | constructs the size of mountains: domes, stepped mesas, an aqueduct; another keeper, seated as ours is, a mile off |
 | 2 the city | 0.60 | the plain below the horizon, lights in perspective, districts lit and dark, avenues running to the pillar's foot; its skyline |
 | 3 the middle distance | 0.42 | a stepped temple with its tiers lit and a rose shrine on top; a domed temple, its oculus amber; the bridge between them with lanterns; spires; a lantern the size of a house hung on a chain |
 | 4 near | 0.22 | towers rising out of the dark below; roots and chains hanging; mist; the near bridge where the tall ones stand |

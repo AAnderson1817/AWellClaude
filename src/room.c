@@ -478,70 +478,48 @@ void RoomLoad(void) {
 void RoomRelight(void) { LightBake(); }
 
 // ---------------------------------------------------------------- the camera
-// Two ways to look at a room bigger than a screen, and C switches between them to compare.
+// The view goes with you (L11, as amended for the antechamber). Across, it keeps a little
+// ahead of the way you are running -- you see the next thing before you reach it -- with a
+// small dead zone so a step back and forth does not rock it. Up and down, it does not
+// follow a jump: it moves when you land somewhere higher or lower, or when you fall far
+// enough to leave the frame. It never shows past the room's edges. Everything that draws
+// takes the view in whole pixels.
 //
-// Following (the default): the view goes with you. Across, it keeps a little ahead of the
-// way you are running -- you see the next thing before you reach it -- with a small dead
-// zone so a step back and forth does not rock it. Up and down, it does not follow a jump:
-// it moves when you land somewhere higher or lower, or when you fall far enough to leave
-// the frame. It never shows past the room's edges. Everything that draws takes the view
-// in whole pixels.
-//
-// Screen by screen (L11 as first amended): the view is always exactly one of the six
-// screens, and when your centre leaves it the view slides to the next -- a third of a
-// second, eased at both ends, the world running under it. Going back needs a little more
-// than crossing the line, so a jump that pokes over the top edge does not slide the view
-// there and back.
+// For the tools only (--camera screens, tools/screens.py): the view held to whichever of
+// the six screens you are in, so each can be shot exactly as one.
 #define SCR_W (SW * TS)
 #define SCR_H (SH * TS)
-#define HYST_X 5.0f         // px past a side edge before the view goes
-#define HYST_UP 18.0f       // px past the top edge: more, because jumps go up and come back
-#define HYST_DN 2.0f
-#define SLIDE_T 22          // frames
 #define LOOK 34.0f          // how far ahead of you the view runs
 #define DEAD 10.0f          // px either side of where it wants to be that it lets be
 #define STAND 0.66f         // where the ground you stand on sits in the view, top to bottom
 #define TOP_KEEP 26.0f      // px of view kept above you before it follows you up
 #define LOW_KEEP 34.0f      // and below you, before it follows you down
 f32 camX, camY;
-int camFollow = 1;
-static int scrX, scrY, slideT;
-static f32 fromX, fromY;
-static f32 fx, fy, look, standY;         // the following view, before whole pixels
+int camScreens;
+static f32 fx, fy, look, standY;         // the view, before whole pixels
 
 static int ClampI(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
 static f32 ClampF(f32 v, f32 lo, f32 hi) { return v < lo ? lo : v > hi ? hi : v; }
 static f32 MaxX(void) { return (f32)(RW * TS - SCR_W); }
 static f32 MaxY(void) { return (f32)(RH * TS - SCR_H); }
 
-static void FollowSnap(void) {
+static void ScreenHold(void) {
+    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
+    camX = (f32)(ClampI((int)floorf(cx / SCR_W), 0, RW / SW - 1) * SCR_W);
+    camY = (f32)(ClampI((int)floorf(cy / SCR_H), 0, RH / SH - 1) * SCR_H);
+}
+
+void CameraInit(void) {
+    if (camScreens) { ScreenHold(); return; }
     f32 cx = player.x + player.w * 0.5f;
     look = 0; standY = player.y + player.h;
     fx = ClampF(cx - SCR_W * 0.5f, 0, MaxX());
     fy = ClampF(standY - SCR_H * STAND, 0, MaxY());
     camX = roundf(fx); camY = roundf(fy);
 }
-static void ScreenSnap(void) {
-    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
-    scrX = ClampI((int)floorf(cx / SCR_W), 0, RW / SW - 1);
-    scrY = ClampI((int)floorf(cy / SCR_H), 0, RH / SH - 1);
-    camX = (f32)(scrX * SCR_W); camY = (f32)(scrY * SCR_H);
-    slideT = 0;
-}
 
-void CameraInit(void) { if (camFollow) FollowSnap(); else ScreenSnap(); }
-
-// Switch the way of looking, without a jump: each picks up from where the view is now.
-void CameraToggle(void) {
-    camFollow = !camFollow;
-    if (camFollow) { fx = camX; fy = camY; standY = player.y + player.h; look = 0; return; }
-    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
-    scrX = ClampI((int)floorf(cx / SCR_W), 0, RW / SW - 1);
-    scrY = ClampI((int)floorf(cy / SCR_H), 0, RH / SH - 1);
-    fromX = camX; fromY = camY; slideT = SLIDE_T;
-}
-
-static void FollowStep(void) {
+void CameraStep(void) {
+    if (camScreens) { ScreenHold(); return; }
     f32 cx = player.x + player.w * 0.5f, top = player.y, feet = player.y + player.h;
     // across: a little ahead of where you are going; it keeps the lead when you stop
     if (fabsf(player.vx) > 0.4f) look += ((player.vx > 0 ? LOOK : -LOOK) - look) * 0.035f;
@@ -556,29 +534,6 @@ static void FollowStep(void) {
     fy += (ClampF(ty, 0, MaxY()) - fy) * rate;
     camX = roundf(fx); camY = roundf(fy);
 }
-
-static void ScreenStep(void) {
-    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
-    int sx = scrX, sy = scrY;
-    if (cx < sx * SCR_W - HYST_X) sx--;
-    else if (cx >= (sx + 1) * SCR_W + HYST_X) sx++;
-    if (cy < sy * SCR_H - HYST_UP) sy--;
-    else if (cy >= (sy + 1) * SCR_H + HYST_DN) sy++;
-    sx = ClampI(sx, 0, RW / SW - 1);
-    sy = ClampI(sy, 0, RH / SH - 1);
-    if (sx != scrX || sy != scrY) {
-        fromX = camX; fromY = camY;      // from wherever it is, even mid-slide
-        scrX = sx; scrY = sy; slideT = SLIDE_T;
-    }
-    f32 tx = (f32)(scrX * SCR_W), ty = (f32)(scrY * SCR_H);
-    if (slideT > 0) {
-        slideT--;
-        f32 t = 1.0f - (f32)slideT / SLIDE_T, e = t * t * (3.0f - 2.0f * t);
-        camX = fromX + (tx - fromX) * e; camY = fromY + (ty - fromY) * e;
-    } else { camX = tx; camY = ty; }
-}
-
-void CameraStep(void) { if (camFollow) FollowStep(); else ScreenStep(); }
 
 // Whole pixels, always: a view between pixels would shimmer every edge in the room.
 void WorldBegin(void) {
@@ -944,7 +899,8 @@ void DebugLabelsDraw(void) {
         char t[3] = { '^', (char)('1' + i), 0 };
         Tag(bulbs[i].x - 4, ROOM_Y + bulbs[i].y - BULB_H - 8, t, palBulbLit);
     }
-    char r[3] = { (char)('A' + scrX), (char)('1' + scrY), 0 };     // which screen: A1 top left .. C2
+    int sx = (int)((camX + SCR_W * 0.5f) / SCR_W), sy = (int)((camY + SCR_H * 0.5f) / SCR_H);
+    char r[3] = { (char)('A' + sx), (char)('1' + sy), 0 };         // the screen most in view: A1 top left .. C2
     Tag((int)roundf(camX) + 3, (int)roundf(camY) + ROOM_Y + 2, r, (Color){ 160, 200, 255, 255 });
 }
 

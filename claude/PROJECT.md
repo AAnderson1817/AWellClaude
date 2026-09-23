@@ -11,8 +11,7 @@ two rooms it describes are parked in `parked/rooms-2/`.
 
 - **Engine.** The room is 120 x 44 tiles. `CameraStep` follows you (a lead the way you
   run, still through jumps, settling to the ground you land on, clamped to the room, whole
-  pixels) or, with C, keeps the view on one screen and slides it when your centre crosses
-  an edge; the composite reads the camera (`uCam`) and the room's size (`uWorld`), and its
+  pixels); the composite reads the camera (`uCam`) and the room's size (`uWorld`), and its
   dither is held to the room. Drawing, motes, air
   and lights are culled to the view; sounds from a place in the room pan by the view and
   fade off it (`SfxAt`).

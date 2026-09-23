@@ -4,9 +4,10 @@ painted as a multiplane -- five layers, each a picture on glass at its own dista
 src/city.c slides past one another as the view moves, the far ones hardly at all.
 
     0  the far haze: the chamber's ceiling lost in the dark, a few of its lights; the
-       horizon's glow; and the pillar of light where its heart is
-    1  the constructs on the horizon, mountain-sized: domes, the tower the light comes out
-       of, an aqueduct, and far off another keeper, seated, as ours is
+       horizon's glow; and the pillar of light where its heart is, with the tower it comes
+       out of -- one thing, on one glass, so the two never part
+    1  the constructs on the horizon, mountain-sized: domes, mesas, an aqueduct, and far
+       off another keeper, seated, as ours is
     2  the city on the plain, lights to the horizon, its avenues running to the pillar
     3  the middle distance: a stepped temple, a domed one, the bridge between them, a
        lantern hung on a chain from the ceiling
@@ -131,6 +132,14 @@ def layer0(lights):
     L.fill(up & (d < 1.0) & (Y < 132), 'cityH')
     top = np.hypot((X - PILLAR) / 60.0, (Y - 50) / 22.0)
     L.ramp((top < 1) & up, np.clip(v + (1 - top) * 0.3, 0, 0.999), ['void', 'deep', 'deep', 'waterD', 'dark', 'waterD', 'coolD', 'coolM'], dither=1.0)
+    # the tower the light comes out of: tall, tapering, crowned. On this glass and not the
+    # horizon's, though it stands among those: a beam and its tower on two glasses slide
+    # apart as the view moves, and they are one thing.
+    tower = L.poly([(PILLAR - 13, HZ + 2), (PILLAR - 5, 142), (PILLAR - 3, 130), (PILLAR + 3, 130), (PILLAR + 5, 142), (PILLAR + 13, HZ + 2)])
+    tower |= L.rect(PILLAR - 8, 140, PILLAR + 8, 143)
+    L.ramp(tower, np.clip(0.18 + np.clip((HZ - Y) / 150.0, 0, 1) * 0.55, 0, 0.999), ['deep', 'waterD', 'dark', 'waterD', 'water'], dither=1.0)
+    for y in range(134, HZ, 5):                                            # its windows, up it
+        L.put(PILLAR - 2 + (y // 5) % 4, y, 'coolM')
     return L
 
 
@@ -146,9 +155,6 @@ def layer1(lights):
     # mesas, stepped
     for x0, x1, h in ((396, 444, 16), (404, 436, 26), (412, 428, 34), (760, 824, 12), (770, 812, 20)):
         sil |= L.rect(x0, HZ - h, x1, HZ + 2)
-    # the tower the light comes out of: tall, tapering, crowned
-    sil |= L.poly([(PILLAR - 13, HZ + 2), (PILLAR - 5, 142), (PILLAR - 3, 130), (PILLAR + 3, 130), (PILLAR + 5, 142), (PILLAR + 13, HZ + 2)])
-    sil |= L.rect(PILLAR - 8, 140, PILLAR + 8, 143)
     # an aqueduct on arches, going away along the horizon
     sil |= L.rect(614, HZ - 22, 776, HZ - 17)
     for x in range(614, 776, 11):
@@ -172,8 +178,6 @@ def layer1(lights):
             hv = h2(i, 11, 3)
             if hv < 0.12: lights.append((1, int(x), int(y), 'roseL' if hv < 0.03 else 'coolM', TWINKLE))
             else: L.put(x, y, 'coolM' if hv > 0.75 else 'coolD')
-    for y in range(134, HZ, 5):                                            # the tower's windows, up it
-        L.put(PILLAR - 2 + (y // 5) % 4, y, 'coolM')
     L.put(KX + 14 * KS, KB - 40 * KS, 'city')                               # the far keeper's eye, awake
     return L
 

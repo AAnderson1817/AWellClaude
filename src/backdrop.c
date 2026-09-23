@@ -231,7 +231,8 @@ void BackdropDrawEmis(void) {
 
 void BackdropLights(void) {
     // the door is a cell awake: its lens lights its own blades from within, their colour
-    LightAddPointCool(104.0f, 88.0f, 9.5f, 0.75f + 0.08f * sinf(frameNo * 0.021f));
+    // (the lens is archive.py's DOOR: the cell's centre, its crown on row 17)
+    LightAddPointCool(136.0f, 248.0f, 9.5f, 0.75f + 0.08f * sinf(frameNo * 0.021f));
     // the keeper's eye lights a little of the face round it
     LightAddPointCool(440.0f, 55.0f, 1.6f, 0.3f);
 }
