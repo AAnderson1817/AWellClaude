@@ -37,5 +37,17 @@ for f in sorted(glob.glob(os.path.join(ROOT, 'art', '*.veins'))):
     out.append('const int %s_LEN = %d;' % (name, len(vals)))
     out.append('')
     files.append(f)
+# tables: rows of whitespace-separated numbers, all of them in one flat array; the reader
+# knows the row length
+for f in sorted(glob.glob(os.path.join(ROOT, 'art', '*.ints'))):
+    name = 'INTS_' + os.path.splitext(os.path.basename(f))[0].upper()
+    vals = [int(v) for line in open(f) for v in line.split()]
+    out.append('const i16 %s[%d] = {' % (name, max(len(vals), 1)))
+    for i in range(0, len(vals), 20):
+        out.append('    ' + ','.join(str(v) for v in vals[i:i + 20]) + ',')
+    out.append('};')
+    out.append('const int %s_LEN = %d;' % (name, len(vals)))
+    out.append('')
+    files.append(f)
 open(os.path.join(ROOT, 'src', 'art_data.c'), 'w', newline='\n').write('\n'.join(out))
 print('embedded', ', '.join(os.path.basename(f) for f in files))

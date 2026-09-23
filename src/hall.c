@@ -96,15 +96,16 @@ static const int SITX[3] = { 100 * TS + 3, 102 * TS + 6, 104 * TS + 9 };
 #define FLUE_Y    (1 * TS)
 #define DOOR_CX   (17 * TS)                       // the foot of the door, where you wake
 #define DOOR_FOOT (38 * TS)
-#define MURAL_X0  (25 * TS)          // the index band over the door's crown
-#define MURAL_X1  (38 * TS)
+#define MURAL_X0  (16 * TS)          // the index band over the door's crown
+#define MURAL_X1  (29 * TS)
 #define MURAL_Y   (12 * TS + 4)
 #define BASIN_X0  (51 * TS)
 #define BASIN_X1  (96 * TS)
 #define BASIN_Y0  (38 * TS)
 #define BASIN_Y1  (43 * TS)
-#define HEART_X   (61 * TS)          // the heart's grate, where it meets the water
-#define HEART_Y   (36 * TS)
+#define EDGE_X0   (36 * TS)          // the parapet along the great opening's foot
+#define EDGE_X1   (87 * TS)
+#define EDGE_Y    (37 * TS)
 
 // ---------------------------------------------------------------- state
 static int   hunterArm, hunterHum, hunterLook, hunterNoted;
@@ -112,7 +113,7 @@ static int   sitBreath[3], sitLook;
 static f32   printsA;                           // 0..1: how far the prints have come up
 static int   leafN, leafT;
 static struct { f32 x, y, vx, ph; int down; } leaves[10];
-static f32   douse;                             // 0 lit .. 1 put out, beyond the heart's grate
+static f32   douse;                             // 0 lit .. 1 put out, the chamber's near lights
 static int   douseHold, nearer, douseWas;
 static struct { f32 x, y, vx, ph; } fish[6];
 int hallHums, hallLeaves, hallDouses;
@@ -195,10 +196,10 @@ void HallStep(void) {
         }
     }
 
-    // Beyond the heart's grate: bring a lamp near its foot and their light goes out, with a
-    // murmur close to the bars; it comes back five to ten seconds after you leave, and
-    // sometimes one of them is a step nearer than it was.
-    int near = lamp && fabsf(lx - (HEART_X + 4 * TS)) < 14 * TS && ly > 28 * TS;
+    // Beyond the parapet: bring a lamp to the edge and the chamber's near lights go out, one
+    // by one, with a murmur; they come back five to ten seconds after you leave, and
+    // sometimes one of the tall ones on the near bridge is a step nearer than it was.
+    int near = lamp && lx > EDGE_X0 && lx < EDGE_X1 && ly > 28 * TS;
     if (near) douseHold = 300 + (int)(Rnd() * 300);
     else if (douseHold > 0) douseHold--;
     int want = near || douseHold > 0;
@@ -207,7 +208,7 @@ void HallStep(void) {
     if (douse > 1) douse = 1;
     if (douse > 0.9f && !douseWas) {
         douseWas = 1; hallDouses++;
-        SfxAt(SFX_MURMUR, 0.8f, 0.9f + Rnd() * 0.1f, HEART_X, HEART_Y);
+        SfxAt(SFX_MURMUR, 0.8f, 0.9f + Rnd() * 0.1f, (EDGE_X0 + EDGE_X1) / 2, EDGE_Y);
     }
     if (douse < 0.05f && douseWas) { douseWas = 0; if (nearer < 2 && Rnd() < 0.6f) nearer++; }
 
@@ -224,9 +225,9 @@ void HallStep(void) {
         if (fish[i].y > BASIN_Y1 - 4) fish[i].y = BASIN_Y1 - 4;
     }
 
-    // The draft: the air comes out of the heart low, over the water, and carries a little dust.
-    if ((frameNo % 24) == 0) AirPuff(HEART_X + Rnd() * 12 * TS, HEART_Y + Rnd() * 8, 0.10f, 4.0f, 0.0f);
-    if ((frameNo % 40) == 0) AirPuff(HEART_X - 6 * TS + Rnd() * 24 * TS, BASIN_Y0 - 6, 0.12f, 6.0f, 0.0f);   // mist on the water before it
+    // The draft: the chamber's air comes in over the parapet and carries a little dust.
+    if ((frameNo % 24) == 0) AirPuff(EDGE_X0 + 20 * TS + Rnd() * 24 * TS, EDGE_Y - Rnd() * 8, 0.10f, 4.0f, 0.0f);
+    if ((frameNo % 40) == 0) AirPuff(BASIN_X0 + Rnd() * (BASIN_X1 - BASIN_X0), BASIN_Y0 - 6, 0.12f, 6.0f, 0.0f);   // mist on the water
 }
 
 void HallReset(void) { leafN = 0; nearer = 0; }
@@ -407,6 +408,6 @@ void HallLights(void) {
     if (PropFireLit(0)) LightAddPoint(37 * TS + 4, 31 * TS, 5.0f, 0.95f + 0.1f * sinf(frameNo * 0.19f));
 }
 
-// For city.c: how far the light beyond the heart's grate is out, and how many steps nearer.
+// For city.c: how far the chamber's near lights are out, and how many steps nearer.
 f32 HallDouse(void) { return douse; }
 int HallNearer(void) { return nearer; }

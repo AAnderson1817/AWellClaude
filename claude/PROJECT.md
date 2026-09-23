@@ -15,15 +15,17 @@ two rooms it describes are parked in `parked/rooms-2/`.
   and lights are culled to the view; sounds from a place in the room pan by the view and
   fade off it (`SfxAt`).
 - **The far wall is one picture of the whole room**, drawn in the archive's language
-  (`claude/ARCHIVE.md`) by `tools/art/archive.py` from the kit (`tools/art/kit.py`) as one
-  wheel: the heart at its hub with the keeper before it (the colossus, sculpted as a height
-  field by `tools/art/colossus.py`), five spokes, the rim through all six screens with the
-  door and the window on it, the stacks and seed drawers, roots, growth. It comes with a picture of its own light and the paths of its
-  veins. `src/backdrop.c` decodes it once, paints the city's stone and the buried rock into
-  it from the tiles, and sends the archive's reading along the veins toward the heart. The
-  window looks out on more of the archive, and the heart on its light and the tall ones
-  (`src/city.c`). The room draws only raw rock's
-  edges and the small things each frame.
+  (`claude/ARCHIVE.md`) by `tools/art/archive.py` from the kit (`tools/art/kit.py`): the
+  antechamber as a balcony, its far wall open behind the keeper (the colossus, sculpted as
+  a height field by `tools/art/colossus.py`) between two piers above a parapet; the door
+  at the left end, the window at the right, the stacks, roots, growth. It comes with a
+  picture of its own light and the paths of its veins. `src/backdrop.c` decodes it once,
+  paints the city's stone and the buried rock into it from the tiles, and sends the
+  archive's reading along the veins.
+- **The view beyond is a multiplane** (`tools/art/vista.py`, `src/city.c`): the rest of the
+  archive, a chamber miles across, in five layers each following the camera by its depth;
+  its near lights go out when a lamp comes to the parapet. The window looks into the same
+  chamber. The room draws only raw rock's edges and the small things each frame.
 - **The hall's lives** (`src/hall.c`): the hunter, the sitters, the prints, the leaves,
   the mural, the dead lamps, the spilled glass, the fish, the draft's dust, the tall ones
   dousing. Three new sounds: hum, murmur, leaf.

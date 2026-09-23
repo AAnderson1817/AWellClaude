@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""The archive: the far wall of the whole antechamber, all six screens, as one piece of
-architecture made of the building's parts (tools/art/kit.py, claude/ARCHIVE.md).
+"""The archive: the far wall of the whole antechamber, all six screens, made of the
+building's parts (tools/art/kit.py, claude/ARCHIVE.md).
 
-The hall is a cell, the size of the hall. Its lens is the heart: a round grate at the
-centre of the six screens, green light beyond it, and the keeper sitting before it with
-its hand out toward the door. Its iris is drawn all the way back into five spokes that
-run out from the heart's ring to the rim, each carrying its vein in toward the heart. Its
-ring is the rim, a circle through all six screens, cut into the raw rock of the mountain;
-inside it the collection in its courses, the seed drawers in the outermost band, awake
-toward the heart and dark toward the rim. On the rim, at the two ends of one diameter
-through the heart, the door (low left, where you wake) and the window (high right, open
-on more of the archive). Roots come down out of the rock, along the rim and the spokes,
-to the heart.
+The antechamber is a balcony. Its far wall is open in the middle, between two great piers
+leaning in toward an arch out of sight overhead, and through the opening is the rest of
+the archive: a chamber miles across, its cities and temples and constructs far off in
+their own light (tools/art/vista.py draws that, in layers, and src/city.c moves them). A
+low parapet runs along the opening's foot; the basin is on this side of it. The keeper
+sits at the edge with its back to all of it and its hand out toward the door.
+
+The wall either side of the opening is the collection in its courses, cut into the raw
+rock of the mountain at the two ends: at the left end the door, where you wake, the
+hunters' planks up its ring and the mural over it; at the right end the window, a cell
+open on the same chamber, and the tall ones' stair up to its lip. Veins run down the piers
+to the parapet and out over it; roots hang from the roof over the opening.
 
     A the door's crown, the flue | B the keeper's head  | C the window
     D the door, the camp         | E the keeper's lap   | F the stair
@@ -29,33 +31,26 @@ import colossus
 W, H = 960, 352
 TAU = math.tau
 D2R = math.pi / 180
-# The heart's and the window's openings are the map's F_GRILLE (43, 3, 36, 36) and F_WINDOW
-# (94, -1, 21, 21): circles in those squares of tiles. (centre x, y, opening radius, ring)
-HEART = (488.0, 168.0, 144.0, 14.0)
-WINDOW = (836.0, 76.0, 84.0, 12.0)
+# The opening and the window are the map's F_VISTA (36, 1, 51, 36) and F_WINDOW (94, -1, 21,
+# 21): the one a rectangle, the other the circle in its square of tiles.
+OPEN = (288, 8, 696, 296)               # x0, y0, x1, y1: between the piers, above the parapet
+WINDOW = (836.0, 76.0, 84.0, 12.0)      # centre x, y, opening radius, ring
 DOOR = (136.0, 248.0, 96.0, 16.0)       # its crown on row 17, where the hunters' plank lies
-RIM = 361.0                             # the wheel's rim: through the door's centre and the window's
-SPOKES = (168, 208, 318, 344, 18)       # degrees (y down): to the door, up-left, up-right, to the window, down-right
-SEEDBAND = 312.0                        # inside the rim from here out: the seed drawers
 FLOOR, BED = 304, 344                   # the floor and the basin's surface; the basin's floor
 SILL = (800, 872, 160)                  # the window's lip: x0, x1, its top (row 20)
-MURAL = (196, 312, 96)                  # the index band over the door, where hall.c carves the mural
+MURAL = (128, 232, 96)                  # the index band over the door, where hall.c carves the mural
 COLOSSUS_AT = (288, 8)                  # tools/art/colossus.py: its canvas's top-left in the room
 STAIR = ((108, 35), (112, 32), (108, 29), (112, 26), (108, 23))   # the map's treads (tile x, top row), 3 x 2
 SPINE = 888                             # the stair's rib, between its two files of treads
 
 
-def hub(r, deg):
-    return HEART[0] + r * math.cos(deg * D2R), HEART[1] + r * math.sin(deg * D2R)
-
-
 def grade(x, y):
-    """The odds of a kept thing being awake, or at least asleep, by its place on the wheel:
-    awake toward the heart, dark toward the rim."""
-    d = math.hypot(x - HEART[0], y - HEART[1])
-    w = min(1.0, max(0.0, 1.0 - (d - 160.0) / (RIM - 160.0)))
-    a = 0.02 + 0.26 * w * w
-    return a, a + 0.24 + 0.38 * w
+    """The odds of a kept thing being awake, or at least asleep, by its place: awake toward
+    the opening, where the chamber's light comes in; dark toward the rock."""
+    d = min(abs(x - OPEN[0]), abs(x - OPEN[2]))
+    w = max(0.0, 1.0 - d / 260.0)
+    a = 0.02 + 0.2 * w * w
+    return a, a + 0.26 + 0.34 * w
 
 
 # ------------------------------------------------------------------------------ rings
@@ -115,76 +110,11 @@ def great_cell(c, C, seed=0.0, teeth=9, stones=40, nodes=12, awake=(0,), mark=1,
     return v
 
 
-def iris_of_bars(c, C, n=7, hub_r=9.0, seed=0.3, below=1e9):
-    """The heart's iris: bars, not blades -- a grate you see through, curving in to a hub
-    where the lens would be. A silhouette on the light."""
-    cx, cy, r, ring = C
-    for i in range(n):
-        a0 = seed + i * TAU / n
-        pts = []
-        for k in range(60):
-            t = k / 59
-            rr = r + 1 - (r + 1 - hub_r) * t
-            pts.append((cx + rr * math.cos(a0 + 1.1 * t * t), cy + rr * math.sin(a0 + 1.1 * t * t)))
-        c.stroke([p for p in pts if p[1] < below + 4], 1.6, 1.1, 'deep', tag=TAG_WALL, shade=('dark', 'void'))
-    for j in range(-int(hub_r) - 2, int(hub_r) + 3):
-        for i in range(-int(hub_r) - 2, int(hub_r) + 3):
-            dd = math.hypot(i + 0.5, j + 0.5)
-            if dd < hub_r + 1.5:
-                c.put(cx + i, cy + j, 'stoneL' if (i + j) < -3 else ('stone' if dd > hub_r - 1.5 else 'dark'), TAG_STONE)
-            if dd < hub_r - 3.5: c.put(cx + i, cy + j, 'deep', TAG_STONE)
-
-
-# ------------------------------------------------------------------------------ spokes
-def spoke(c, V, deg, r0, r1, w=18.0, seed=0.0, root_side=1, band=18):
-    """A rib laid along a radius of the wheel, from the heart's ring out to the rim: three
-    shafts bound in bands, a root wound round it, and in a channel down its face a vein
-    that runs in, to the heart, glass at every band."""
-    ux, uy = math.cos(deg * D2R), math.sin(deg * D2R)
-    px, py = -uy, ux
-    x0, y0 = hub(r0, deg); x1, y1 = hub(r1, deg)
-    m = w / 2 + 6
-    v = c.view(min(x0, x1) - m, min(y0, y1) - m, max(x0, x1) + m, max(y0, y1) + m)
-    if v.w <= 0 or v.h <= 0: return
-    f = Form(v.w, v.h, v.ox, v.oy)
-    for off in (-w / 3, 0.0, w / 3):
-        f.capsule(x0 + off * px, y0 + off * py, x1 + off * px, y1 + off * py, w / 5.2,
-                  depth=w / 5.2 + (2 if off == 0 else 0), base=10)
-    L = r1 - r0
-    for s in np.arange(10, L - 4, band):                                   # the bands
-        bx, by = x0 + s * ux, y0 + s * uy
-        f.capsule(bx - (w / 2 + 1) * px, by - (w / 2 + 1) * py, bx + (w / 2 + 1) * px, by + (w / 2 + 1) * py,
-                  2.3, depth=5, base=14)
-    for (ex, ey) in ((x0, y0), (x1, y1)):                                  # its feet, where it meets the rings
-        f.capsule(ex - (w / 2 + 3) * px, ey - (w / 2 + 3) * py, ex + (w / 2 + 3) * px, ey + (w / 2 + 3) * py,
-                  4.0, depth=7, base=12)
-    lit(v, f)
-    pts = [(x1 - s * ux + 0.5 * px, y1 - s * uy + 0.5 * py) for s in np.arange(0, L, 2)]
-    V.add(c, pts, lit_every=6)
-    for s in np.arange(10, L - 4, band):
-        bx, by = x0 + s * ux, y0 + s * uy
-        c.glow(bx, by, 'cityH'); c.glow(bx + ux, by + uy, 'city'); c.glow(bx - ux, by - uy, 'city')
-    # the root, wound round it: seen where it crosses in front, its shadow where it goes behind
-    for k in range(int(L * 10)):
-        s = k * 0.1
-        ph = s * 0.05 + seed
-        sn = math.sin(ph)
-        cx = x0 + s * ux + root_side * sn * (w / 2 + 1.5) * px
-        cy = y0 + s * uy + root_side * sn * (w / 2 + 1.5) * py
-        r = 1.6 + 1.4 * (s / L)                                            # thicker toward the rim, where it came in
-        if math.cos(ph) * root_side > -0.15:
-            for j in range(-3, 4):
-                for i in range(-3, 4):
-                    if i * i + j * j <= r * r:
-                        c.put(cx + i, cy + j, 'warm' if (i + j) < -0.5 else ('warmD' if (i + j) < 1.5 else 'deep'))
-            if h2(k, int(seed * 10), 5) < 0.015: c.put(cx - 1, cy - r - 0.5, 'moss')
-
-
 # ------------------------------------------------------------------------------ the door
 def door(c, V):
     """The largest cell you will stand before: its ring cut with the catalogue, nine blades
-    closed on a lens that is awake and lights them from within. It stands on the rim with
-    its foot sunk below the floor."""
+    closed on a lens that is awake and lights them from within. Its foot is sunk below the
+    floor."""
     DX, DY, DR, RING = DOOR
     cell(c, DX, DY, DR, 'living', seed=-math.pi / 2, blades=9, ring=RING)
     for k in range(36):
@@ -202,33 +132,13 @@ def door(c, V):
         for r in np.arange(DR - 3, 22, -1.0):
             a = am + (DR - r) * 0.013
             if int(r) % 3 == 0: c.glow(DX + r * math.cos(a), DY + r * math.sin(a), 'coolD' if int(r) % 9 else 'coolM')
-    # its ring's vein: round the top from both sides, and out along the spoke to the heart
+    # its ring's veins: from the crown down both sides; the right one on along the floor to
+    # the pier, and down the pier's plinth to the parapet
     rr = DR + RING - 2.5
-    x_, y_ = hub(RIM - DR - RING, 168)
-    for side in (1, -1):
-        pts = [(DX + rr * math.cos(a), DY + rr * math.sin(a))
-               for a in np.linspace(math.pi + side * 0.0, -0.1 if side > 0 else -math.pi * 0.95, 60)]
-        V.add(c, pts, lit_every=6)
-
-
-# ------------------------------------------------------------------------------ the vault's band
-def drawers(c, m, seed, grade):
-    """The seed drawers: the smallest cells, packed like comb, where m says. Each a seed's
-    drawer, lit as its state."""
-    ys, xs = np.nonzero(m)
-    if not len(xs): return
-    x0, x1, y0, y1 = xs.min() + c.ox, xs.max() + c.ox + 1, ys.min() + c.oy, ys.max() + c.oy + 1
-    c.fill_mask(m, 'deep', TAG_WALL)
-    row = 0
-    for y in range(int(y0) - 7, int(y1), 7):
-        off = 4 if row % 2 else 0
-        for x in range(int(x0) - 8 + off, int(x1), 8):
-            cx, cy = x + 3 - c.ox, y + 3 - c.oy
-            if not (0 <= cx < c.w and 0 <= cy < c.h and m[cy, cx]): continue
-            a, s = grade(x, y)
-            v = h2(x, y, seed)
-            seed_cell(c, x, y, 'living' if v < a * 0.5 else ('asleep' if v < s else 'dark'))
-        row += 1
+    right = [(DX + rr * math.cos(a), DY + rr * math.sin(a)) for a in np.linspace(-math.pi / 2, 0.35, 50)]
+    V.add(c, right + [(DX + rr * math.cos(0.35), FLOOR - 3), (OPEN[0] - 10, FLOOR - 3)], lit_every=6)
+    left = [(DX + rr * math.cos(a), DY + rr * math.sin(a)) for a in np.linspace(-math.pi / 2, -math.pi * 1.1, 50)]
+    V.add(c, left, lit_every=6)
 
 
 # ------------------------------------------------------------------------------ the living
@@ -272,67 +182,85 @@ def overgrow(c, m, seed, density=0.55, hang=0.0, hang_len=10):
 
 
 # ------------------------------------------------------------------------------ the picture
+def pier(c, V, x, w, lean, seed, root_side):
+    """One of the two piers either side of the opening: a rib at the building's scale, from
+    a plinth on the floor up past the roof, leaning in toward the arch they close out of
+    sight; its vein runs down it to the parapet."""
+    rib(c, x, -80, FLOOR + 4, w, lean=lean, root_side=root_side, seed=seed, veins=V,
+        vein_to=[(x + w / 2, FLOOR - 4), (x + w / 2 + (w / 2 + 6) * (1 if lean > 0 else -1), OPEN[3] - 3)])
+
+
 def build():
     c = Canvas(W, H)
     V = Veins()
+    x0o, y0o, x1o, y1o = OPEN
     rock(c, np.ones((H, W), bool), seed=41)                                # the mountain, under all of it
-    d_hub, a_hub = c.polar(HEART[0], HEART[1])
 
-    # ---- the wheel's body: the collection in its courses, inside the rim
-    inside = d_hub < RIM - 8
-    stacks(c, 0, 2, W, BED + 2, seed=7, grade=grade, pier=48, where=inside & (d_hub < SEEDBAND - 3))
-    drawers(c, inside & (d_hub >= SEEDBAND + 3), seed=5, grade=grade)
-    moulded_ring(c, HEART[0], HEART[1], SEEDBAND - 3, 6, seed=0.05, stones=160, nodes=0, mark=11, gain=0.8)
-    # the rim: the wheel's own ring, where the archive is cut into the rock
-    moulded_ring(c, HEART[0], HEART[1], RIM - 8, 16, seed=0.02, stones=144, nodes=48,
-                 awake=(0, 12, 24, 36), mark=13)
-    # the rock just outside it, dressed back from the ring
-    c.fill_mask((d_hub >= RIM + 8) & (d_hub < RIM + 10), 'deep', TAG_WALL)
+    # ---- the wall either side of the opening: the collection in its courses, cut into the
+    # rock at the two ends of the room; under the parapet, the basin's drowned back wall
+    edgeL = 96 + 14 * noise(c, 20, 3) + 0.08 * (H - c.Y)
+    edgeR = 936 - 12 * noise(c, 20, 4)
+    cut = (c.X > edgeL) & (c.X < edgeR)
+    stacks(c, 0, 2, W, BED + 2, seed=7, grade=grade, pier=48, where=cut)
+    for e, side in ((edgeL, 1), (edgeR, -1)):                              # the cut: a shadow along it
+        c.fill_mask(cut & (np.abs(c.X - e) < 1.5), 'deep', TAG_WALL)
+        c.fill_mask(cut & (np.abs(c.X - e - 2 * side) < 0.6), 'stone', TAG_WALL)
 
     # the index band over the door, where the mural is carved: a panel let into the stacks,
     # its face plain and dark so the carving and the phosphor read, its frame moulded
-    x0, x1, y0 = MURAL
-    pv = c.view(x0 - 6, y0 - 8, x1 + 6, y0 + 38)
+    mx0, mx1, my0 = MURAL
+    pv = c.view(mx0 - 6, my0 - 8, mx1 + 6, my0 + 38)
     f = Form(pv.w, pv.h, pv.ox, pv.oy)
-    f.slab(x0 - 5, y0 - 7, x1 + 5, y0 + 37, 6, bevel=2)                   # the frame
-    f.slab(x0, y0, x1, y0 + 30, 3, bevel=1, base=-2)                       # the face, set back
+    f.slab(mx0 - 5, my0 - 7, mx1 + 5, my0 + 37, 6, bevel=2)                # the frame
+    f.slab(mx0, my0, mx1, my0 + 30, 3, bevel=1, base=-2)                   # the face, set back
     lit(pv, f, tag=TAG_WALL, gain=0.8)
-    face = pv.rect(x0 + 1, y0 + 1, x1 - 1, y0 + 29)
+    face = pv.rect(mx0 + 1, my0 + 1, mx1 - 1, my0 + 29)
     pv.fill_mask(face, 'dark', TAG_WALL)
-    pv.fill_mask(face & (noise(pv, 3, 61) > 0.62), 'deep', TAG_WALL)
-    for x in (x0 - 5, x1 + 1):                                              # its ends: two cells asleep
-        seed_cell(c, x, y0 + 12, 'asleep')
+    pv.fill_mask(face & (noise(pv, 5, 61) > 0.78), 'deep', TAG_WALL)
+    for x in (mx0 - 5, mx1 + 1):                                            # its ends: two cells asleep
+        seed_cell(c, x, my0 + 12, 'asleep')
 
-    # ---- the spokes: the iris drawn all the way back, each a rib from the heart to the rim
-    for k, deg in enumerate(SPOKES):
-        spoke(c, V, deg, HEART[2] + HEART[3] + 2, RIM - 8, w=18, seed=k * 1.3, root_side=1 if k % 2 else -1)
+    # ---- the opening: nothing, where the rest of the archive shows (src/city.c)
+    hole = c.rect(x0o, y0o - 8, x1o, y1o)
+    c.clear_mask(hole); c.g[hole] = -1
+    # the parapet along its foot, the basin's far edge: coping stones, their joints
+    pv = c.view(x0o - 4, y1o - 4, x1o + 4, FLOOR + 2)
+    f = Form(pv.w, pv.h, pv.ox, pv.oy)
+    f.slab(x0o - 4, y1o - 4, x1o + 4, y1o + 3, 9, bevel=2, base=4)          # the coping
+    f.slab(x0o - 2, y1o + 3, x1o + 2, FLOOR + 2, 6, bevel=1.5)              # its face
+    lit(pv, f, tag=TAG_THING)
+    for x in range(x0o + 5, x1o, 23):
+        for y in range(y1o - 3, FLOOR + 2): c.put(x, y, 'deep')
+    # the piers, leaning in: the opening's two sides, and what the arch over it stands on
+    pier(c, V, x0o - 34, 34, 22, seed=2.1, root_side=-1)
+    pier(c, V, x1o, 34, -22, seed=3.4, root_side=1)
 
-    # ---- the heart: the wheel's lens, a grate, green beyond; under the water, drowned
-    great_cell(c, HEART, seed=0.21, teeth=11, stones=56, nodes=16, awake=tuple(range(16)), mark=31, hole_above=FLOOR)
-    iris_of_bars(c, HEART, n=7, hub_r=9.0, seed=0.5, below=FLOOR)
-    cx, cy, r, ring = HEART
-    V.add(c, [(cx + (r + ring - 2.5) * math.cos(a), cy + (r + ring - 2.5) * math.sin(a))
-              for a in np.linspace(-math.pi / 2, math.pi * 1.5, 220)], lit_every=4)
-
-    # ---- the window: on the rim, open on more of the archive; its lip, where they sit
+    # ---- the window: a cell open on the same chamber; its lip, where they sit
     great_cell(c, WINDOW, seed=-0.4, teeth=9, stones=40, nodes=12, awake=(0, 6), mark=57)
     sx0, sx1, sy = SILL
     wcx, wcy, wr, _ = WINDOW
     wv = c.view(sx0 - 4, sy - 16, sx1 + 4, sy + 14)
     dd, _ = wv.polar(wcx, wcy)
-    wv.clear_mask(wv.rect(sx0 + 2, sy - 12, sx1 - 2, sy) & (dd < wr + 2)); wv.g[wv.rect(sx0 + 2, sy - 12, sx1 - 2, sy) & (dd < wr + 2)] = -1
+    lipm = wv.rect(sx0 + 2, sy - 12, sx1 - 2, sy) & (dd < wr + 2)
+    wv.clear_mask(lipm); wv.g[lipm] = -1
     f = Form(wv.w, wv.h, wv.ox, wv.oy)
     f.slab(sx0, sy, sx1, sy + 10, 10, bevel=2)
     f.slab(sx0 + 3, sy + 9, sx1 - 3, sy + 13, 6, bevel=1.5)
     lit(wv, f, tag=TAG_THING)
+    rr = WINDOW[2] + WINDOW[3] - 2.5
+    for side in (1, -1):                                                    # its ring's veins, down to the floor and in to the parapet
+        pts = [(wcx + rr * math.cos(a), wcy + rr * math.sin(a))
+               for a in np.linspace(-math.pi / 2, -math.pi / 2 + side * (math.pi - 0.05), 70)]
+        if side < 0: V.add(c, pts + [(wcx - 4, FLOOR - 3), (x1o + 40, FLOOR - 3)], lit_every=6)
+        else: V.add(c, pts, lit_every=6)
 
-    # ---- the door: on the rim at the far end of the diameter, its foot below the floor
+    # ---- the door, at the left end: its foot below the floor
     door(c, V)
 
-    # ---- the stair: the tall ones' treads, grown by turns out of a rib standing outside the
-    # rim; under each a bracket back to the rib (the treads themselves are the map's stone)
+    # ---- the stair: the tall ones' treads, grown by turns out of a rib at the right end;
+    # under each a bracket back to the rib (the treads themselves are the map's stone)
     rib(c, SPINE - 8, 150, FLOOR + 6, 16, lean=0, root_side=1, seed=7.7, veins=V,
-        vein_to=[(SPINE, FLOOR - 2), (836, FLOOR - 2), hub(HEART[2] + HEART[3], 12)])
+        vein_to=[(SPINE, FLOOR - 3), (x1o + 40, FLOOR - 3)])
     for x0_, top in STAIR:
         tx0, tx1, ty = x0_ * 8, x0_ * 8 + 24, top * 8 + 16
         near = tx1 if tx1 <= SPINE else tx0                               # the tread's end at the rib
@@ -343,38 +271,37 @@ def build():
         f.poly(pts, 8, bevel=2.5, base=8)
         lit(bv, f)
 
-    # ---- the living, on the building: roots down out of the rock along the rim and the
-    # spokes to the heart, gripping its ring; growth where it is warm
-    def arc(cx, cy, R, a0, a1, wob=1.2, seed=0):
-        n = max(4, int(abs(a1 - a0) * D2R * R / 3))
-        return [(cx + (R + wob * math.sin(i * 0.9 + seed)) * math.cos(a * D2R),
-                 cy + (R + wob * math.sin(i * 0.9 + seed)) * math.sin(a * D2R))
-                for i, a in enumerate(np.linspace(a0, a1, n))]
-    hx, hy = HEART[0], HEART[1]
-    roots = [(arc(hx, hy, RIM + 11, 244, 196, seed=1), 6.0, 3.0),        # over the rim, down to the door
-             (arc(hx, hy, RIM - 12, 2, 24, seed=3), 3.5, 2.0),           # from the window down the rim's inside, to the water
-             (arc(hx, hy, HEART[2] + HEART[3] + 3, 250, 150, seed=4), 4.0, 2.0),   # hugging the heart's ring
-             (arc(hx, hy, HEART[2] + HEART[3] + 3, 290, 380, seed=5), 4.0, 2.0)]
+    # ---- the living: roots down out of the rock over the roof's edge, hanging into the
+    # opening and gripping the piers; growth where the light comes in
+    roots = [(Canvas.bez((x0o - 40, -4), (x0o - 30, 60), (x0o + 6, 90), (x0o + 2, 190), 50), 6.0, 2.5),
+             (Canvas.bez((x0o + 30, -4), (x0o + 24, 30), (x0o + 44, 50), (x0o + 36, 96), 30), 3.6, 1.2),
+             (Canvas.bez((x0o + 120, -4), (x0o + 118, 14), (x0o + 130, 22), (x0o + 124, 44), 18), 2.6, 1.0),
+             (Canvas.bez((x1o - 70, -4), (x1o - 74, 26), (x1o - 58, 40), (x1o - 64, 78), 26), 3.2, 1.0),
+             (Canvas.bez((x1o + 50, -4), (x1o + 36, 70), (x1o - 8, 110), (x1o - 2, 230), 56), 6.0, 2.5),
+             (Canvas.bez((x1o - 150, -4), (x1o - 146, 10), (x1o - 158, 18), (x1o - 152, 34), 14), 2.2, 0.8)]
     for k, (pts, r0, r1) in enumerate(roots):
         c.root(pts, r0, r1, seed=40 + k, moss=0.5)
-        for j in range(6, len(pts) - 3, 7):                               # rootlets, hanging
+        for j in range(5, len(pts) - 2, 6):                               # rootlets, hanging
             x, y = pts[j]
             s_ = 1 if (j + k) % 2 else -1
-            L = 5 + h2(j, k, 9) * 10
+            L = 5 + h2(j, k, 9) * 12
             c.stroke([(x, y), (x + 2 * s_, y + L * 0.5), (x + 3 * s_, y + L)], 0.8, 0.4, 'warmD')
-    d, _ = c.polar(hx, hy)
-    c.moss((d > HEART[2] + 4) & (d < HEART[2] + HEART[3] + 3) & (noise(c, 3, 71) < 0.42), 0.55, 71)
-    c.moss((np.abs(c.Y - FLOOR + 2) < 3) & (c.X > 330) & (noise(c, 4, 73) < 0.45), 0.5, 73)
-    # the basin: weed standing up from its bed; the heart's ring pouring growth into it
+    for k, x in enumerate(range(x0o + 10, x1o - 10, 17)):                  # vines hanging over the roof's edge
+        if h2(k, 5, 1) < 0.45: continue
+        L = 8 + h2(k, 5, 2) * 36
+        c.vine([(x + math.sin(i * 0.25 + k) * 1.2, i) for i in range(int(L))], seed=120 + k, leaf=0.45, flower=0.04)
+    c.moss(c.rect(x0o - 4, y1o - 5, x1o + 4, y1o - 3) & (noise(c, 3, 73) < 0.5), 0.6, 73)   # moss along the parapet
+    for k, x in enumerate(range(x0o + 2, x1o, 5)):                         # and growth standing on it
+        if h2(k, 9, 1) < 0.6: continue
+        reeds(c, x, x + 3, y1o - 4, seed=200 + k, hmin=2, hmax=7)
+    # the basin: weed standing up from its bed
     for k, x in enumerate(range(404, 776, 9)):
         L = 12 + h2(x, 5, 1) * 26
         c.vine([(x + 2.5 * math.sin(i * 0.2 + k), BED - i) for i in range(int(L))], seed=90 + k, leaf=0.5)
-    spill(c, 356, 236, 3, seed=5, length=40)
-    spill(c, 626, 236, 3, seed=6, length=44)
     # amber in the raw rock: seams of their own light, where the archive has not drunk them
-    for k in range(18):
+    for k in range(22):
         x = h2(k, 3, 1) * W; y = h2(k, 3, 2) * H
-        if math.hypot(x - hx, y - hy) < RIM + 20: continue
+        if (edgeL[min(H - 1, int(y)), min(W - 1, int(x))] < x < edgeR[min(H - 1, int(y)), min(W - 1, int(x))]): continue
         pts = [(x, y)]
         for i in range(int(4 + h2(k, 3, 3) * 8)):
             x += (h2(k, i, 4) - 0.5) * 6; y += 2 + h2(k, i, 5) * 3
@@ -385,7 +312,7 @@ def build():
                 qx, qy = ax + (bx - ax) * i / n, ay + (by - ay) * i / n
                 c.put(qx, qy, 'warmD', TAG_WALL); c.glow(qx, qy, 'warm' if i % 3 else 'amber')
 
-    # ---- the keeper, before the heart: the colossus (tools/art/colossus.py), on a pier cut short
+    # ---- the keeper, at the edge: the colossus (tools/art/colossus.py), on its seat
     col = colossus.paint(colossus.build(throne=False))
     rev = {tuple(int(u) for u in v): IDX[k] for k, v in PAL.items()}
     ox, oy = COLOSSUS_AT

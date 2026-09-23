@@ -103,7 +103,7 @@ const ZRect ROOM_CITY[] = {
 
 const Feature ROOM_FEATURES[] = {
     { F_WINDOW, 94, -1, 21, 21, 0 },
-    { F_GRILLE, 43, 3, 36, 36, 0 },
+    { F_VISTA, 36, 1, 51, 36, 0 },
     { F_NONE, 0, 0, 0, 0, 0 },
 };
 

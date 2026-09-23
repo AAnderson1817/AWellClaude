@@ -75,22 +75,23 @@ different people, and the player joins them up (LORE.md section 6 still holds).
 - The great window looks out on more archive, not a city: stacks of lit cells to the
   horizon.
 
-## The hall: one cell
+## The antechamber: a balcony on the archive
 
-The six screens are not six bays. The user asked for one composition, so the hall is built
-on principle 4 taken all the way: **the hall is itself a cell.**
+The six screens are one place, not six bays: the antechamber is a balcony on the side of
+the archive's great chamber. Its far wall is open in the middle, between two great piers
+(ribs at the building's scale, leaning in toward an arch out of sight) above a low parapet,
+and through the opening is **the rest of the archive, a chamber miles across**: the city on
+its plain, temples, constructs the size of mountains, and at its heart a pillar of light
+rising out of sight. The keeper sits at the edge with its back to it, hand out toward the
+door. The wall either side is the collection in its courses, cut into the raw rock at the
+two ends: the door at the left, where you wake; the window at the right, a cell open on the
+same chamber. Veins run down the piers to the parapet and out over it, toward the heart
+out there.
 
-| part of a cell | in the hall |
-|---|---|
-| lens | the heart: the round grate at the centre, awake, green light beyond it going in ring after ring; the keeper sits before it, a silhouette on its light, hand out toward the door |
-| iris | drawn all the way back, into five spokes: ribs along radii from the heart's ring to the rim, each carrying its vein in to the heart |
-| ring | the rim: a circle through all six screens where the archive is cut into the mountain; raw rock outside it, the collection inside it, seed drawers in its outermost band |
-| on the ring | the door (low left, where you wake) and the window (high right, open on more of the archive), at the two ends of one diameter through the heart |
+The view is painted as a multiplane (`tools/art/vista.py`, moved by `src/city.c`); how it is
+layered is in `claude/ANTECHAMBER.md`. It is made of the same language at a distance: cells,
+tiers of kept things lit as they are kept, ribs, a keeper -- only far off, in its own light.
 
-Door, heart, window lie on one line: in low at the left, past the keeper, up and out at the
-right. The gradient runs by radius: awake near the heart, asleep further out, dark at the
-rim. How each screen reads is in `claude/ANTECHAMBER.md`; the picture is
-`tools/art/archive.py`.
-
-The first build had six bays, one per screen, each with its own set piece; it read as six
-rooms, and a walkway crossed the keeper at the neck. This replaced it.
+Before this the hall was built as one cell (a wheel with the heart for its lens, a round
+grate behind the keeper) and before that as six bays; the first read as two portals side by
+side, the second as six rooms. This replaced them.

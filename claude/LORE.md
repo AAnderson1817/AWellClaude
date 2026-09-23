@@ -120,8 +120,8 @@ the ledge under it, and they pile there until the reset. *First:* a crack. *Know
 ones did not build, the only thing that reaches the hall from the warm world without being
 a hunter. The layer-2 hook (section 4).
 
-**5. The colossus.** *B, E.* A seated figure in profile before the heart's grate, two
-screens tall, feet in the basin, a silhouette on the heart's light. Its forearm reaches down across the hall, palm open toward the
+**5. The colossus.** *B, E.* A seated figure in profile at the edge of the balcony, two
+screens tall, feet in the basin, its back to the chamber beyond and its face to the door. Its forearm reaches down across the hall, palm open toward the
 camp, low enough that the camp fire reaches its fingertips; the back of the hand is a
 platform. Green glass eyes. *First:* a king's blessing. *Knows:* it is how anyone holds a
 hand over a fire. When the fire catches, the fingertips take an amber rim, and below them
@@ -137,14 +137,16 @@ worn almost smooth. *First:* a welcome, a feast, a tea party that never ends. *K
 had no warm pigment, so you are the bare stone between them, shown only by your own light.
 It is the hall's use, in order. It never shows a flame.
 
-**7. The far archive.** *C.* Through the window's cell, more of the archive (`city.c`):
-a hall of stacks seen down its length, ring after ring of ribs over it, the kept things lit
-in their courses on its walls, a vein down its floor to another cell far off, awake. Now
-and then a light out there changes its mind. The city *is* this: the tall ones built no
-streets, only the keeping. (Not yet: once the camp fire is lit, the far cell's lens a band
-brighter until the reset.) *First:* a city of lights, rank on rank, and it goes on for
-ever. *Knows:* it is shelves, it is going dark from the edges in, and it is still at its
-cataloguing.
+**7. The far archive.** *B, E, C.* Past the keeper, through the great opening, and through
+the window: the rest of the archive (`city.c`), a chamber miles across. A city of lights
+on its plain; stepped temples with their tiers lit; domes; an aqueduct; a lantern the size
+of a house on a chain from the ceiling; and at its heart a pillar of light going up out of
+sight from a tower on the horizon. Another keeper sits out there, a mile off, as ours
+does. Now and then a light changes its mind; lanterns rise out of the depths; a procession
+carries lights over a bridge. The city *is* this: the tall ones built no streets, only the
+keeping. (Not yet: once the camp fire is lit, the pillar a band brighter until the reset.)
+*First:* a lost city, and it goes on for ever. *Knows:* it is the archive, it is going dark
+from the edges in, and it is still at its cataloguing.
 
 **8. The sitters.** *C.* On the sill, three figures your size face the city in bedrolls,
 hats down. Two breathe, a puff of mist a minute, seen only in your light; the nearest head
@@ -188,41 +190,40 @@ friendly whale singing to you. *Knows:* it is basking. You are what the lamp is 
 dressed stone, and there they are black. *First:* crystals, some burnt out. *Knows:* the
 city drank these first; where amber turns black is how far it has reached.
 
-**16. The fireguard.** *F.* A tall iron grille, its foot under water, green beyond; too
-close for you, open to the fish. The lowest bars, under the surface, are rubbed bright where
-something large squeezes past. The current starts here. *First:* a locked gate; find the
-key. *Knows:* a fireguard. It is not keeping the city from you. It keeps the fire in the
-grate.
+**16. The parapet.** *E.* A low stone edge along the opening's foot, the basin on this side
+of it, and beyond it the drop into the chamber. Its air comes in over it. *First:* a view.
+*Knows:* a hearth's fender. It is not keeping the city from you. It keeps the fire in.
 
-**17. The tall ones.** *F.* Far beyond the grille, tall still silhouettes. Bring your lamp
-near and the light beyond goes out; in the dark, a murmur close to the bars; when the light
-returns, a silhouette is sometimes a step nearer. *First:* shy natives come to see the
+**17. The tall ones.** *E.* On a bridge beyond the parapet, tall still silhouettes. Bring
+your lamp to the edge and the near lights of the chamber go out one by one; in the dark, a
+murmur; when the lights return, a silhouette is sometimes a step nearer. *First:* shy natives come to see the
 newcomer. *Knows:* they put out their own light because yours is enough, and come as close
 as the bars allow, as anyone moves toward a stove. They are not looking at you.
 
 ## 4. The antechamber as a place
 
-**Why it is shaped like this.** It is a fireplace the size of a cathedral, built as one of
-their cells. The vault passage is the chimney and the door its damper, low at one end. The
-heart is the fire's place, at the centre, behind its grate; the keeper sits before it the
-way you sit before a fire, hand out. The window is the hearth's mouth, high at the other
-end, where warm air leaves; the draft runs from the heart up past the keeper's back and
-out of it. The basin is the cold, pooled at the heart's foot. The hunters camp by the door,
-out of the draft. Never stated; only true, so the draft, the light and the creatures agree.
+**Why it is shaped like this.** It is a fireplace the size of a cathedral, open on one
+side to the city it warmed. The vault passage is the chimney and the door its damper, low
+at one end. The opening behind the keeper is the hearth's front, the parapet its fender;
+the city's cold air comes in over it, rises past the keeper's back and leaves by the
+window, high at the other end. The basin is the cold, pooled along the fender. The keeper
+sits with its back to the city and its hand out toward the door, the way you sit at a
+fire, waiting for it to be fed. The hunters camp by the door, out of the draft. Never
+stated; only true, so the draft, the light and the creatures agree.
 
-**Each screen.** One picture, one line through it: door (low left), heart (centre), window
-(high right).
+**Each screen.**
 - **D, the door** (the first frame): the door fills it, you at its foot, the lamp beside
   you; the camp to the right, the keeper's fingers reaching in over it from the right edge.
 - **A, the crown**: the door's crown, the raw rock and the hunters' planks up it toward
-  the flue's amber; the heart's spoke across the top pulls you right.
-- **B, the keeper**: its head against the heart's light, nothing across it.
-- **E, the lap**: the heart's foot, the water, the tall ones standing in the light.
-- **C, the window**: a round window on the rim, its iris drawn back, more of the archive
-  through it going on for ever; the sitters on its lip. You look through it, never walk
-  out of it.
-- **F, the stair**: the tall ones' treads up to the window. The heart's grate never opens in
-  layer 1; the way on is down through the water.
+  the flue's amber.
+- **B, the keeper**: its head against the chamber beyond, the pillar of light by its back,
+  nothing across it.
+- **E, the lap**: the water along the parapet, the city below, the temples, the tall ones on
+  their bridge.
+- **C, the window**: a round window at the right end, its iris drawn back, the pillar of
+  light standing in it; the sitters on its lip. You look through it, never walk out of it.
+- **F, the stair**: the tall ones' treads up to the window. The way on is not over the
+  parapet in layer 1; it is down through the water.
 
 **What you cannot reach yet.** The flue slot: in the first seconds, one amber point over
 the door and a column of sinking motes. Nothing in layer 1 gets you there; the leaves on

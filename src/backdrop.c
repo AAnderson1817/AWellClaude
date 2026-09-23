@@ -11,9 +11,9 @@
 // can stand on a piece of it (the colossus), the map carves a tile under it ('X') and the
 // room leaves the drawing to this.
 //
-// The openings -- the window's cell and the heart's grate -- are holes in the picture: alpha
-// zero, which is how the composite knows to show what is beyond (city.c). They are circles,
-// the map's F_WINDOW and F_GRILLE squares, and the picture is cut to the same circles.
+// The openings -- the great one behind the keeper, and the window's cell -- are holes in the
+// picture: alpha zero, which is how the composite knows to show what is beyond (city.c).
+// They are the map's F_VISTA rectangle and F_WINDOW square, and the picture is cut to them.
 #include "aw.h"
 #include <math.h>
 #include <stdlib.h>
@@ -81,7 +81,12 @@ static int CircleSpan(const Feature *f, int y, int *x0, int *x1) {
     return *x1 > *x0;
 }
 int WindowSpan(int y, int *x0, int *x1) { const Feature *f = Find(F_WINDOW); return f && CircleSpan(f, y, x0, x1); }
-int GrilleSpan(int y, int *x0, int *x1) { const Feature *f = Find(F_GRILLE); return f && CircleSpan(f, y, x0, x1); }
+int VistaSpan(int y, int *x0, int *x1) {
+    const Feature *f = Find(F_VISTA);
+    if (!f || y < f->y * TS || y >= (f->y + f->h) * TS) return 0;
+    *x0 = f->x * TS; *x1 = (f->x + f->w) * TS;
+    return 1;
+}
 int OpeningBox(int kind, int *x, int *y, int *w, int *h) {
     const Feature *f = Find(kind);
     if (!f) return 0;
@@ -228,5 +233,5 @@ void BackdropLights(void) {
     // the door is a cell awake: its lens lights its own blades from within, their colour
     LightAddPointCool(104.0f, 88.0f, 9.5f, 0.75f + 0.08f * sinf(frameNo * 0.021f));
     // the keeper's eye lights a little of the face round it
-    LightAddPointCool(440.0f, 55.0f, 2.5f, 0.4f);
+    LightAddPointCool(440.0f, 55.0f, 1.6f, 0.3f);
 }

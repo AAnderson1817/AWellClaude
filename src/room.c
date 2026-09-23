@@ -187,14 +187,14 @@ static void LightBake(void) {
                     if (l[ny][nx] < 1.0f) l[ny][nx] = 1.0f;
                 }
         }
-    // The openings to the city are its light, pouring in: strong, so it reaches across the
-    // hall. Seeded on every open tile whose middle is inside one.
+    // The openings are the chamber's light, coming in: the window's strong, the great
+    // opening's a wash over the middle of the hall. Seeded on every open tile inside one.
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
             if (Opaque(x, y) || TileWater(tiles[y][x])) continue;
             int x0, x1, py = y * TS + TS / 2, px = x * TS + TS / 2;
             if (WindowSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 1.25f) lstatC[y][x] = 1.25f;
-            if (GrilleSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 0.55f) lstatC[y][x] = 0.55f;
+            if (VistaSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 0.4f) lstatC[y][x] = 0.4f;
         }
     // The door's own light: wherever its glass and channels cover a tile, their colour.
     for (int y = 0; y < RH; y++)
