@@ -67,11 +67,13 @@ static void Live(int layer, const i16 *L, int nl) {
         if (y > -40) { Dot(590, y, PL_CITYH); Dot(590, y + 1, PL_CITY); Dot(590, y + 2, PL_COOLM); }
     }
     if (layer == 2) {
-        // the reading, far off: a pulse runs up one of the avenues to the pillar's foot
+        // the reading, far off: a pulse runs up one of the avenues toward the pillar, and
+        // goes into the plain's haze where the avenue does (vista.py's AVE_GONE, AVE_FULL)
         int t = (int)(frameNo % 1100);
-        if (t < 520) {
-            f32 u = 1.0f - t / 520.0f, sx = 3 + u * 120.0f;
-            Dot((int)lroundf(590 + 3 * sx * 1.7f), (int)lroundf(184 + sx * 0.85f), PL_CITYH);
+        if (t < 440) {
+            f32 u = 1.0f - t / 440.0f, sx = 22 + u * 101.0f;
+            int pl = sx > 52 ? PL_CITYH : (sx > 36 ? PL_CITY : PL_COOLM);
+            Dot((int)lroundf(590 + 3 * sx * 1.7f), (int)lroundf(184 + sx * 0.85f), pl);
         }
     }
     if (layer == 3) {

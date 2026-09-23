@@ -8,7 +8,7 @@ src/city.c slides past one another as the view moves, the far ones hardly at all
        out of -- one thing, on one glass, so the two never part
     1  the constructs on the horizon, mountain-sized: domes, mesas, an aqueduct, and far
        off another keeper, seated, as ours is
-    2  the city on the plain, lights to the horizon, its avenues running to the pillar
+    2  the city on the plain, lights to the horizon, its avenues running toward the pillar
     3  the middle distance: a stepped temple, a domed one, the bridge between them, a
        lantern hung on a chain from the ceiling
     4  near: towers rising out of the dark below, roots and chains hanging from above, the
@@ -34,6 +34,7 @@ LX0, LY0, LW, LH = 240, -40, 700, 380    # every layer covers this much of the r
 P = (0.8, 0.72, 0.6, 0.42, 0.22)          # how far each layer follows the camera
 HZ = 180                                 # the horizon
 PILLAR = 590                             # the chamber's heart: a pillar of light
+AVE_GONE, AVE_FULL = 18, 52              # the avenues: gone this far from where they would meet, whole from here
 NAMES = list(PAL.keys())
 IDX = {n: i for i, n in enumerate(NAMES)}
 TWINKLE, DOUSE = 1, 2
@@ -221,13 +222,18 @@ def layer2(lights):
                 if h2(x, k, 31) < 0.006: name = 'roseL'
                 L.put(x, y, name)
                 if h2(x, k, 33) < 0.01: lights.append((2, x, int(y), 'cityH', TWINKLE))
-    for a in range(-8, 9):                                                 # the avenues, running to the pillar's foot
+    # the avenues, running toward the pillar -- and lost in the plain's haze well before the
+    # horizon: where they would meet is never drawn. (They are on this glass and the pillar on
+    # the haze's, so a meeting point would slide off the tower's foot as you walk.)
+    for a in range(-8, 9):
         if a == 0: continue
-        for s in np.arange(3, 140, 0.6):
+        for s in np.arange(AVE_GONE, 140, 0.6):
             y = HZ + 4 + s * 0.85
             x = PILLAR + a * s * 1.7
             if y > HZ + 125 or not (LX0 <= x < LX0 + LW): continue
-            if h2(int(x), int(y), 41) < 0.5: L.put(x, y, 'city' if (int(s) % 11) == 0 else 'coolD')
+            keep = min(1.0, (s - AVE_GONE) / (AVE_FULL - AVE_GONE))           # thinning into the haze
+            if h2(int(x), int(y), 41) < 0.5 * keep:
+                L.put(x, y, 'city' if (int(s) % 11) == 0 and keep > 0.6 else 'coolD')
     # the haze lying on the plain, thicker toward the horizon
     mist = (Y > HZ + 2) & (Y < HZ + 30) & (L.a < 0)
     return L

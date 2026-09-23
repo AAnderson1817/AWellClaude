@@ -70,7 +70,7 @@ you walked; they are one object now, on the haze.
 |---|---|---|
 | 0 the haze | 0.80 | the chamber's air, dark overhead and glowing blue-teal at the horizon; shafts of light down through it; the far ceiling's courses of lights; falls of water; the pillar of light, the chamber's heart, and the tower it rises from |
 | 1 the horizon | 0.72 | constructs the size of mountains: domes, stepped mesas, an aqueduct; another keeper, seated as ours is, a mile off |
-| 2 the city | 0.60 | the plain below the horizon, lights in perspective, districts lit and dark, avenues running to the pillar's foot; its skyline |
+| 2 the city | 0.60 | the plain below the horizon, lights in perspective, districts lit and dark, avenues running toward the pillar and thinning into the plain's haze before the horizon, so where they meet is never drawn; its skyline |
 | 3 the middle distance | 0.42 | a stepped temple with its tiers lit and a rose shrine on top; a domed temple, its oculus amber; the bridge between them with lanterns; spires; a lantern the size of a house hung on a chain |
 | 4 near | 0.22 | towers rising out of the dark below; roots and chains hanging; mist; the near bridge where the tall ones stand |
 
@@ -82,7 +82,7 @@ Stitched screenshots of the six screens will not line up behind the keeper -- ea
 own camera -- and that is the point: in play the wall slides past the chamber.
 
 What lives in it: lights far off change their minds now and then (the cataloguing); one
-light climbs the pillar; a pulse runs up an avenue to its foot; lanterns rise slowly out of
+light climbs the pillar; a pulse runs up an avenue toward it and goes into the haze; lanterns rise slowly out of
 the depths; a procession carries lanterns across the bridge. The near lights -- the
 temples', the towers', the bridge's -- are the ones that answer: bring a lamp to the
 parapet and they go out one by one, with a murmur, and the tall ones stand dark; they come
