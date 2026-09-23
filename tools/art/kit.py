@@ -48,6 +48,17 @@ class Veins:
 
 
 # ------------------------------------------------------------------------------ cell
+def arc_marks(c, cx, cy, r, a0, a1, seed, name='dark', step=1.0):
+    """The catalogue, cut along an arc: marks and gaps, now and then a deeper stroke."""
+    n = int(abs(a1 - a0) * r / step)
+    for k in range(n):
+        a = a0 + (a1 - a0) * k / n
+        v = h2(k, seed)
+        if v < 0.28: continue
+        c.put(cx + r * math.cos(a), cy + r * math.sin(a), name)
+        if v > 0.8: c.put(cx + (r - 1) * math.cos(a), cy + (r - 1) * math.sin(a), name)
+
+
 def cell(c, cx, cy, r, state, seed=0, blades=None, ring=None):
     """A round opening, a moulded ring, an iris, a lens. state: 'living', 'asleep', 'dark'.
     The same drawing at every size: under r 4 the iris is only a recess and a dot."""
@@ -56,7 +67,7 @@ def cell(c, cx, cy, r, state, seed=0, blades=None, ring=None):
     outer = d < r + ring
     inner = d < r
     # the ring, rounded in section
-    f = Form(c.w, c.h)
+    f = Form(c.w, c.h, c.ox, c.oy)
     rim = outer & ~inner
     f.z = np.where(rim, 20 + 6 * np.sqrt(np.clip(1 - ((d - r - ring / 2) / (ring / 2 + 0.01)) ** 2, 0, 1)), -1e9)
     if r >= 4: lit(c, f, where=rim)
@@ -76,7 +87,7 @@ def cell(c, cx, cy, r, state, seed=0, blades=None, ring=None):
                 lead.append((cx + rr * math.cos(a0 + 1.6 * t * t), cy + rr * math.sin(a0 + 1.6 * t * t)))
             back = [(cx + r * math.cos(a0 + 1.5 * s / 8), cy + r * math.sin(a0 + 1.5 * s / 8)) for s in range(9)]
             m = c.poly(lead + back[::-1]) & inner
-            bf = Form(c.w, c.h)
+            bf = Form(c.w, c.h, c.ox, c.oy)
             rel = (ang - a0) % math.tau
             bf.z = np.where(m, 12 + 3 * np.sin(np.clip(d / r, 0, 1) * math.pi) - 2.0 * rel, -1e9)
             lit(c, bf, where=m, gain=0.85)
@@ -119,12 +130,13 @@ def seed_cell(c, x, y, state):
             c.put(x + i, y + j, {'2': 'dark', '3': 'stone', '4': 'stoneL'}[ch], TAG_WALL)
 
 
-def stacks(c, x0, y0, x1, y1, seed=0, alive=0.08, asleep=0.5, where=None, darken=None, pier=44):
+def stacks(c, x0, y0, x1, y1, seed=0, alive=0.08, asleep=0.5, where=None, darken=None, pier=44, grade=None):
     """The wall's fabric: the collection on its shelves. Piers every `pier` px divide the wall
     into bays of shelving; each shelf a lit edge and a shadow under it; on each shelf the
     kept things side by side -- round sockets with a lens (the cells), pairs of small ones,
     tall glass vessels, record tablets leaning, and gaps where something has gone.
-    darken(x, y) -> 0..1 turns them dark toward the edges of the archive."""
+    darken(x, y) -> 0..1 turns them dark toward the edges of the archive; or grade(x, y) ->
+    (living, living + asleep) gives the odds outright."""
     SH = 12
     m = c.rect(x0, y0, x1, y1)
     if where is not None: m = m & where
@@ -147,9 +159,12 @@ def stacks(c, x0, y0, x1, y1, seed=0, alive=0.08, asleep=0.5, where=None, darken
                 for yy in range(y, y + SH): P(x, yy, 'stone'); P(x + 1, yy, 'dark')
                 x += 3; continue
             v = h2(k + seed * 97, gy, 11)
-            dk = darken(x, y) if darken else 0.0
+            if grade: pa, ps = grade(x, y)
+            else:
+                dk = darken(x, y) if darken else 0.0
+                pa, ps = alive * (1 - dk), (alive + asleep) * (1 - dk)
             st = h2(k, gy + seed * 13, 29)
-            state = 'living' if st < alive * (1 - dk) else ('asleep' if st < (alive + asleep) * (1 - dk) else 'dark')
+            state = 'living' if st < pa else ('asleep' if st < ps else 'dark')
             base = sy - 1
             if v < 0.5:                                                   # a cell: a round socket, a lens
                 for j, row in enumerate(['.33.', '3..2', '3..2', '.22.']):
@@ -192,7 +207,7 @@ def rib(c, x, y_top, y_foot, w, lean=0.0, root_side=1, seed=0, veins=None, vein_
     channel down its middle with a node of glass at each band. The vein runs down."""
     BAND = 18
     cx_at = lambda y: x + w / 2 + lean * max(0.0, (y_foot - y) / (y_foot - y_top)) ** 2.2
-    f = Form(c.w, c.h)
+    f = Form(c.w, c.h, c.ox, c.oy)
     ys = list(range(y_foot, y_top - 2, -2))
     for k, off in enumerate((-w / 3, 0.0, w / 3)):                        # three shafts
         for y0, y1 in zip(ys, ys[1:]):
@@ -230,7 +245,7 @@ def rib(c, x, y_top, y_foot, w, lean=0.0, root_side=1, seed=0, veins=None, vein_
 # ------------------------------------------------------------------------------ rock and root
 def noise(c, cell, seed):
     rng = np.random.default_rng(seed)
-    gw, gh = c.w // cell + 2, c.h // cell + 2
+    gw, gh = (c.ox + c.w) // cell + 2, (c.oy + c.h) // cell + 2       # the grid spans the picture up to here
     g = rng.random((gh, gw))
     fx, fy = c.X / cell, c.Y / cell
     i0, j0 = fx.astype(int), fy.astype(int)

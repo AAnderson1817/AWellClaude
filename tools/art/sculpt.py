@@ -25,12 +25,14 @@ BAYER4 = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
 
 
 class Form:
-    def __init__(self, w, h):
-        self.w, self.h = w, h
+    def __init__(self, w, h, ox=0, oy=0):
+        # (ox, oy): where this form's top-left is in the picture it will be laid into, so a
+        # form over a small part of a big picture still takes the picture's coordinates
+        self.w, self.h, self.ox, self.oy = w, h, ox, oy
         self.z = np.full((h, w), -1e9)         # height; -inf where nothing is
         self.part = np.zeros((h, w), np.int16)  # which primitive won, for per-part colour
         yy, xx = np.mgrid[0:h, 0:w]
-        self.X, self.Y = xx + 0.5, yy + 0.5
+        self.X, self.Y = xx + 0.5 + ox, yy + 0.5 + oy
         self.n = 0
 
     def _put(self, zz, mask, part):
@@ -67,7 +69,7 @@ class Form:
         """A flat polygon with a bevel toward its edge."""
         from PIL import ImageDraw
         im = Image.new('L', (self.w, self.h), 0)
-        ImageDraw.Draw(im).polygon(pts, fill=255)
+        ImageDraw.Draw(im).polygon([(x - self.ox, y - self.oy) for x, y in pts], fill=255)
         m = np.array(im) > 0
         d = _dist_inside(m)
         self._put(base + depth * np.clip(d / bevel, 0, 1) ** 0.5, m, part)

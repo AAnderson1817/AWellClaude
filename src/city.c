@@ -1,31 +1,40 @@
-// city.c -- the far city, seen through a break in the vault's back wall.
+// city.c -- what is beyond the far wall's two openings: through the window's cell, more of
+// the archive; through the heart's grate, the tall ones.
 //
 // Drawn only in the new look. Everything here is self-lit: it is not touched by the light
 // pass, because it is far away and it is theirs. It is points and lines of their colour on
-// black -- the city is read by its lights, never by its stone -- in planes: a plain of
-// lights below the horizon compressing toward it, far towers, nearer towers standing black
-// against the far ones, a great ring hung over the city, and one light that climbs a spire
-// and never stops climbing. It does not notice you (L9).
+// black -- the archive far off is read by its lights, never by its stone. It does not
+// notice you (L9).
 #include "aw.h"
 #include <math.h>
+#include <stdlib.h>
 
-// The city is seen through the great window (backdrop.c cuts it). It is drawn in the frame's
-// own coordinates, a little behind the room: when the view slides, the walls cross the whole
-// frame and the city a third of it, which is most of what says it is far away.
+// Each is drawn in the frame's own coordinates, a little behind the room: when the view
+// slides, the walls cross the whole frame and what is beyond only part of it, which is most
+// of what says it is far away.
 #define PARALLAX 0.3f
-static int OX, OY;          // frame px of the city's origin this frame
+static int OX, OY;          // frame px of the piece's origin this frame
+static f32 clipX, clipY, clipR;       // the opening it is seen through, room px; r 0: none
 
-static void Dot(int x, int y, int pl) { DrawRectangle(OX + x, OY + y, 1, 1, PAL[pl]); }
+static void Dot(int x, int y, int pl) {
+    if (clipR > 0) {
+        f32 dx = camX + OX + x + 0.5f - clipX, dy = camY + OY + y - ROOM_Y + 0.5f - clipY;
+        if (dx * dx + dy * dy > clipR * clipR) return;
+    }
+    DrawRectangle(OX + x, OY + y, 1, 1, PAL[pl]);
+}
 
-// A window's light, hashed: whether it is lit now. A few change their minds, slowly.
+// A light's state, hashed: whether it is lit now. Now and then one changes its mind, slowly
+// -- the archive at its cataloguing, far off, taking no notice.
 static int Lit(u32 h, int pct) {
     int lit = (int)(h % 100) < pct;
     if (((frameNo / 150) + (h >> 8) % 211) % 211 == 0) lit = !lit;
     return lit;
 }
 
-#define HZ 78      // the horizon, in room px
-#define VX 176     // where the avenues meet it
+static void Rect(int x, int y, int w, int h, int pl) {
+    for (int j = y; j < y + h; j++) for (int i = x; i < x + w; i++) Dot(i, j, pl);
+}
 
 // A dithered glow, in bands: a is 0..1, above a floor.
 static void Glow(int x, int y, float a) {
@@ -48,119 +57,99 @@ static void Far(void);
 static void Beyond(void);
 void CityDraw(void) { Far(); Beyond(); }
 
+// Through the window: the archive goes on. A hall of stacks, seen down its length from high
+// in its end wall -- its ribs arching over it bay after bay, each a ring of their glass
+// smaller than the last; on its walls and up into its vault the kept things in their
+// courses, lit as they are kept; a vein down the middle of its floor to where it ends, at
+// another cell, awake. The sitters on the sill face it.
+#define VY 14               // the vanishing point, below the window's centre: the sill's eye
+#define HALF 150.0f         // the hall's half-width, its floor under the eye and its arches' spring
+#define FLOORY 60.0f
+#define SPRING (-40.0f)
 static void Far(void) {
-    int wx0, wx1;
-    if (!WindowSpan(15 * TS, &wx0, &wx1) || camX + GW < wx0 - 64 || camX > wx1 + 64) return;
-    // composed for the view of the great window's screen; the city's (176, 78) -- where its
-    // avenues meet the horizon -- is on the window's centre line, at the sill
-    Place((wx0 + wx1) * 0.5f - 176.0f, 13 * TS - 78.0f, 2 * SW * TS, 0, PARALLAX, &OX, &OY);   // the horizon just over the sill
-    int X0 = 50, X1 = 296;
-    // The glow the city throws up into the air over itself, strongest at the horizon.
-    for (int y = HZ - 50; y < HZ + 8; y++)
-        for (int x = X0; x < X1; x++) {
-            float dy = y < HZ ? (HZ - y) / 50.0f : (y - HZ) / 8.0f;
-            float dx = fabsf((float)(x - VX)) / 140.0f;
-            float a = (1.0f - dy) * (1.0f - dx * dx * 0.7f);
-            if (a > 0) Glow(x, y, a * 0.9f);
+    int bx, by, bw, bh;
+    if (!OpeningBox(F_WINDOW, &bx, &by, &bw, &bh)) return;
+    if (camX + GW < bx - 8 || camX > bx + bw + 8 || camY + GH < by - 8 || camY > by + bh + 8) return;
+    clipR = bw * 0.5f; clipX = bx + clipR; clipY = by + clipR;
+    Place(clipX, clipY, 2 * SW * TS, 0, PARALLAX, &OX, &OY);          // local (0, 0) is the window's centre
+    // the light the far end throws back up the hall
+    for (int y = -60; y < 60; y++)
+        for (int x = -70; x < 70; x++) {
+            f32 dx = x / 70.0f, dy = (y - VY + 8) / 50.0f, a = 0.55f - (dx * dx + dy * dy) * 0.9f;
+            if (a > 0) Glow(x, y, a);
         }
-    // The plain below the horizon, in perspective: avenues of lights running out from where
-    // they meet the horizon, and cross streets closer together the further off they are.
-    for (int k = 0; k < 13; k++) {                               // cross streets
-        int y = HZ + 3 + (int)(k * k * 0.30f + k * 1.4f);
-        if (y > 116) break;
-        float spread = (y - HZ) * 3.2f;
-        int step = 2 + k / 4;
-        for (int x = VX - (int)spread; x < VX + (int)spread; x += step) {
-            if (x < X0 || x >= X1) continue;
-            u32 h = Hash2(x * 3 + k, y * 7);
-            if (!Lit(h, 62 - k * 2)) continue;
-            Dot(x, y, (h >> 12) % 100 < 10 + k ? PL_CITY : PL_COOLM);
+    // the bays, far to near: an arch at each, the stacks between
+    static const f32 Z[] = { 1.6f, 2.1f, 2.7f, 3.4f, 4.3f, 5.4f, 6.8f, 8.6f, 11.0f, 14.0f, 18.0f };
+    const int NZ = (int)(sizeof Z / sizeof Z[0]);
+    for (int k = NZ - 2; k >= 0; k--) {
+        f32 z0 = Z[k], z1 = Z[k + 1];
+        int far = k > 5;
+        // the walls' courses and the vault's, from this arch to the next
+        for (f32 z = z0 + 0.02f; z < z1; z += 2.0f * z * z / HALF) {
+            f32 s = 1.0f / z;
+            int zi = (int)(z * 97.0f);
+            for (int side = -1; side <= 1; side += 2) {
+                for (int j = 0; j <= 12; j++) {              // up the wall, a course every eight
+                    f32 h = FLOORY - 8.0f * j;
+                    u32 hh = Hash2(zi * 2 + (side > 0), j * 31 + k);
+                    if (!Lit(hh, far ? 52 : 64)) continue;
+                    int pl = (hh >> 12) % 100 < 9 ? PL_CITY : ((hh >> 12) % 100 < 30 && !far ? PL_COOLM : PL_COOLD);
+                    Dot((int)lroundf(side * HALF * s), (int)lroundf(VY + h * s), pl);
+                }
+            }
+            for (int j = 1; j < 16; j++) {                    // and over, up the vault
+                f32 ph = j * 3.14159f / 16.0f;
+                u32 hh = Hash2(zi, j * 53 + k + 7);
+                if (!Lit(hh, far ? 40 : 50)) continue;
+                int pl = (hh >> 12) % 100 < 7 ? PL_CITY : PL_COOLD;
+                Dot((int)lroundf(-HALF * cosf(ph) * s), (int)lroundf(VY + (SPRING - HALF * sinf(ph)) * s), pl);
+            }
         }
-    }
-    for (int a = -7; a <= 7; a++) {                              // avenues
-        float slope = a * 0.62f;
-        for (int k = 1; k < 60; k++) {
-            float y = HZ + 1 + k * k * 0.034f + k * 0.35f;
-            if (y > 116) break;
-            int x = VX + (int)lroundf((y - HZ) * slope);
-            if (x < X0 || x >= X1) continue;
-            u32 h = Hash2(a + 50, k);
-            if ((h % 100) < 78) Dot(x, (int)y, (k % 7 == 3) ? PL_CITYH : PL_CITY);
+        // the rib at this arch: up the wall, over, down, glass at every band
+        f32 s = 1.0f / z0;
+        int n = (int)(HALF * s * 3.3f) + 8;
+        for (int i = 0; i <= n; i++) {
+            f32 ph = i * 3.14159f / n;
+            int x = (int)lroundf(-HALF * cosf(ph) * s), y = (int)lroundf(VY + (SPRING - HALF * sinf(ph)) * s);
+            if ((i % 7) == 3) Dot(x, y, PL_CITY);
+            else if (i & 1) Dot(x, y, PL_COOLD);
         }
-    }
-    // Where the far city runs together into one line.
-    for (int x = X0; x < X1; x++) {
-        u32 h = Hash2(x, 991);
-        float dx = fabsf((float)(x - VX)) / 140.0f;
-        if ((h % 100) < (u32)(80 - dx * 40)) Dot(x, HZ, (h >> 9) % 100 < 30 ? PL_CITYH : PL_CITY);
-    }
-    // Far towers on the horizon: taller toward the middle, faint windows every 2 px.
-    for (int i = 0; i < 48; i++) {
-        u32 h = Hash2(i, 55);
-        int x0 = X0 + 2 + i * 5 + (int)(h % 3), w = 2 + (int)((h >> 3) % 4);
-        float mid = 1.0f - fabsf((x0 - (float)VX) / 130.0f);
-        int ht = 3 + (int)((h >> 7) % 10) + (int)(mid * mid * 26.0f);
-        DrawRectangle(OX + x0, OY + HZ - ht, w, ht, PAL[PL_VOID]);
-        for (int y = HZ - ht + 1; y < HZ - 1; y += 3)
-            for (int x = x0; x < x0 + w; x += 2) {
-                u32 g = Hash2(x * 13, y * 17 + i);
-                if (Lit(g, 12)) Dot(x, y, PL_COOLM);
+        for (int side = -1; side <= 1; side += 2)
+            for (f32 h = FLOORY; h > SPRING; h -= 1.0f / s) {
+                int k2 = (int)((FLOORY - h) * s), node = (k2 % 7) == 3;
+                if (node || (k2 & 1)) Dot((int)lroundf(side * HALF * s), (int)lroundf(VY + h * s), node ? PL_CITY : PL_COOLD);
             }
     }
-    // The ring: a great circle of lights hung over the city, a pulse running round it.
+    // the floor: a vein down the middle to the far end, and the reading running along it
+    int run = (int)(frameNo % 900);
+    for (f32 z = 1.4f; z < 18.0f; z *= 1.045f) {
+        f32 s = 1.0f / z;
+        int y = (int)lroundf(VY + FLOORY * s);
+        int k = (int)((z - 1.4f) * 40.0f);
+        int pulse = run < 600 && abs(k - run * 2 / 3) < 3;
+        Dot(0, y, pulse ? PL_CITYH : ((k % 5) == 0 ? PL_CITY : PL_COOLM));
+        if ((k % 3) == 0) { Dot((int)lroundf(-40.0f * s), y, PL_COOLD); Dot((int)lroundf(40.0f * s), y, PL_COOLD); }
+    }
+    // the far end: a cell like the door, and awake
     {
-        float cx = 176.0f, cy = 12.0f, r = 40.0f;          // centred in the window's head
-        int n = 120, pulse = (int)(frameNo / 4) % n;
-        for (int k = 0; k < n; k++) {
-            float a = k * 6.2831853f / n;
-            int x = (int)lroundf(cx + r * cosf(a)), y = (int)lroundf(cy + r * 0.94f * sinf(a));
-            int d = (k - pulse + n) % n;
-            Dot(x, y, d == 0 ? PL_CITYH : (d < 6 ? PL_CITY : ((k % 3) ? PL_CITY : PL_COOLM)));
-            if ((k & 1) == 0) {
-                int xi = (int)lroundf(cx + (r - 4) * cosf(a)), yi = (int)lroundf(cy + (r - 4) * 0.94f * sinf(a));
-                Dot(xi, yi, PL_COOLD);
-            }
+        f32 s = 1.0f / 18.0f, r = 70.0f * s * 1.6f;
+        int cy = (int)lroundf(VY + (FLOORY - 70.0f) * s);
+        for (int i = 0; i < 40; i++) {
+            f32 a = i * 6.2832f / 40;
+            Dot((int)lroundf(r * cosf(a)), cy + (int)lroundf(r * sinf(a)), (i % 4) ? PL_COOLM : PL_CITY);
         }
-        for (int t = 0; t < 3; t++) {                              // it hangs from threads of light
-            float a = 1.75f + t * 0.42f;
-            int xs = (int)(cx + r * cosf(a)), ys = (int)(cy + r * 0.94f * sinf(a));
-            for (int y = ys + 2; y < HZ - 40; y += 2) Dot(xs, y, PL_COOLD);
-        }
+        Dot(0, cy, PL_CITYH); Dot(1, cy, PL_CITY); Dot(-1, cy, PL_CITY); Dot(0, cy - 1, PL_CITY); Dot(0, cy + 1, PL_CITY);
     }
-    // Nearer towers: black against the glow, lit down one edge by it, windows in columns.
-    static const int NX[7] = { 78, 106, 136, 168, 199, 243, 270 };
-    static const int NH[7] = { 42, 70, 50, 92, 62, 48, 34 };
-    static const int NW[7] = { 11, 9, 14, 9, 12, 10, 8 };
-    for (int i = 0; i < 7; i++) {
-        int x0 = NX[i], w = NW[i], top = HZ + 8 - NH[i], bot = HZ + 16;
-        DrawRectangle(OX + x0, OY + top, w, bot - top, PAL[PL_VOID]);
-        int lit = x0 + w / 2 < VX ? x0 + w - 1 : x0;                 // the edge that faces the glow
-        for (int y = top; y < bot; y++) if (y > HZ - 22 && ((y & 1) || y > HZ - 8)) Dot(lit, y, y > HZ - 8 ? PL_COOLM : PL_COOLD);
-        for (int x = x0 + 2; x < x0 + w - 2; x += 3)
-            for (int y = top + 3; y < bot - 2; y += 3) {
-                u32 g = Hash2(x * 7 + i, y * 11);
-                if (Lit(g, 30)) Dot(x, y, (g >> 11) % 100 < 14 ? PL_CITYH : PL_CITY);
-            }
-        int sx = x0 + w / 2, sh = 6 + (int)(Hash2(i, 9) % 10);
-        for (int y = top - sh; y < top; y++) Dot(sx, y, PL_COOLD);
-        Dot(sx, top - sh - 1, PL_CITYH);
-    }
-    // One light climbs the tallest spire, all the way up, for twenty seconds, then again.
-    {
-        int x0 = NX[3] + NW[3] / 2, top = HZ + 8 - NH[3] - 16, bot = HZ + 10;
-        float t = (float)(frameNo % 1200) / 1200.0f;
-        int y = bot - (int)(t * (bot - top));
-        Dot(x0, y, PL_CITYH); Dot(x0, y + 1, PL_CITY);
-    }
+    clipR = 0;
 }
 
 // Beyond the fireguard: the city's near halls, lit green from below, and the tall ones in
 // them -- standing, still, a long way in. Only ever silhouettes (LORE.md section 6).
 static void Beyond(void) {
-    int gx0, gx1, gy = 0;
-    for (int y = 20 * TS; y < 44 * TS; y++) if (GrilleSpan(y, &gx0, &gx1)) { gy = y; break; }
-    if (!gy || camX + GW < gx0 - 32 || camX > gx1 + 32 || camY + GH < gy - 32) return;
-    int w = gx1 - gx0, h = 44 * TS - gy;
+    int gx0, gy, w, h;
+    if (!OpeningBox(F_GRILLE, &gx0, &gy, &w, &h)) return;
+    if (camX + GW < gx0 - 32 || camX > gx0 + w + 32 || camY + GH < gy - 32 || camY > gy + h + 32) return;
+    clipR = w * 0.5f + 1; clipX = gx0 + w * 0.5f; clipY = gy + h * 0.5f;
     Place((f32)gx0, (f32)gy, 2 * SW * TS, SH * TS, 0.45f, &OX, &OY);
     // the light, strongest low and in the middle: it comes from further in, under the water.
     // Bring a lamp near and they put it out.
@@ -174,22 +163,23 @@ static void Beyond(void) {
     // the far wall of that hall: a colonnade, black against the glow
     for (int k = 0; k < 6; k++) {
         int x = -6 + k * (w + 12) / 5;
-        DrawRectangle(OX + x, OY - 8, 5, h + 16, PAL[PL_DEEP]);
+        Rect(x, -8, 5, h + 16, PL_DEEP);
     }
     // the tall ones: three, at different depths, the nearest largest; heads long, shoulders
     // narrow, arms down. One of them is always a step nearer than you remember.
-    static const int TX[3] = { 30, 68, 98 }, TH[3] = { 70, 92, 60 };
+    static const int TX[3] = { 30, 68, 98 }, TH[3] = { 44, 58, 38 };
     for (int i = 0; i < 3; i++) {
-        int x = TX[i] * w / 120, H = TH[i] + (i == 0 ? HallNearer() * 8 : 0), foot = h - 6 - i * 3 + (i == 0 ? HallNearer() * 3 : 0), top = foot - H;
+        int x = TX[i] * w / 120, H = TH[i] + (i == 0 ? HallNearer() * 6 : 0), foot = h - 18 - i * 3 + (i == 0 ? HallNearer() * 3 : 0), top = foot - H;
         int hw = 3 + H / 30;
-        DrawRectangle(OX + x - hw, OY + top + H / 5, hw * 2, H - H / 5, PAL[PL_VOID]);            // body
-        DrawRectangle(OX + x - hw - 1, OY + top + H / 5 + 2, 1, H / 2, PAL[PL_VOID]);              // arm
-        DrawRectangle(OX + x + hw, OY + top + H / 5 + 2, 1, H / 2, PAL[PL_VOID]);
-        DrawRectangle(OX + x - hw / 2 - 1, OY + top + H / 5 - 3, hw + 2, 4, PAL[PL_VOID]);         // neck
+        Rect(x - hw, top + H / 5, hw * 2, H - H / 5, PL_VOID);            // body
+        Rect(x - hw - 1, top + H / 5 + 2, 1, H / 2, PL_VOID);              // arm
+        Rect(x + hw, top + H / 5 + 2, 1, H / 2, PL_VOID);
+        Rect(x - hw / 2 - 1, top + H / 5 - 3, hw + 2, 4, PL_VOID);         // neck
         for (int r = 0; r < H / 5 + 2; r++) {                                                         // the long head, tipped forward
             int hwid = (int)(hw * 0.9f * sinf(3.1416f * (r + 0.5f) / (H / 5 + 2))) + 1;
-            DrawRectangle(OX + x - hwid - r / 4, OY + top - 2 + r, hwid * 2, 1, PAL[PL_VOID]);
+            Rect(x - hwid - r / 4, top - 2 + r, hwid * 2, 1, PL_VOID);
         }
-        DrawRectangle(OX + x + hw, OY + top + H / 5, 1, H - H / 5, PAL[PL_COOLD]);                // the glow on one edge
+        Rect(x + hw, top + H / 5, 1, H - H / 5, PL_COOLD);                // the glow on one edge
     }
+    clipR = 0;
 }

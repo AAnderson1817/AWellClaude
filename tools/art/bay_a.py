@@ -9,14 +9,17 @@ edge. To the right the mountain has pushed back in: raw rock over the stacks bel
 index band, where the chasm drops toward the heart and the fallen rock climbs to the
 passage; a third rib frames the way into the hall. Every vein runs down, into the chasm.
 
-    tools/art/bay_a.py [--preview DIR]    write art/bay_a.png, _glow.png, .veins
+It is drawn into the whole room's picture by tools/art/archive.py; run alone it only shows
+itself.
+
+    tools/art/bay_a.py DIR    a look at bay A by itself, DIR/bay_a.png
 """
 import math, os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sculpt import TAG_WALL, TAG_THING, TAG_STONE
 from paint import Canvas, h2
-from kit import cell, stacks, rib, rock, noise, Veins, lit
+from kit import cell, stacks, rib, rock, noise, Veins, lit, arc_marks
 from sculpt import Form
 
 W, H = 320, 176                  # the whole first screen; its top-left is room px (0, 0)
@@ -24,19 +27,10 @@ DX, DY, DR, RING = 104.0, 88.0, 70.0, 10.0      # the door
 FLOOR = 168                      # the floor's top (row 21)
 
 
-def arc_marks(c, cx, cy, r, a0, a1, seed, name='dark', step=1.0):
-    n = int(abs(a1 - a0) * r / step)
-    for k in range(n):
-        a = a0 + (a1 - a0) * k / n
-        v = h2(k, seed)
-        if v < 0.28: continue
-        c.put(cx + r * math.cos(a), cy + r * math.sin(a), name)
-        if v > 0.8: c.put(cx + (r - 1) * math.cos(a), cy + (r - 1) * math.sin(a), name)
-
-
-def build():
-    c = Canvas(W, H)
-    V = Veins()
+def build(c=None, V=None):
+    """Draw the bay into c (a canvas, or a view of the whole room's) and its veins into V."""
+    c = c if c is not None else Canvas(W, H)
+    V = V if V is not None else Veins()
     # ---- the fabric: seed drawers everywhere, the mountain over them on the right
     stacks(c, 0, 2, W, FLOOR, seed=1, alive=0.06, asleep=0.42,
            darken=lambda x, y: min(1.0, max(0.0, (x - 150) / 200.0)))
@@ -47,7 +41,7 @@ def build():
     # the index: a frieze over the rock, moulded above and below, dentils under it; hall.c
     # carves the mural into its face
     band = (c.X > 200) & (c.Y >= 74) & (c.Y < 108)
-    f = Form(W, H)
+    f = Form(c.w, c.h, c.ox, c.oy)
     f.slab(200, 74, W + 8, 108, 8, bevel=2)
     f.slab(198, 70, W + 8, 76, 10, bevel=1.5, base=2)
     f.slab(198, 106, W + 8, 111, 10, bevel=1.5, base=2)
@@ -104,10 +98,6 @@ def build():
 
 
 if __name__ == '__main__':
-    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'art')
     c, V = build()
-    c.save(os.path.join(root, 'bay_a'))
-    V.write(os.path.join(root, 'bay_a.veins'))
-    if '--preview' in sys.argv:
-        c.preview(os.path.join(sys.argv[sys.argv.index('--preview') + 1], 'bay_a.png'))
+    c.preview(os.path.join(sys.argv[1], 'bay_a.png'))
     print('bay a:', len(V.paths), 'veins')

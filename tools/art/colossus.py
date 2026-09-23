@@ -27,11 +27,21 @@ STANDS = [(40, 45, 26),            # the back of the hand
           (57, 60, 17),            # the band on the upper arm
           (60, 72, 25)]            # the lap
 
-def build():
+def build(throne=True):
     f = Form(W, H)
-    # ---- the throne, behind everything: a block with a high back
-    f.slab(248, 88, 320, 336, 10, bevel=4, base=0, part=9)
-    f.slab(238, 214, 320, 336, 14, bevel=3, base=0, part=9)          # the seat's front
+    # ---- the seat, behind everything: a block, and a high back to it unless the keeper sits
+    # in its cell, where the cell is what is behind it (tools/art/archive.py)
+    if throne:
+        f.slab(248, 88, 320, 336, 10, bevel=4, base=0, part=9)
+        f.slab(238, 214, 320, 336, 14, bevel=3, base=0, part=9)      # the seat's front
+    else:
+        # a pier cut short: three shafts bound in bands, the building's own bones, and the
+        # keeper sits on them. Kept under the thigh's height, so the thigh stays in front.
+        for sx in (254, 276, 298):
+            f.capsule(sx, 338, sx, 226, 10, depth=10, base=0, part=9)
+        for yb in range(232, 338, 18):
+            f.slab(242, yb - 3, 310, yb + 3, 4, bevel=1.5, base=8, part=9)
+        f.slab(238, 212, 314, 228, 9, bevel=3, base=2, part=9)       # its cap
     # ---- the body
     # torso: upright, robed, a little forward at the chest
     f.poly([(190, 104), (184, 150), (186, 196), (266, 214), (272, 150), (262, 104)], 30, bevel=10, base=8, part=2)
@@ -112,7 +122,7 @@ def paint(f):
 
 
 if __name__ == '__main__':
-    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), '..', '..', 'art', 'colossus.png')
-    f = build()
-    save(paint(f), out, scale=3)
+    # it is drawn into the room's picture by tools/art/archive.py; alone, only a look at it
+    out = os.path.join(sys.argv[1], 'colossus.png')
+    save(paint(build(throne=False)), out, scale=3)
     print('wrote', out)

@@ -71,9 +71,9 @@ extern const char *const ROOM_MAP[RH];     // antechamber.c: the tiles
 extern const char *const ROOM_PROPS[RH];   //                the dressing
 typedef struct { i16 x0, y0, x1, y1; } ZRect;
 extern const ZRect ROOM_CITY[];            //                where the stone is theirs; ends at x0 < 0
-// The backdrop's big pieces, in tiles: drawn behind everything, and only the tiles marked
-// carved in the map ('X', 'x') stand under them for you to stand on.
-enum { F_NONE = 0, F_COLOSSUS, F_WINDOW, F_GRILLE, F_NICHE, F_PILLAR, F_CORNICE, F_BAY };
+// The far wall's openings, in tiles: each a circle in its square (x, y, w = h). The picture
+// (backdrop.c) is cut to them, and what is beyond them is drawn behind (city.c).
+enum { F_NONE = 0, F_WINDOW, F_GRILLE };
 typedef struct { u8 kind; i16 x, y, w, h, a; } Feature;
 extern const Feature ROOM_FEATURES[];      //                ends at F_NONE
 // What a tile is drawn as, beyond its kind: carved (the backdrop draws it, the room does
@@ -328,15 +328,16 @@ void HallLights(void);
 f32  HallDouse(void);       // 0..1: the light beyond the fireguard put out
 int  HallNearer(void);      // how many steps nearer one of them stands
 extern int hallHums, hallLeaves, hallDouses;
-// backdrop.c: the colossus, the great window, the fireguard
+// backdrop.c: the far wall, the archive's whole picture
 void BackdropInit(void);
 void BackdropDraw(void);    // over the far wall, under the stone
 void BackdropDrawEmis(void);
 void BackdropLights(void);
 int  WindowSpan(int y, int *x0, int *x1);   // room px spans of the openings, per row
-f32  BackdropGlow(int tx, int ty);          // 0..1: a bay's own light over a tile
+f32  BackdropGlow(int tx, int ty);          // 0..1: the archive's own light over a tile
 void RoomRelight(void);     // bake the light again (after the door changes)
 int  GrilleSpan(int y, int *x0, int *x1);
+int  OpeningBox(int kind, int *x, int *y, int *w, int *h);   // an opening's square, room px
 
 // ---------------------------------------------------------------- the palette of the new look
 enum { PL_VOID, PL_DEEP, PL_DARK, PL_STONE, PL_STONEL, PL_STONEH, PL_WARMD, PL_WARM, PL_AMBER,

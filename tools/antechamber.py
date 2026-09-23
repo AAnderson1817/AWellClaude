@@ -81,6 +81,10 @@ R.fill(60, 25, 72, 25, 'X')             # the lap
 R.shelf(41, 44, 32)
 R.shelf(36, 39, 29)                     # and the hunters' planks, lashed up under its fingers
 R.at(42, 34, 's')                       # the stone, on the hall floor by the basin
+# E, the garden: growth on the keeper's lap and by the water, hanging from the gallery
+for x in (62, 66, 70): R.at(x, 24, 'b')
+R.at(47, 34, 'b')
+for x in (43, 49, 63, 67, 75): R.at(x, 16, ',')
 
 # the floor: paving at the undercroft's mouth, stepping down into the basin
 R.fill(40, 35, 49, 43, '#')
@@ -96,6 +100,7 @@ treads = [(97, 34), (100, 31), (103, 28), (106, 25), (109, 22), (112, 19), (115,
 for x0, top in treads:
     R.fill(x0, top, 118, 42, '#')
 R.fill(97, 35, 118, 42, '#')
+for x0, top in treads[:-1]: R.at(x0 + 1, top - 1, 'b')    # each tread a bed
 
 # C: the sill, the one long flat run, a balcony across the window's foot
 R.fill(80, 14, 111, 15, '#')
@@ -115,15 +120,12 @@ R.city(40, 0, 119, 43)                  # the hall
 R.city(34, 2, 39, 13)                   # the threshold: the passage's last few steps are theirs
 R.city(1, 0, 22, 20)                    # and the door's wall: theirs, built into the rock
 
-# ------------------------------------------------------------------ backdrop pieces
-# (kind, x, y, w, h, a) in tiles
-R.feat('F_BAY', 0, 0, 40, 22, 0)        # bay A, the intake: tools/art/bay_a.py paints its whole far wall
-R.feat('F_CORNICE', 40, 1, 79, 1)
-R.feat('F_NICHE', 45, 3, 32, 40)
-R.feat('F_PILLAR', 78, 2, 3, 34)
-R.feat('F_COLOSSUS', 40, 1, 36, 42)
-R.feat('F_WINDOW', 82, 2, 30, 19)
-R.feat('F_GRILLE', 81, 24, 15, 18)
+# ------------------------------------------------------------------ the openings
+# The far wall is one picture (tools/art/archive.py); these are the holes in it, each a circle
+# in its square of tiles (x, y, w, h): the window's cell, and the heart's grate. archive.py
+# cuts the picture to the same circles.
+R.feat('F_WINDOW', 86, 1, 22, 22)
+R.feat('F_GRILLE', 84, 26, 12, 12)
 
 # ------------------------------------------------------------------ props
 R.prop(24, 21, 'r'); R.prop(26, 21, 'r')    # old lines over the chasm's lip: every anchor at the top

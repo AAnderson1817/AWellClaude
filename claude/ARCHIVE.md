@@ -86,4 +86,8 @@ different people, and the player joins them up (LORE.md section 6 still holds).
 | E | the living garden | the basin and its terraces under grown light |
 | F | the heart | the fireguard is the grate over the warm core; the giant stair is terraced beds |
 
-Built first: **A**, as the proof of the language. The others follow once it is seen.
+Built: all six, as one picture (`tools/art/archive.py`); A first, as the proof of the
+language. How each bay reads is in `claude/ANTECHAMBER.md`. Three cells at the
+building's own scale stand on the hall's wall -- the keeper's, the window's, the heart's --
+and the window's looks out on more of the same: a hall of stacks under ring after ring of
+ribs, ending far off at another cell, awake.

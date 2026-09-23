@@ -14,11 +14,15 @@ two rooms it describes are parked in `parked/rooms-2/`.
   composite reads the camera (`uCam`) and the room's size (`uWorld`). Drawing, motes, air
   and lights are culled to the view; sounds from a place in the room pan by the view and
   fade off it (`SfxAt`).
-- **The far wall is painted once** (`src/backdrop.c`) into a picture of the whole room:
-  the tall ones' masonry in blocks bigger than a person, raw rock in strata, the niche,
-  pilasters, cornice, the great window, the fireguard, the colossus (sculpted as a height
-  field by `tools/art/colossus.py`), and every tile of the city's stone and of buried
-  rock. The room draws only raw rock's edges and the small things each frame.
+- **The far wall is one picture of the whole room**, drawn in the archive's language
+  (`claude/ARCHIVE.md`) by `tools/art/archive.py` from the kit (`tools/art/kit.py`): the
+  door's cell, the stacks, the seed vault's drawers, the keeper in its cell (the colossus,
+  sculpted as a height field by `tools/art/colossus.py`), the window's cell, the heart's
+  grate, ribs, roots, growth. It comes with a picture of its own light and the paths of its
+  veins. `src/backdrop.c` decodes it once, paints the city's stone and the buried rock into
+  it from the tiles, and sends the archive's reading along the veins toward the heart. The
+  window looks out on more of the archive (`src/city.c`). The room draws only raw rock's
+  edges and the small things each frame.
 - **The hall's lives** (`src/hall.c`): the hunter, the sitters, the prints, the leaves,
   the mural, the dead lamps, the spilled glass, the fish, the draft's dust, the tall ones
   dousing. Three new sounds: hum, murmur, leaf.

@@ -35,7 +35,7 @@ shown as an event and nothing is done to anyone on screen. See `claude/ARCHIVE.m
 You are a treasure hunter. You came down a throat of rock glittering with green glass, and
 the door rolled shut behind you like a flower closing: a setback, not a tragedy. Below is a
 hall built for giants. An enthroned king holds out his hand in blessing. A mural shows tall
-hosts welcoming small guests to a feast. Through a cliff-sized window a whole city glitters.
+hosts welcoming small guests to a feast. Through a cliff-sized window a whole city of lights glitters.
 The locals are shy: their lights go out when you come near. A pale swimmer comes to your
 lamp and sings. An old hunter camps below, and when you light his cold fire he holds his
 hands to it and hums. It is Wonderland: strange rules, kindly meant, and somewhere a way on.
@@ -137,11 +137,14 @@ worn almost smooth. *First:* a welcome, a feast, a tea party that never ends. *K
 had no warm pigment, so you are the bare stone between them, shown only by your own light.
 It is the hall's use, in order. It never shows a flame.
 
-**7. The far city and the ring.** *C.* Through the opening, the city from `city.c`. Every
-avenue runs away from this window; near districts bright, far ones patchy, some towers
-black. Once the camp fire is lit, the ring's pulse is a band brighter until the reset.
-*First:* a living city, and it noticed me. *Knows:* it is set round its hearth like chairs
-round a fire, it is going dark from the edges in, and the ring felt your fire.
+**7. The far archive.** *C.* Through the window's cell, more of the archive (`city.c`):
+a hall of stacks seen down its length, ring after ring of ribs over it, the kept things lit
+in their courses on its walls, a vein down its floor to another cell far off, awake. Now
+and then a light out there changes its mind. The city *is* this: the tall ones built no
+streets, only the keeping. (Not yet: once the camp fire is lit, the far cell's lens a band
+brighter until the reset.) *First:* a city of lights, rank on rank, and it goes on for
+ever. *Knows:* it is shelves, it is going dark from the edges in, and it is still at its
+cataloguing.
 
 **8. The sitters.** *C.* On the sill, three figures your size face the city in bedrolls,
 hats down. Two breathe, a puff of mist a minute, seen only in your light; the nearest head
@@ -212,9 +215,9 @@ stated; only true, so the draft, the light and the creatures agree.
   away with the ropes; the right edge is washed green and pulls you on.
 - **B, Upper gallery**: the colossus's head fills the back wall; the forearm leads the eye
   down and left.
-- **C, Great window**: the far city fills the back wall, everything built black against it,
-  rim-lit green; the sill is the one long flat run. You look through the opening, never
-  walk out of it.
+- **C, Stacks window**: a round window, its iris drawn back, and through it more of the
+  archive, going on for ever; the sill is the one long flat run. You look through the
+  opening, never walk out of it.
 - **D, Undercroft**: low, raw, amber, close; the fire is the composition; the hand hangs in
   at top right.
 - **E, Floor and basin**: the colossus's lap, paving stepping down into water, the

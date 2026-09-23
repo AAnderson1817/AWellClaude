@@ -23,21 +23,32 @@ def h2(x, y, s=0):
 
 class Canvas:
     def __init__(self, w, h):
-        self.w, self.h = w, h
+        self.w, self.h, self.ox, self.oy = w, h, 0, 0
         self.a = np.full((h, w), -1, np.int16)      # albedo, palette index; -1 nothing
         self.t = np.zeros((h, w), np.uint8)          # tag
         self.g = np.full((h, w), -1, np.int16)      # glow
         yy, xx = np.mgrid[0:h, 0:w]
         self.X, self.Y = xx + 0.5, yy + 0.5
 
+    def view(self, x0, y0, x1, y1):
+        """A window onto part of this canvas, in the same coordinates: drawing into it draws
+        here, and whole-canvas work (masks, forms) costs only the window's size."""
+        x0, y0 = max(0, int(x0) - self.ox), max(0, int(y0) - self.oy)
+        x1, y1 = min(self.w, int(x1) - self.ox), min(self.h, int(y1) - self.oy)
+        v = Canvas.__new__(Canvas)
+        v.w, v.h, v.ox, v.oy = x1 - x0, y1 - y0, self.ox + x0, self.oy + y0
+        v.a, v.t, v.g = self.a[y0:y1, x0:x1], self.t[y0:y1, x0:x1], self.g[y0:y1, x0:x1]
+        v.X, v.Y = self.X[y0:y1, x0:x1], self.Y[y0:y1, x0:x1]
+        return v
+
     # ---- raw
     def put(self, x, y, name, tag=TAG_THING):
-        x, y = int(x), int(y)
+        x, y = int(x) - self.ox, int(y) - self.oy
         if 0 <= x < self.w and 0 <= y < self.h:
             self.a[y, x] = IDX[name]; self.t[y, x] = tag
 
     def glow(self, x, y, name):
-        x, y = int(x), int(y)
+        x, y = int(x) - self.ox, int(y) - self.oy
         if 0 <= x < self.w and 0 <= y < self.h:
             self.g[y, x] = IDX[name]
 
@@ -68,7 +79,7 @@ class Canvas:
     def poly(self, pts):
         from PIL import ImageDraw
         im = Image.new('L', (self.w, self.h), 0)
-        ImageDraw.Draw(im).polygon([(float(x), float(y)) for x, y in pts], fill=255)
+        ImageDraw.Draw(im).polygon([(float(x) - self.ox, float(y) - self.oy) for x, y in pts], fill=255)
         return np.array(im) > 0
 
     # ---- strokes
@@ -130,7 +141,7 @@ class Canvas:
     def moss(self, m, density=0.5, seed=0):
         """Moss over whatever is under the mask, thicker where the mask is thick."""
         ys, xs = np.nonzero(m)
-        for x, y in zip(xs, ys):
+        for x, y in zip(xs + self.ox, ys + self.oy):
             v = h2(x, y, seed)
             if v < density * 0.55: self.put(x, y, 'mossD')
             elif v < density * 0.85: self.put(x, y, 'moss')
