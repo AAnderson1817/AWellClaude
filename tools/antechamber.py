@@ -109,9 +109,13 @@ R.prop(91, 1, 'c')                      # and one before the window
 R.prop(8, 1, 'R'); R.prop(24, 1, 'R'); R.prop(116, 1, 'R')   # roots through the roof
 
 # ------------------------------------------------------------------ the draft
-# In over the parapet, up behind the keeper, out of the window.
+# In over the parapet, up behind the keeper, out of the window. Over the water it runs
+# along the surface from both ends of the basin to where it rises, so the mist on the
+# water goes that way -- and so does anything floating (items.c reads these, not the air).
 for y in range(34, 5, -5): R.draft(76, y, 0.0, -0.020, 12)
 for x in range(78, 102, 6): R.draft(x, 5, 0.020, 0.008, 12)
+for x in range(52, 76, 4): R.draft(x, 37, 0.006, 0.0, 24)
+for x in range(80, 97, 4): R.draft(x, 37, -0.006, 0.0, 24)
 
 ok = write(R, "// antechamber.c -- the room: tiles, dressing, zones, openings, drafts. Written by\n"
               "// tools/antechamber.py (run it after editing that); read once at startup, never at runtime.")

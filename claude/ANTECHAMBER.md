@@ -163,11 +163,14 @@ back to the door's screen (standing anywhere in D). All 31 do.
 | the hunter | D | cold fire: tends his cairn now and then. Lit: hands out to it, hums. Lamp near: head turns a pixel. Lamp set on the clean patch among the dead lamps: looks up and hums once |
 | the fire | D | lit by the lamp held near (D6: it stays lit until the reset); its glow rims the colossus's fingertips |
 | the spilled glass | D | brighter as your lamp nears |
-| the fish | E | small green lights in the basin; they turn toward a lamp in the water |
+| the fish | E | small green lights in the basin; they gather under a lamp in or on the water, each a little to one side, and follow it as it drifts; close under it they are a band brighter |
+| the lamp afloat | E | set on the water, it goes where the air over the water goes: along the basin to where the draft rises behind the keeper, slowly (about a minute from end to end), and stays there, its light broken on the water under it. Everything that answers a lamp answers it there, you near or not: from the basin's far end it drifts into the opening's foot and the chamber's lights go out by themselves (SURPRISES S13) |
+| the keeper's eye | B | its light moves in the slit, a pixel at a time, to the warmest thing in the hall: the fire once lit, else whatever was last in your hand, in it or where you let it go. Never at you. Carry the lamp and it seems to watch you; set the lamp down and climb away, and it stays on the lamp |
+| your breath | all | after a run, a climb or a swim, quick puffs in front of your face that slow over some seconds to a resting pace, one every four or so; seen only where light falls. The sitters breathe once a minute |
 | the sitters | C | on the window's lip, facing out; two breathe mist a minute apart; the nearest turns a pixel toward your lamp; the third is bones |
 | the veins | all | now and then a pulse of light runs the length of one, down the piers and out over the parapet toward the heart of the chamber: the archive reading |
 | the tall ones | E | on the near bridge beyond the parapet; bring a lamp to the parapet (the paving, the water, anywhere along the opening's foot) and the chamber's near lights go out one by one and they stand dark, with a murmur; the lights come back 5-10 s after you leave, and sometimes one of them stands a step nearer |
-| the draft | E, B, C | the chamber's air comes in over the parapet with a little dust, rises behind the keeper and goes out of the window; mist lies on the water |
+| the draft | E, B, C | the chamber's air comes in over the parapet with a little dust, runs along the water from both ends of the basin to where it rises behind the keeper, and goes out of the window; the mist on the water goes with it |
 
 ## Not yet (in the lore, not in this build)
 

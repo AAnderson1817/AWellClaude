@@ -200,6 +200,22 @@ murmur; when the lights return, a silhouette is sometimes a step nearer. *First:
 newcomer. *Knows:* they put out their own light because yours is enough, and come as close
 as the bars allow, as anyone moves toward a stove. They are not looking at you.
 
+**18. The keeper's eye.** *B.* Its glass eye is awake, and the light in it moves, a pixel at
+a time, to the warmest thing in the hall: the fire once it is lit, else whatever was last in
+your hand. Carry your lamp and it seems to watch you. Set the lamp down and climb away and it
+stays on the lamp. *First:* the king is watching you. *Knows:* it never was; it watches
+warmth, and you were carrying some.
+
+**19. The lamp afloat.** *E.* Set on the water, your lamp goes where the hall's air goes,
+along the basin to where the draft rises behind the keeper, and lies there. The fish come up
+under it, and the chamber's near lights go out, one by one, with you nowhere near. *First:*
+the tide took it. *Knows:* the hearth draws toward its mouth whatever is warm; and the tall
+ones never put out their lights for you. It was for the flame.
+
+**20. Your breath.** *All.* After a run or a climb your breath shows in the light, quick,
+then slower, then a puff every few seconds. The sitters breathe once a minute. *First:* it is
+cold. *Knows:* same cold, different clocks; theirs is where yours is going.
+
 ## 4. The antechamber as a place
 
 **Why it is shaped like this.** It is a fireplace the size of a cathedral, open on one

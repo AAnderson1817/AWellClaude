@@ -23,7 +23,7 @@ class Room:
         self.p = [['.'] * w for _ in range(h)]       # props
         self.zones = []                              # city stone, as tile rects
         self.feats = []                              # backdrop pieces: (kind, x, y, w, h, a)
-        self.drafts = []                             # (x, y, vx, vy, radius) in tiles, pushed every step
+        self.drafts = []                             # (x, y) in tiles, (vx, vy) px per frame, radius px; pushed every step
 
     # ---- tiles
     def fill(self, x0, y0, x1, y1, c='#'):
@@ -109,11 +109,12 @@ class Room:
         out.append('    { F_NONE, 0, 0, 0, 0, 0 },')
         out.append('};')
         out.append('')
-        out.append('// The room\'s own slow drafts, in tiles and px per frame.')
-        out.append('void RoomDrafts(void) {')
+        out.append('// The room\'s own slow drafts: where (tiles), which way (px per frame), how wide (px).')
+        out.append('const Draft ROOM_DRAFTS[] = {')
         for x, y, vx, vy, r in self.drafts:
-            out.append('    AirPush(%.1ff * TS, %.1ff * TS, %.3ff, %.3ff, %.1ff);' % (x, y, vx, vy, r))
-        out.append('}')
+            out.append('    { %.1ff, %.1ff, %.3ff, %.3ff, %.1ff },' % (x, y, vx, vy, r))
+        out.append('    { 0, 0, 0, 0, 0 },')
+        out.append('};')
         out.append('')
         return '\n'.join(out)
 

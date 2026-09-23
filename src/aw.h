@@ -130,7 +130,9 @@ void LightAddPointCool(f32 px, f32 py, f32 R, f32 peak);   // the city's colour 
 extern int airOff;          // headless runs: off
 void AirInit(void);         // per room, after the tiles
 void AirStep(void);
-void RoomDrafts(void);      // antechamber.c: the room's own slow drafts, pushed into the air each step
+typedef struct { f32 x, y, vx, vy, r; } Draft;   // x, y in tiles; vx, vy px per frame; r px
+extern const Draft ROOM_DRAFTS[];          // antechamber.c: the room's own slow drafts; ends at r == 0
+void DraftAt(f32 px, f32 py, f32 *vx, f32 *vy);   // what they add up to at a point: fixed, not the air
 void AirDraw(void);
 void AirPush(f32 px, f32 py, f32 vx, f32 vy, f32 radius);         // px per frame
 void AirPuff(f32 px, f32 py, f32 amount, f32 radius, f32 warm);   // warm: 1 smoke, 0 dust/mist
@@ -234,13 +236,14 @@ enum { IT_NONE = 0, IT_LAMP, IT_STONE };
 #define ITEM_MAX 8
 typedef struct {
     int kind, room;         // room: where it is when not held
-    f32 x, y, vy;
+    f32 x, y, vx, vy;       // vx: only ever the drift of something afloat
     int onGround, cool;
     f32 flick;              // the lamp's
     f32 hx, hy; int hroom;  // home: where it was set at the start, for starting over
 } Item;
 extern Item items[ITEM_MAX];
 extern int  itemCount, heldItem;
+extern int  lastHeldItem;   // what was in your hand last: in it now, or where you let it go
 void ItemsReset(void);
 int  ItemsAdd(int kind, int room, int tx, int ty);
 void ItemsHome(void);       // every item back where it began, hands empty

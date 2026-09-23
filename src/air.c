@@ -124,6 +124,23 @@ void AirPuff(f32 px, f32 py, f32 amount, f32 radius, f32 warm) {
             tint[k] += (warm - tint[k]) * 0.5f * w;
         }
 }
+// The room's drafts, pushed in every step (the table is antechamber.c's).
+static void RoomDrafts(void) {
+    for (const Draft *r = ROOM_DRAFTS; r->r > 0; r++) AirPush(r->x * TS, r->y * TS, r->vx, r->vy, r->r);
+}
+
+// What the drafts add up to at a point, with the same reach as a push. Not the air: the air
+// is for looking at and headless runs switch it off, and what floats must drift the same
+// way in every run, so it reads this.
+void DraftAt(f32 px, f32 py, f32 *vx, f32 *vy) {
+    *vx = *vy = 0;
+    for (const Draft *r = ROOM_DRAFTS; r->r > 0; r++) {
+        f32 dx = px - r->x * TS, dy = py - r->y * TS, w = 1.0f - sqrtf(dx * dx + dy * dy) / (r->r + 2.0f);
+        if (w <= 0) continue;
+        *vx += r->vx * w; *vy += r->vy * w;
+    }
+}
+
 // The air's velocity at a point, in px per frame.
 void AirAt(f32 px, f32 py, f32 *vx, f32 *vy) {
     int i, j;

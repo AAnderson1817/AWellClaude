@@ -179,7 +179,26 @@ the shelf's drop-through and the bulb's crossing test were each written alone, a
 chain reset only ever knew about touching ground. Measured: no input, max chain 1, ends on
 the shelf; Down held, max chain 3.
 
+## 2026-09-23 — The antechamber: the lamp afloat
+
+### S13. A lamp set adrift puts the chamber's lights out on its own
+Observed. The lamp dropped into the basin's far end (col 94, behind the right pier, outside
+the opening's foot); you on the keeper's shoulder the whole time, nowhere near the water.
+The lamp drifts left at about 0.11 px a frame, passes the end of the opening near frame
+600, and the chamber's near lights go out one by one -- the lantern the size of a house,
+the stepped temple -- and stay out while it lies under the rising air behind the keeper
+(x 613). In the recording nothing moves but the lamp.
+
+Collision: the dousing reads the lamp's position, never yours (it was written for "bring a
+lamp to the edge"), and the floating lamp now goes where the draft over the water goes.
+Predicted when the drift was proposed, then seen. It is the L12 turn for the tall ones: it
+was never you they put their light out for. It was the flame.
+
+Room: the antechamber, E.
+
 ## Not logged, and why
+- The fish following the drifting lamp, and the keeper's eye staying on it: both are
+  written behaviour (hall.c), not a collision, however good they look together.
 - "Load 2 can almost hold station against buoyancy." Predicted from the constants
   (SINK 0.22 vs SWIM 0.17), **not observed** — in the deep pan load 2 sank the full five
   tiles to the floor. Reasoning is not observation and it does not go in this file.

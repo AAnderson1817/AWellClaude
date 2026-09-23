@@ -324,9 +324,9 @@ def build():
             c.a[oy + y, ox + x] = rev[(int(p[0]), int(p[1]), int(p[2]))]; c.t[oy + y, ox + x] = p[3]
             c.g[oy + y, ox + x] = -1
             cm[oy + y, ox + x] = True
-    for (x, y, w, h, g) in ((438, 54, 5, 2, 'city'), (439, 53, 3, 1, 'city'), (439, 54, 2, 1, 'cityH'), (429, 57, 2, 1, 'coolM')):
+    for (x, y, w, h, g) in ((438, 54, 5, 2, 'city'), (439, 53, 3, 1, 'city'), (429, 57, 2, 1, 'coolM')):
         for j in range(h):
-            for i in range(w): c.glow(x + i, y + j, g)                     # its eye: awake
+            for i in range(w): c.glow(x + i, y + j, g)                     # its eye: awake (hall.c draws its light, turning)
     kv = c.view(288, 8, 608, 344)
     overgrow(kv, cm[8:344, 288:608], seed=13, density=0.45, hang=0.05, hang_len=9)
     reeds(c, 480, 584, 200, seed=17, hmin=3, hmax=11)                     # a bed on its lap

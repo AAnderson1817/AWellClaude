@@ -165,7 +165,37 @@ static float SubmergedFraction(void) {
 }
 
 // ---------------------------------------------------------------- step
+// Your breath. It is cold down here and you are the warm thing in it: after a run, a
+// climb, a swim, it shows in the light as quick puffs that slow, over some seconds, to a
+// resting pace, one every few seconds. The sitters on the window's lip breathe once a
+// minute. Same cold, different clocks. (Drawn by the air, so only where light falls.)
+#define BREATH_REST 250      // frames between breaths at rest
+#define BREATH_FAST 38       // and hard at it
+static f32 exert;            // 0 rested .. 1 blown
+static int breathT = BREATH_REST;
+
+static void Breathe(void) {
+    int moving = fabsf(player.vx) > 0.6f;
+    f32 load = player.heavy ? 1.6f : 1.0f;
+    if (player.submerged && (moving || fabsf(player.vy) > 0.4f)) exert += 0.0030f * load;   // swimming
+    else if (!player.onGround && player.vy < -0.5f) exert += 0.0060f * load;             // going up
+    else if (player.onGround && moving) exert += 0.0040f * load * fabsf(player.vx) / RUN_MAX;
+    else if (player.onGround) exert -= exert * 0.0035f;                                  // getting it back
+    if (exert > 1) exert = 1;
+    f32 easy = 1.0f - exert;
+    int period = BREATH_FAST + (int)((BREATH_REST - BREATH_FAST) * easy * easy);
+    if (breathT > period) breathT = period;                  // blown: the next one comes sooner
+    if (--breathT > 0) return;
+    breathT = period + (int)(Hash2((int)frameNo, 17) % 12);
+    if (player.submerged && player.waterY >= 0 && player.waterY <= player.y + 5) return;   // under
+    // out in front at head height, over where a held lamp hangs, and a little up: it is warm
+    f32 mx = player.x + (player.facing > 0 ? player.w + 1.5f : -1.5f), my = player.y + 3.0f;
+    AirPuff(mx, my, 0.30f + 0.40f * exert, 3.0f + 1.5f * exert, 0.0f);
+    AirPush(mx, my, player.facing * (0.12f + 0.18f * exert), -0.10f, 4.0f);
+}
+
 void PlayerInit(float x, float y) {
+    exert = 0; breathT = BREATH_REST;
     player = (Player){ 0 };
     player.x = x; player.y = y;
     player.w = 6; player.h = 11;
@@ -318,6 +348,7 @@ void PlayerStep(void) {
     // A body moving through air moves the air.
     if (fabsf(player.vx) > 0.3f || fabsf(player.vy) > 0.5f)
         AirPush(player.x + player.w * 0.5f, player.y + player.h * 0.5f, player.vx * 0.45f, player.vy * 0.25f, 6.0f);
+    Breathe();
     player.leanX += (player.vx * 0.9f  - player.leanX) * 0.22f;
     player.leanY += (player.vy * 0.35f - player.leanY) * 0.18f;
     if (--player.blink < 0) player.blink = 70 + (int)(Hash2((int)frameNo, 3) % 150);

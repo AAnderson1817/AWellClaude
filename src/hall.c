@@ -1,7 +1,8 @@
 // hall.c -- the antechamber's own small lives and signs, from claude/LORE.md: the hunter at
 // the camp, the sitters on the sill, the prints that come up on the door in the dark, the
 // leaves from the flue, the mural in the threshold, the dead lamps, the spilled glass, the
-// fish in the basin, the dust the draft carries, and the tall ones putting their light out.
+// fish in the basin, the dust the draft carries, the tall ones putting their light out, and
+// the keeper's eye.
 //
 // None of it is read by a rule, none of it counts anything, and none of it says anything
 // in words (L5). Each is a thing that is there, doing what it does; most of them do it
@@ -106,6 +107,8 @@ static const int SITX[3] = { 100 * TS + 3, 102 * TS + 6, 104 * TS + 9 };
 #define EDGE_X0   (36 * TS)          // the parapet along the great opening's foot
 #define EDGE_X1   (87 * TS)
 #define EDGE_Y    (37 * TS)
+#define EYE_X     438                // the keeper's eye: the front of its slit (it faces the door)
+#define EYE_Y     54                 // (archive.py paints the slit; its light is drawn here)
 
 // ---------------------------------------------------------------- state
 static int   hunterArm, hunterHum, hunterLook, hunterNoted;
@@ -115,7 +118,9 @@ static int   leafN, leafT;
 static struct { f32 x, y, vx, ph; int down; } leaves[10];
 static f32   douse;                             // 0 lit .. 1 put out, the chamber's near lights
 static int   douseHold, nearer, douseWas;
-static struct { f32 x, y, vx, ph; } fish[6];
+static struct { f32 x, y, vx, ph; int dir; } fish[6];
+static f32   eyeGX = -9, eyeGY;                 // where the keeper's eye is turning, before whole pixels
+static int   eyeX, eyeY;                        // where its light is in the slit
 int hallHums, hallLeaves, hallDouses;
 
 void HallInit(void) {
@@ -129,7 +134,9 @@ void HallInit(void) {
         fish[i].y = BASIN_Y0 + 14 + Rnd() * 30;
         fish[i].vx = (Rnd() < 0.5f ? -1 : 1) * (0.12f + Rnd() * 0.12f);
         fish[i].ph = Rnd() * 6.28f;
+        fish[i].dir = fish[i].vx > 0 ? 1 : -1;
     }
+    eyeGX = -9;
 }
 
 // ---------------------------------------------------------------- step
@@ -212,17 +219,44 @@ void HallStep(void) {
     }
     if (douse < 0.05f && douseWas) { douseWas = 0; if (nearer < 2 && Rnd() < 0.6f) nearer++; }
 
-    // The fish: small lights of theirs, in the basin. They turn toward a lamp in the water.
+    // The fish: small lights of theirs, in the basin. They turn toward a lamp in the water or
+    // afloat on it, and hold under it, each a little to one side; it drifts and they go with it.
+    int wetLamp = lamp && ly > BASIN_Y0 - 6 && lx > BASIN_X0 - TS && lx < BASIN_X1 + TS;
     for (int i = 0; i < 6; i++) {
         fish[i].ph += 0.03f;
         f32 tx = fish[i].vx;
-        if (lamp && ly > BASIN_Y0 && fabsf(lx - fish[i].x) < 6 * TS) tx = (lx > fish[i].x ? 0.25f : -0.25f);
+        if (wetLamp && fabsf(lx - fish[i].x) < 6 * TS) {
+            f32 d = lx + (i - 2.5f) * 3.5f - fish[i].x;
+            tx = fabsf(d) < 1.0f ? 0.0f : (d > 0 ? 1 : -1) * fminf(0.25f, fabsf(d) * 0.05f);
+            fish[i].y += (BASIN_Y0 + 9 + (i % 3) * 4 - fish[i].y) * 0.01f;      // up toward it
+        }
         fish[i].x += tx;
+        if (fabsf(tx) > 0.02f) fish[i].dir = tx > 0 ? 1 : -1;
         fish[i].y += sinf(fish[i].ph) * 0.12f;
         if (fish[i].x < BASIN_X0 + 4) { fish[i].x = BASIN_X0 + 4; fish[i].vx = fabsf(fish[i].vx); }
         if (fish[i].x > BASIN_X1 - 4) { fish[i].x = BASIN_X1 - 4; fish[i].vx = -fabsf(fish[i].vx); }
         if (fish[i].y < BASIN_Y0 + 8) fish[i].y = BASIN_Y0 + 8;
         if (fish[i].y > BASIN_Y1 - 4) fish[i].y = BASIN_Y1 - 4;
+    }
+
+    // The keeper's eye. It is awake, and it looks at the warmest thing in the hall: the fire,
+    // once lit; else whatever was last in your hand -- in it still, or where you let it go.
+    // Never at you. While you carry the lamp it seems to; set the lamp down and walk off, and
+    // the eye stays on the lamp. It turns as something that size turns, a pixel at a time.
+    {
+        f32 wx = FIRE_X, wy = CAMP_Y - 4;
+        if (!fire && lastHeldItem < itemCount) { wx = items[lastHeldItem].x + 2; wy = items[lastHeldItem].y + 2; }
+        f32 dx = wx - (EYE_X + 2), dy = wy - (EYE_Y + 1), dd = sqrtf(dx * dx + dy * dy) + 0.001f;
+        f32 gx = 1.5f + 1.5f * dx / dd;                                    // 0 the front of the slit .. 3 the back
+        f32 gy = dy / dd > 0.45f ? 1.0f : (dy / dd < -0.45f ? -1.0f : 0.0f);
+        if (eyeGX < -5) { eyeGX = gx; eyeGY = gy; eyeX = (int)lroundf(gx); eyeY = (int)gy; }
+        eyeGX += (gx - eyeGX) * 0.012f; eyeGY += (gy - eyeGY) * 0.012f;
+        if (fabsf(eyeGX - eyeX) > 0.6f) eyeX = (int)lroundf(eyeGX);        // not on the fence
+        if (fabsf(eyeGY - eyeY) > 0.6f) eyeY = (int)lroundf(eyeGY);
+        if (eyeX < 0) eyeX = 0;
+        if (eyeX > 3) eyeX = 3;
+        if (eyeY < 0 && eyeX < 1) eyeX = 1;                                // the slit is shorter at its top
+        if (eyeY < 0 && eyeX > 2) eyeX = 2;
     }
 
     // The draft: the chamber's air comes in over the parapet and carries a little dust.
@@ -380,6 +414,7 @@ void HallDraw(void) {
 void HallDrawEmis(void) {
     Prints();
     MuralPhosphor();
+    if (InView(EYE_X, EYE_Y, 8)) DrawRectangle(EYE_X + eyeX, ROOM_Y + EYE_Y + eyeY, 2, 1, PAL[PL_CITYH]);   // the keeper's eye
     // the spilled glass by the pack: chips prised from the vault's throat, brighter as your
     // lamp comes near -- they drink from it
     if (InView(38 * TS, CAMP_Y, 40)) {
@@ -391,16 +426,21 @@ void HallDrawEmis(void) {
             DrawRectangle(x, ROOM_Y + y, 1, 1, PAL[pl]);
         }
     }
-    // the fish
+    // the fish; close under a lamp they are a band brighter -- they drink from it
+    f32 lx = 0, ly = 0;
+    int lamp = Lamp(&lx, &ly);
     for (int i = 0; i < 6; i++) {
         if (!InView(fish[i].x, fish[i].y, 8)) continue;
-        int x = (int)fish[i].x, y = ROOM_Y + (int)fish[i].y, dir = fish[i].vx > 0 ? 1 : -1;
-        DrawRectangle(x, y, 2, 1, PAL[PL_CITY]);
-        DrawRectangle(x - dir, y, 1, 1, PAL[PL_COOLM]);
+        int x = (int)fish[i].x, y = ROOM_Y + (int)fish[i].y, dir = fish[i].dir;
+        int fed = lamp && fabsf(lx - fish[i].x) < 3 * TS && fabsf(ly - fish[i].y) < 4 * TS;
+        DrawRectangle(x, y, 2, 1, PAL[fed ? PL_CITYH : PL_CITY]);
+        DrawRectangle(x - dir, y, 1, 1, PAL[fed ? PL_CITY : PL_COOLM]);
     }
 }
 
 void HallLights(void) {
+    // the keeper's eye lights a little of the face round it
+    LightAddPointCool(EYE_X + eyeX + 1.0f, EYE_Y + eyeY + 0.5f, 1.6f, 0.3f);
     // the glass by the pack gives a breath of their light
     LightAddPointCool(39 * TS, CAMP_Y - 2, 2.5f, 0.25f);
     // and once the fire is lit, its glow reaches the colossus's fingertips over it: they take

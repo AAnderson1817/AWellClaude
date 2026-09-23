@@ -5,6 +5,10 @@
 // gives light. A stone sinks, and while you hold it so do you: you jump lower, fall
 // harder, and in water you go to the bottom and walk it. Set it down there and you
 // float back up without it. It is still there. You can see it. That is the point.
+//
+// Afloat, the lamp goes where the air over the water goes: along the basin to where the
+// draft rises behind the keeper, slowly, and there it stays. Everything that answers a
+// lamp answers it there -- the fish, the chamber's lights -- whether you are near or not.
 #include "aw.h"
 #include <math.h>
 #include <string.h>
@@ -12,9 +16,12 @@
 Item items[ITEM_MAX];
 int  itemCount;
 int  heldItem = -1;
+int  lastHeldItem;          // the lamp, at the start: it was in your hand before the first frame
 
 #define LAMP_R    9.0f
 #define LAMP_PEAK 0.90f
+#define DRIFT_GAIN 28.0f     // the drafts over the water, as a floating lamp's pace
+#define DRIFT_MAX  0.16f     // px per frame: about the length of the basin in a minute
 
 static u32 rng = 0x1A5B7C9Du;
 static float Rnd(void) { rng ^= rng << 13; rng ^= rng >> 17; rng ^= rng << 5; return (float)(rng & 0xFFFF) / 65535.0f - 0.5f; }
@@ -32,7 +39,7 @@ int ItemsAdd(int kind, int room, int tx, int ty) {
     it->hx = it->x; it->hy = it->y; it->hroom = room;
     return itemCount++;
 }
-void ItemsReset(void) { itemCount = 0; heldItem = -1; }
+void ItemsReset(void) { itemCount = 0; heldItem = -1; lastHeldItem = 0; }
 
 // Starting over. A stone on the flooded floor is the one thing in the game you can lose
 // for good; this is how it is not lost for good. Each thing goes back to where it was
@@ -41,9 +48,9 @@ void ItemsHome(void) {
     for (int i = 0; i < itemCount; i++) {
         Item *it = &items[i];
         it->x = it->hx; it->y = it->hy; it->room = it->hroom;
-        it->vy = 0; it->onGround = 0; it->cool = 0; it->flick = 0;
+        it->vx = 0; it->vy = 0; it->onGround = 0; it->cool = 0; it->flick = 0;
     }
-    heldItem = -1;
+    heldItem = -1; lastHeldItem = 0;
     player.heavy = 0;
 }
 
@@ -87,11 +94,20 @@ static void Fall(Item *it) {
             int under = TileWater(TileAtPx(cx, it->y + 3.5f));
             it->vy += under ? -0.10f : 0.05f;
             it->vy *= 0.86f;
+            // carried: it takes a while to get going, and to stop
+            f32 ax, ay; DraftAt(cx, it->y + 2.0f, &ax, &ay);
+            f32 want = ax * DRIFT_GAIN;
+            if (want >  DRIFT_MAX) want =  DRIFT_MAX;
+            if (want < -DRIFT_MAX) want = -DRIFT_MAX;
+            it->vx += (want - it->vx) * 0.02f;
+            float nx = it->x + it->vx;
+            if (Blocked(it, nx, it->y)) it->vx = 0; else it->x = nx;
         } else {
             it->vy += 0.06f;
             if (it->vy > 0.7f) it->vy = 0.7f;
         }
     } else {
+        it->vx = 0;
         it->vy += 0.185f;
         if (it->vy > 2.9f) it->vy = 2.9f;
     }
@@ -146,7 +162,7 @@ void ItemsStep(void) {
             float x = player.x + (player.facing > 0 ? player.w + 1.0f : -W(it) - 1.0f);
             float y = player.y + player.h - H(it);
             if (Blocked(it, x, y)) x = player.x + (player.w - W(it)) * 0.5f;
-            it->x = x; it->y = y; it->cool = 8;
+            it->x = x; it->y = y; it->vx = 0; it->cool = 8;
             heldItem = -1;
             SfxAt(it->kind == IT_LAMP ? SFX_SETDOWN : SFX_STONE, 0.6f, 1.0f + Rnd() * 0.1f, x, y);
         }
@@ -163,7 +179,7 @@ void ItemsStep(void) {
         if (d < 11.0f && cy > player.y - 6.0f && cy < player.y + player.h + 6.0f && d < bestD) { best = i; bestD = d; }
     }
     if (heldItem < 0 && best >= 0 && in.actPressed && items[best].cool == 0) {
-        heldItem = best; items[best].cool = 8;
+        heldItem = lastHeldItem = best; items[best].cool = 8; items[best].vx = 0;
         Item *it = &items[best];
         SfxAt(it->kind == IT_LAMP ? SFX_PICKUP : SFX_STONE_UP, 0.7f, 0.95f + Rnd() * 0.1f, it->x, it->y);
     }
@@ -195,5 +211,15 @@ void ItemsDrawCore(void) {
         DrawRectangle(x + 1, y + 1, 2, 2, PAL[PL_AMBERH]);
         DrawRectangle(x + 1, y + 3, 2, 1, PAL[PL_AMBER]);
         DrawRectangle(x + 1 + (it->flick > 0.05f ? 1 : 0), y + 1, 1, 1, PAL[PL_BONE]);
+        // afloat: its light broken on the water under it, a few dashes that the ripples move
+        if (i != heldItem && TileWater(TileAtPx(it->x + 2.0f, it->y + H(it) + 1.0f))) {
+            static const int DX[5] = { 0, 1, -1, 1, 0 }, LEN[5] = { 2, 1, 3, 2, 1 };
+            int ph = (int)(frameNo / 9 + i * 3);
+            for (int k = 0; k < 5; k++) {
+                if ((k + ph) % 4 == 3) continue;                       // a gap, travelling down
+                int wob = ((k * 5 + ph) % 3) - 1;
+                DrawRectangle(x + 1 + DX[k] + wob, y + H(it) + 1 + k, LEN[k], 1, PAL[k < 2 ? PL_AMBER : PL_WARMD]);
+            }
+        }
     }
 }
