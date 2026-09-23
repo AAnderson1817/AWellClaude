@@ -67,7 +67,7 @@ the one warm season they get.
 **What becomes of hunters who stay.** They cool. Nothing is done to them; heat goes to cold.
 It goes in an order: the wanting first (which is why they do not try to leave), then the
 hurry, the fear, the moving. It does not hurt; it feels like calm. They settle in the
-undercroft, the warmest nook; later they sit on the window's sill, in the draft, because it
+camp, the warmest nook; later they sit on the window's sill, in the draft, because it
 has stopped feeling like anything; later they are bones in the same seat, and nothing takes
 any interest in them, because nothing is left to take. The hall shows all four at once:
 you (wanting), the camp hunter (tending), the sitters (still), the bones (cold). The player
@@ -116,13 +116,13 @@ into the hall: hemp, braided leather, a chain, different knots. Every anchor is 
 
 **4. The flue slot.** *A.* High in the raw rock over the door, out of reach: a slot lit
 inside by one amber seam. Motes sink below it; now and then a dry brown leaf spins down onto
-the step, and they pile there until the reset. *First:* a crack. *Knows:* a flaw the tall
+the ledge under it, and they pile there until the reset. *First:* a crack. *Knows:* a flaw the tall
 ones did not build, the only thing that reaches the hall from the warm world without being
 a hunter. The layer-2 hook (section 4).
 
-**5. The colossus.** *B, E.* A seated figure in profile against the back wall, two screens
-tall, feet in the basin. Its forearm reaches down across the hall, palm open toward the
-undercroft, low enough that the camp fire reaches its fingertips; the back of the hand is a
+**5. The colossus.** *B, E.* A seated figure in profile before the heart's grate, two
+screens tall, feet in the basin, a silhouette on the heart's light. Its forearm reaches down across the hall, palm open toward the
+camp, low enough that the camp fire reaches its fingertips; the back of the hand is a
 platform. Green glass eyes. *First:* a king's blessing. *Knows:* it is how anyone holds a
 hand over a fire. When the fire catches, the fingertips take an amber rim, and below them
 the hunter holds his hands to his fire the same way. Everyone in this hall is warming their
@@ -174,7 +174,7 @@ dull; at the end, a clean patch in the dust the size of a lamp's foot. Set yours
 the hunter looks up and hums; nothing else (L6). *First:* spares. *Knows:* each owner set
 theirs down when it went out. The tidiness is how slow it was.
 
-**13. The basking trough.** *E.* At the water's edge nearest the undercroft, a hollow worn
+**13. The basking trough.** *E.* At the water's edge nearest the camp, a hollow worn
 in the paving, polished paler, the swimmer's length (26 px). It is empty while you are in
 the room. *First:* a seal's beach. *Knows:* the closest the city comes to the hunters'
 fire; something large has lain in it, still, for a very long time.
@@ -202,28 +202,27 @@ as the bars allow, as anyone moves toward a stove. They are not looking at you.
 
 ## 4. The antechamber as a place
 
-**Why it is shaped like this.** It is a fireplace the size of a cathedral. The vault
-passage is the chimney, the door its damper. The hall is the firebox, tall because heat
-rises. The great window is the hearth's mouth, high, where warm air leaves for the city.
-The inner gate is low because cold comes in low; the basin is the city's cold, pooled. The
-undercroft is the ash pit, out of the draft, which is why hunters camp there. The gallery
-is where the tall ones stood to warm themselves when they still climbed up here. Never
-stated; only true, so the draft, the light and the creatures agree.
+**Why it is shaped like this.** It is a fireplace the size of a cathedral, built as one of
+their cells. The vault passage is the chimney and the door its damper, low at one end. The
+heart is the fire's place, at the centre, behind its grate; the keeper sits before it the
+way you sit before a fire, hand out. The window is the hearth's mouth, high at the other
+end, where warm air leaves; the draft runs from the heart up past the keeper's back and
+out of it. The basin is the cold, pooled at the heart's foot. The hunters camp by the door,
+out of the draft. Never stated; only true, so the draft, the light and the creatures agree.
 
-**Each screen.**
-- **A, Entry** (the first frame): door and lamp at left, raw rock, amber; the ledge drops
-  away with the ropes; the right edge is washed green and pulls you on.
-- **B, Upper gallery**: the colossus's head fills the back wall; the forearm leads the eye
-  down and left.
-- **C, Stacks window**: a round window, its iris drawn back, and through it more of the
-  archive, going on for ever; the sill is the one long flat run. You look through the
-  opening, never walk out of it.
-- **D, Undercroft**: low, raw, amber, close; the fire is the composition; the hand hangs in
-  at top right.
-- **E, Floor and basin**: the colossus's lap, paving stepping down into water, the
-  swimmer's lights under the surface.
-- **F, Inner gate**: the grille and the green beyond. It never opens in layer 1; the way on
-  is down through the water.
+**Each screen.** One picture, one line through it: door (low left), heart (centre), window
+(high right).
+- **D, the door** (the first frame): the door fills it, you at its foot, the lamp beside
+  you; the camp to the right, the keeper's fingers reaching in over it from the right edge.
+- **A, the crown**: the door's crown, the raw rock and the hunters' planks up it toward
+  the flue's amber; the heart's spoke across the top pulls you right.
+- **B, the keeper**: its head against the heart's light, nothing across it.
+- **E, the lap**: the heart's foot, the water, the tall ones standing in the light.
+- **C, the window**: a round window on the rim, its iris drawn back, more of the archive
+  through it going on for ever; the sitters on its lip. You look through it, never walk
+  out of it.
+- **F, the stair**: the tall ones' treads up to the window. The heart's grate never opens in
+  layer 1; the way on is down through the water.
 
 **What you cannot reach yet.** The flue slot: in the first seconds, one amber point over
 the door and a column of sinking motes. Nothing in layer 1 gets you there; the leaves on
@@ -265,6 +264,5 @@ colour between them.
 - A tally: no set of prints, sitters or lamps to complete (L8), no row of braziers to light.
 
 **For other docs, not changed here.** ROOMS.md's room-0 mural carries a disc, which the
-originality constraint rules out: redraw it as a small seated figure in cupped hands. This
-file assumes the camp and hunter move to the undercroft; if room 0 keeps them, the
-undercroft keeps the pack and dead lamps without him.
+originality constraint rules out: redraw it as a small seated figure in cupped hands. The
+camp and the hunter are by the door, at the foot of the room.

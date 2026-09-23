@@ -61,7 +61,7 @@ static int PlanExhausted(void) { return planLen && frameNo > planTotal + 2; }
 // from its seed, so a failure can be replayed exactly.
 static int wanderSeed = 0;
 static u8 stood[ROOM_COUNT][RH][RW];
-static long homeFrame = 0;                 // first frame a bot dropped elsewhere stood on the start tile again
+static long homeFrame = 0;                 // first frame a bot dropped elsewhere stood in the door's screen again
 static float homeX, homeY;             // where you began (kept for the trace; home is the forecourt)
 static u32 wrng;
 static float WRnd(void) {
@@ -200,12 +200,11 @@ static void Sim(void) {
     PropsStep();
     HallStep();
     AirStep();
-    // Home is the forecourt: standing anywhere in the first screen, the door's. From any of
-    // it the door's foot is a drop and a checked jump away (tools/route.py T0b, R1-R3). A bot
-    // that gets back there out of the undercroft or the hall has found the way the room
-    // gives back.
+    // Home is the door's screen: standing anywhere in D, the lower left, where you began.
+    // All of it is the one floor, the door's foot a walk away. A bot that gets back there
+    // from the heights or out of the water has found the way the room gives back.
     if (wanderSeed && !homeFrame && frameNo > 60 && player.onGround
-        && player.x < SW * TS && player.y + player.h <= SH * TS) homeFrame = frameNo;
+        && player.x < SW * TS && player.y >= SH * TS) homeFrame = frameNo;
     if (wanderSeed && player.onGround) {
         // Half a pixel BELOW the feet, not at them. Landing on stone leaves the feet
         // a fraction past the tile top; landing on a shelf stops them a fraction
@@ -301,7 +300,7 @@ static void Frame(void) {
 
 int main(int argc, char **argv) {
     int winScale = 4, atx = -1, aty = -1, startRoom = 0;
-    int lampRoom = 0, lampTx = 14, lampTy = 20;    // at your feet, at the foot of the door
+    int lampRoom = 0, lampTx = 18, lampTy = 37;    // at your feet, at the foot of the door
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shots") && i + 1 < argc) {
             char *tok = strtok(argv[++i], ",");

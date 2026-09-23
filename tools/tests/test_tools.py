@@ -20,10 +20,9 @@ def fake_run(plan, at=None, frames=None, room=None):
                     room=1, wet=0, sfx="-", hold=0, lampRoom=0, lampX=0, lampY=0,
                     stoneRoom=0, stoneX=0, stoneY=0, fade=0.0)
         base.update(k); return base
-    if plan.startswith("-:90,R"):            return [row(y=261.0, x=780.0)]          # the basin -> the first tread: row 34, col 97
-    if plan == "R:900":                      return [row(y=101.0, x=160.0 + 4 * i) for i in range(200)]   # the long walk: row 14, past col 108
-    if plan == "R:30,-:200":                 return [row(y=269.0, x=136.0)]          # the chasm: the undercroft's floor, row 35
-    if plan.endswith("H:90,-:60"):           return [row(wet=1, hold=2)] * 20 + [row(x=97.0, y=157.0)]   # reset from the deep: the start, at the door's foot
+    if plan.startswith("-:90,R"):            return [row(y=293.0, x=780.0)]          # the basin -> the floor at its far end: row 38, col 97
+    if plan.startswith("-:90,L"):            return [row(y=293.0, x=376.0)]          # the basin -> the paving: row 38, col 47
+    if plan.endswith("H:90,-:60"):           return [row(wet=1, hold=2)] * 20 + [row(x=129.0, y=293.0)]   # reset from the deep: the start, at the door's foot
     if plan.endswith("H:90,-:40"):           return [row(hold=2, stoneX=290)] * 20 + [row(hold=0, stoneX=290)]   # the stone goes home
     if plan.endswith("H:40,-:40"):           return [row(hold=2, fade=0.44)] * 20 + [row(hold=2, fade=0.0)]      # let go early
     return [row()]

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """The colossus: one of the tall ones, seated in profile against the hall's back wall, facing
 the undercroft, its forearm held out low over the hall with the palm open. Two screens tall:
-the head is in the upper gallery (B), the lap and shins on the hall floor (E), the feet in
+the head is in the upper screen (B), the lap and shins on the hall floor (E), the feet in
 the basin. See claude/LORE.md section 5.
 
 The canvas starts at tile (36, 1) of the room: local px = room px - (288, 8). The surfaces
 you stand on -- the back of the hand, the bands of the forearm, the elbow, the band on the
-upper arm, the lap -- are flat on top and sit exactly on the tile rows the map carves
+upper arm, the shoulder, the lap -- are flat on top and sit exactly on the tile rows the map carves
 ('X' in tools/antechamber.py); STANDS below is that list, and the map is built from it.
 """
 import os, sys
@@ -25,6 +25,7 @@ STANDS = [(40, 45, 26),            # the back of the hand
           (46, 49, 24), (50, 53, 22),   # the forearm's bands
           (54, 57, 20),            # the elbow
           (57, 60, 17),            # the band on the upper arm
+          (60, 64, 14),            # the shoulder
           (60, 72, 25)]            # the lap
 
 def build(throne=True):
@@ -35,13 +36,12 @@ def build(throne=True):
         f.slab(248, 88, 320, 336, 10, bevel=4, base=0, part=9)
         f.slab(238, 214, 320, 336, 14, bevel=3, base=0, part=9)      # the seat's front
     else:
-        # a pier cut short: three shafts bound in bands, the building's own bones, and the
-        # keeper sits on them. Kept under the thigh's height, so the thigh stays in front.
-        for sx in (254, 276, 298):
-            f.capsule(sx, 338, sx, 226, 10, depth=10, base=0, part=9)
-        for yb in range(232, 338, 18):
-            f.slab(242, yb - 3, 310, yb + 3, 4, bevel=1.5, base=8, part=9)
-        f.slab(238, 212, 314, 228, 9, bevel=3, base=2, part=9)       # its cap
+        # a drum of their stone, the keeper's seat, banded; kept under the thigh's height,
+        # so the thigh stays in front
+        f.slab(244, 212, 312, 338, 10, bevel=4, base=0, part=9)
+        f.slab(240, 212, 316, 222, 10, bevel=2, base=1, part=9)      # its cap
+        for yb in (246, 290):
+            f.slab(242, yb, 314, yb + 6, 4, bevel=1.5, base=9, part=9)
     # ---- the body
     # torso: upright, robed, a little forward at the chest
     f.poly([(190, 104), (184, 150), (186, 196), (266, 214), (272, 150), (262, 104)], 30, bevel=10, base=8, part=2)
@@ -68,6 +68,10 @@ def build(throne=True):
     # the band: flat on top at the surface row
     ax0, ay = T(57, 17)
     f.slab(ax0 - 2, ay, ax0 + 34, ay + 10, 8, bevel=2, base=44, part=11)
+    # the shoulder: a pauldron over it, flat on top at its surface row
+    sx0, sy = T(60, 14); sx1, _ = T(65, 14)
+    f.slab(sx0 + 1, sy, sx1 - 1, sy + 13, 8, bevel=3, base=46, part=11)
+    f.groove([(sx0 + 3, sy + 5), (sx1 - 3, sy + 5)], width=0.8, depth=1.5)
     # the elbow
     ex0, ey = T(54, 20)
     f.ellipsoid(ex0 + 18, ey + 12, 18, 13, 16, base=36, part=10)

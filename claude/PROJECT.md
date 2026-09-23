@@ -15,13 +15,14 @@ two rooms it describes are parked in `parked/rooms-2/`.
   and lights are culled to the view; sounds from a place in the room pan by the view and
   fade off it (`SfxAt`).
 - **The far wall is one picture of the whole room**, drawn in the archive's language
-  (`claude/ARCHIVE.md`) by `tools/art/archive.py` from the kit (`tools/art/kit.py`): the
-  door's cell, the stacks, the seed vault's drawers, the keeper in its cell (the colossus,
-  sculpted as a height field by `tools/art/colossus.py`), the window's cell, the heart's
-  grate, ribs, roots, growth. It comes with a picture of its own light and the paths of its
+  (`claude/ARCHIVE.md`) by `tools/art/archive.py` from the kit (`tools/art/kit.py`) as one
+  wheel: the heart at its hub with the keeper before it (the colossus, sculpted as a height
+  field by `tools/art/colossus.py`), five spokes, the rim through all six screens with the
+  door and the window on it, the stacks and seed drawers, roots, growth. It comes with a picture of its own light and the paths of its
   veins. `src/backdrop.c` decodes it once, paints the city's stone and the buried rock into
   it from the tiles, and sends the archive's reading along the veins toward the heart. The
-  window looks out on more of the archive (`src/city.c`). The room draws only raw rock's
+  window looks out on more of the archive, and the heart on its light and the tall ones
+  (`src/city.c`). The room draws only raw rock's
   edges and the small things each frame.
 - **The hall's lives** (`src/hall.c`): the hunter, the sitters, the prints, the leaves,
   the mural, the dead lamps, the spilled glass, the fish, the draft's dust, the tall ones
@@ -29,7 +30,7 @@ two rooms it describes are parked in `parked/rooms-2/`.
 - **Lighting** (the pass before this): a 27-colour palette, nearest colour by eye (Oklab),
   higher exposure; mean luminance 18 -> 29, vivid pixels under 1% -> 12-17%.
 - **Checks**: `tools/route.py` (every hop of the new climb, the three reset cases),
-  `tools/escape.py` (every surface back to the entry's level), `tools/check.sh`.
+  `tools/escape.py` (every surface back to the door's screen), `tools/check.sh`.
 
 **Two rooms, before this: the chamber, and a flooded chamber under it.** Running, jumping,
 two bulbs, and the water.

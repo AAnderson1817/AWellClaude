@@ -335,6 +335,7 @@ void BackdropDrawEmis(void);
 void BackdropLights(void);
 int  WindowSpan(int y, int *x0, int *x1);   // room px spans of the openings, per row
 f32  BackdropGlow(int tx, int ty);          // 0..1: the archive's own light over a tile
+f32  BackdropGlowWarm(int tx, int ty);      // 0..1: the rock's amber over a tile
 void RoomRelight(void);     // bake the light again (after the door changes)
 int  GrilleSpan(int y, int *x0, int *x1);
 int  OpeningBox(int kind, int *x, int *y, int *w, int *h);   // an opening's square, room px

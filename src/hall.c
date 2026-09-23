@@ -84,25 +84,27 @@ static const Sprite DEAD_LAMP = { 4, 6, DEAD_LAMP_ROWS };
 
 // ---------------------------------------------------------------- where things are
 // In room px. They belong to the map; they are here because only this file draws them.
-#define HUNTER_X  (29 * TS)          // the camp: between the cairn and the fire, on row 35
-#define CAMP_Y    (35 * TS)
-#define FIRE_X    (33 * TS + 4)
-#define SILL_Y    (14 * TS)          // the sill's top
-static const int SITX[3] = { 93 * TS, 96 * TS + 2, 99 * TS + 5 };
-#define NICHE_X0  (4 * TS)           // the dead lamps, in a recess at the back of the undercroft
+#define HUNTER_X  (35 * TS)          // the camp, by the door: between the cairn and the fire
+#define CAMP_Y    (38 * TS)          // the floor
+#define FIRE_X    (37 * TS + 4)      // under the keeper's fingertips
+#define SILL_Y    (20 * TS)          // the window's lip
+static const int SITX[3] = { 100 * TS + 3, 102 * TS + 6, 104 * TS + 9 };
+#define NICHE_X0  (41 * TS)          // the dead lamps, in a recess by the camp
 #define NICHE_N   5
 #define PATCH_X   (NICHE_X0 + NICHE_N * 7)        // the clean patch at the end of the row
-#define FLUE_X    (30 * TS + 8)                   // the flue slot's mouth, in the roof over the slope
-#define FLUE_Y    (4 * TS)
-#define DOOR_CX   (12 * TS)                       // the foot of the door, where you wake
-#define DOOR_FOOT (21 * TS)
-#define MURAL_X0  (26 * TS)          // the threshold: the mural runs along its wall
-#define MURAL_X1  (39 * TS)
-#define MURAL_Y   (10 * TS + 2)
+#define FLUE_X    (4 * TS + 4)                    // the flue slot, in the roof over the ledge
+#define FLUE_Y    (1 * TS)
+#define DOOR_CX   (17 * TS)                       // the foot of the door, where you wake
+#define DOOR_FOOT (38 * TS)
+#define MURAL_X0  (25 * TS)          // the index band over the door's crown
+#define MURAL_X1  (38 * TS)
+#define MURAL_Y   (12 * TS + 4)
 #define BASIN_X0  (51 * TS)
 #define BASIN_X1  (96 * TS)
-#define BASIN_Y0  (36 * TS)
+#define BASIN_Y0  (38 * TS)
 #define BASIN_Y1  (43 * TS)
+#define HEART_X   (61 * TS)          // the heart's grate, where it meets the water
+#define HEART_Y   (36 * TS)
 
 // ---------------------------------------------------------------- state
 static int   hunterArm, hunterHum, hunterLook, hunterNoted;
@@ -110,7 +112,7 @@ static int   sitBreath[3], sitLook;
 static f32   printsA;                           // 0..1: how far the prints have come up
 static int   leafN, leafT;
 static struct { f32 x, y, vx, ph; int down; } leaves[10];
-static f32   douse;                             // 0 lit .. 1 put out, beyond the fireguard
+static f32   douse;                             // 0 lit .. 1 put out, beyond the heart's grate
 static int   douseHold, nearer, douseWas;
 static struct { f32 x, y, vx, ph; } fish[6];
 int hallHums, hallLeaves, hallDouses;
@@ -171,7 +173,7 @@ void HallStep(void) {
     if (printsA < 0) printsA = 0;
     if (printsA > 1) printsA = 1;
 
-    // A leaf, now and then, out of the flue: it spins down and lies on the step with the rest.
+    // A leaf, now and then, out of the flue: it spins down and lies on the ledge with the rest.
     if (--leafT <= 0) {
         leafT = 3600 + (int)(Rnd() * 3600);
         if (leafN < 10) {
@@ -193,10 +195,10 @@ void HallStep(void) {
         }
     }
 
-    // Beyond the fireguard: bring a lamp near and their light goes out, with a murmur close to
-    // the bars; it comes back five to ten seconds after you leave, and sometimes one of them
-    // is a step nearer than it was.
-    int near = lamp && lx > 78 * TS && lx < 99 * TS && ly > 22 * TS && ly < 43 * TS;
+    // Beyond the heart's grate: bring a lamp near its foot and their light goes out, with a
+    // murmur close to the bars; it comes back five to ten seconds after you leave, and
+    // sometimes one of them is a step nearer than it was.
+    int near = lamp && fabsf(lx - (HEART_X + 4 * TS)) < 14 * TS && ly > 28 * TS;
     if (near) douseHold = 300 + (int)(Rnd() * 300);
     else if (douseHold > 0) douseHold--;
     int want = near || douseHold > 0;
@@ -205,12 +207,11 @@ void HallStep(void) {
     if (douse > 1) douse = 1;
     if (douse > 0.9f && !douseWas) {
         douseWas = 1; hallDouses++;
-        SfxAt(SFX_MURMUR, 0.8f, 0.9f + Rnd() * 0.1f, 88 * TS, 36 * TS);
+        SfxAt(SFX_MURMUR, 0.8f, 0.9f + Rnd() * 0.1f, HEART_X, HEART_Y);
     }
     if (douse < 0.05f && douseWas) { douseWas = 0; if (nearer < 2 && Rnd() < 0.6f) nearer++; }
 
-    // The fish: small lights of theirs, in the basin and through the bars. They turn toward a
-    // lamp in the water.
+    // The fish: small lights of theirs, in the basin. They turn toward a lamp in the water.
     for (int i = 0; i < 6; i++) {
         fish[i].ph += 0.03f;
         f32 tx = fish[i].vx;
@@ -218,14 +219,14 @@ void HallStep(void) {
         fish[i].x += tx;
         fish[i].y += sinf(fish[i].ph) * 0.12f;
         if (fish[i].x < BASIN_X0 + 4) { fish[i].x = BASIN_X0 + 4; fish[i].vx = fabsf(fish[i].vx); }
-        if (fish[i].x > BASIN_X1 + 60) { fish[i].x = BASIN_X1 + 60; fish[i].vx = -fabsf(fish[i].vx); }
+        if (fish[i].x > BASIN_X1 - 4) { fish[i].x = BASIN_X1 - 4; fish[i].vx = -fabsf(fish[i].vx); }
         if (fish[i].y < BASIN_Y0 + 8) fish[i].y = BASIN_Y0 + 8;
         if (fish[i].y > BASIN_Y1 - 4) fish[i].y = BASIN_Y1 - 4;
     }
 
-    // The draft: the air comes in low under the fireguard and carries a little dust with it.
-    if ((frameNo % 24) == 0) AirPuff(94 * TS + Rnd() * 8, 34 * TS + Rnd() * 8, 0.10f, 4.0f, 0.0f);
-    if ((frameNo % 40) == 0) AirPuff(60 * TS + Rnd() * 20 * TS, 35 * TS + 2, 0.12f, 6.0f, 0.0f);   // mist on the water
+    // The draft: the air comes out of the heart low, over the water, and carries a little dust.
+    if ((frameNo % 24) == 0) AirPuff(HEART_X + Rnd() * 12 * TS, HEART_Y + Rnd() * 8, 0.10f, 4.0f, 0.0f);
+    if ((frameNo % 40) == 0) AirPuff(HEART_X - 6 * TS + Rnd() * 24 * TS, BASIN_Y0 - 6, 0.12f, 6.0f, 0.0f);   // mist on the water before it
 }
 
 void HallReset(void) { leafN = 0; nearer = 0; }
@@ -328,7 +329,7 @@ static void Leaves(void) {
     }
 }
 
-// The dead lamps, in a row in a recess at the back of the undercroft, set down tidily; at the
+// The dead lamps, in a row in a recess by the camp, set down tidily; at the
 // end of the row a clean patch in the dust, the size of a lamp's foot.
 static void DeadLamps(void) {
     if (!InView(NICHE_X0, CAMP_Y, 64)) return;
@@ -364,7 +365,7 @@ void HallDraw(void) {
             DrawRectangle(x - 1 - up / 5, y + 5 - up / 6, 2, 1, c);
         }
     }
-    // the sitters, their backs to you, facing the city
+    // the sitters, their backs to you, on the window's lip, facing out
     for (int i = 0; i < 3; i++) {
         if (!InView(SITX[i], SILL_Y, 40)) continue;
         const Sprite *s = i == 2 ? &SITTER_BONES : &SITTER;
@@ -380,11 +381,11 @@ void HallDrawEmis(void) {
     MuralPhosphor();
     // the spilled glass by the pack: chips prised from the vault's throat, brighter as your
     // lamp comes near -- they drink from it
-    if (InView(35 * TS, CAMP_Y, 40)) {
-        f32 d = LampDist(36 * TS, CAMP_Y - 2);
+    if (InView(38 * TS, CAMP_Y, 40)) {
+        f32 d = LampDist(39 * TS, CAMP_Y - 2);
         for (int k = 0; k < 14; k++) {
             u32 h = Hash2(k, 919);
-            int x = 34 * TS + (int)(h % 40), y = CAMP_Y - 1 - (int)((h >> 8) % 2);
+            int x = 38 * TS + (int)(h % 24), y = CAMP_Y - 1 - (int)((h >> 8) % 2);
             int pl = d < 3 * TS ? PL_CITYH : (d < 7 * TS ? PL_CITY : ((h >> 12) & 1 ? PL_COOLM : PL_COOLD));
             DrawRectangle(x, ROOM_Y + y, 1, 1, PAL[pl]);
         }
@@ -400,12 +401,12 @@ void HallDrawEmis(void) {
 
 void HallLights(void) {
     // the glass by the pack gives a breath of their light
-    LightAddPointCool(36 * TS, CAMP_Y - 2, 2.5f, 0.25f);
+    LightAddPointCool(39 * TS, CAMP_Y - 2, 2.5f, 0.25f);
     // and once the fire is lit, its glow reaches the colossus's fingertips over it: they take
     // an amber rim, held out over the fire as the hunter's hands are
-    if (PropFireLit(0)) LightAddPoint(36 * TS + 4, 31 * TS, 5.0f, 0.95f + 0.1f * sinf(frameNo * 0.19f));
+    if (PropFireLit(0)) LightAddPoint(37 * TS + 4, 31 * TS, 5.0f, 0.95f + 0.1f * sinf(frameNo * 0.19f));
 }
 
-// For city.c: how far the light beyond the fireguard is out, and how many steps nearer.
+// For city.c: how far the light beyond the heart's grate is out, and how many steps nearer.
 f32 HallDouse(void) { return douse; }
 int HallNearer(void) { return nearer; }

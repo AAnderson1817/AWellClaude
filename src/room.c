@@ -194,13 +194,14 @@ static void LightBake(void) {
             if (Opaque(x, y) || TileWater(tiles[y][x])) continue;
             int x0, x1, py = y * TS + TS / 2, px = x * TS + TS / 2;
             if (WindowSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 1.25f) lstatC[y][x] = 1.25f;
-            if (GrilleSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 0.9f) lstatC[y][x] = 0.9f;
+            if (GrilleSpan(py, &x0, &x1) && px >= x0 && px < x1 && lstatC[y][x] < 0.55f) lstatC[y][x] = 0.55f;
         }
     // The door's own light: wherever its glass and channels cover a tile, their colour.
     for (int y = 0; y < RH; y++)
         for (int x = 0; x < RW; x++) {
-            f32 g = BackdropGlow(x, y) * 0.7f;
+            f32 g = BackdropGlow(x, y) * 0.7f, gw = BackdropGlowWarm(x, y) * 0.7f;
             if (g > 0.05f && !Opaque(x, y) && lstatC[y][x] < g) lstatC[y][x] = g;
+            if (gw > 0.05f && !Opaque(x, y) && lstatW[y][x] < gw) lstatW[y][x] = gw;
         }
     // And the hall is never quite dark: the city's cold is in the air of the whole of it,
     // enough to see the colossus by and not enough to see the floor.

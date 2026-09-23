@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""From every standable surface in the room, can a body get back to the forecourt, where it began?
+"""From every standable surface in the room, can a body get back to the door's screen, where it began?
 
 The route checks say the designed climb works. This asks the opposite question of every
 surface the map has: drop the wander bot there -- it does not know the route -- and leave
-it to push and jump at random until it stands on the start tile again or the frames run
-out. A surface no seed gets home from is reported and the command fails.
+it to push and jump at random until it stands in the door's screen again (D, the lower
+left) or the frames run out. A surface no seed gets home from is reported and the command fails.
 
 It is a heuristic in one direction only: a bot getting home is a fact, a bot failing is
 a place to go and look. It is also the audit behind the rule that you are never
@@ -14,7 +14,7 @@ import os, re, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME = os.path.join(ROOT, "build", "game")
+GAME = os.environ.get("AWELL_GAME") or os.path.join(ROOT, "build", "game")   # a copy, to keep building while it runs
 SURF = re.compile(r"R(\d) (\S+) (shelf|stone) row\s+(\d+) cols\s+(\d+)-\s*(\d+)")
 FRAMES = 600000         # nearly three hours of play per attempt; the sim is cheap, the bot is not clever
 SEEDS = tuple(range(1, 11))  # a long way home from the basin floor: the bot is lucky, not clever

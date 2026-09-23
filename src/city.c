@@ -1,5 +1,5 @@
 // city.c -- what is beyond the far wall's two openings: through the window's cell, more of
-// the archive; through the heart's grate, the tall ones.
+// the archive; through the heart's grate, its light and the tall ones.
 //
 // Drawn only in the new look. Everything here is self-lit: it is not touched by the light
 // pass, because it is far away and it is theirs. It is points and lines of their colour on
@@ -55,7 +55,7 @@ static void Place(f32 wx, f32 wy, f32 homeX, f32 homeY, f32 p, int *sx, int *sy)
 
 static void Far(void);
 static void Beyond(void);
-void CityDraw(void) { Far(); Beyond(); }
+void CityDraw(void) { Beyond(); Far(); }
 
 // Through the window: the archive goes on. A hall of stacks, seen down its length from high
 // in its end wall -- its ribs arching over it bay after bay, each a ring of their glass
@@ -143,39 +143,74 @@ static void Far(void) {
     clipR = 0;
 }
 
-// Beyond the fireguard: the city's near halls, lit green from below, and the tall ones in
-// them -- standing, still, a long way in. Only ever silhouettes (LORE.md section 6).
+// Beyond the heart's grate: the light at the archive's core, and the tall ones standing in
+// it -- still, a long way in, only ever silhouettes (LORE.md section 6). The keeper sits
+// against it. Bring a lamp near the grate's foot and they put the light out.
+//
+// The light is large and still, so it is drawn once into pictures at a few levels of
+// being put out, and each frame draws the one nearest; only the tall ones are drawn live.
+#define BEYOND_LEVELS 6
+#define BM 72                       // margin round the grate's square: the layer slides under it
+static Texture2D beyondTex[BEYOND_LEVELS];
+
+static void BeyondBuild(int w, int h) {
+    for (int L = 0; L < BEYOND_LEVELS; L++) {
+        f32 lit = (f32)L / (BEYOND_LEVELS - 1);
+        int iw = w + 2 * BM, ih = h + 2 * BM;
+        Image im = GenImageColor(iw, ih, BLANK);
+        ImageFormat(&im, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        Color *p = (Color *)im.data;
+        if (!p) return;
+        for (int y = 0; y < ih; y++)
+            for (int x = 0; x < iw; x++) {
+                int lx = x - BM, ly = y - BM;
+                // strongest at its core, a little below the middle, where the keeper's chest
+                // is, and going in: ring after ring of their glass, each smaller, a shaft
+                f32 R = w * 0.62f, dx = lx - w * 0.52f, dy = ly - h * 0.56f, d = sqrtf(dx * dx + dy * dy) / R;
+                f32 a = (1.0f - d) * 1.02f * lit;
+                int pl = -1;
+                if (a > 0) {
+                    f32 t = (f32)((Hash2(lx, ly * 3) & 15) + 0.5f) / 16.0f - 0.5f, q = a * 3.0f + t * 0.8f;
+                    if (q > 2.9f) pl = PL_CITY;
+                    else if (q > 2.0f) pl = PL_COOLM;
+                    else if (q > 1.0f) pl = PL_COOLD;
+                    else if (q > 0.55f && ((lx + ly) & 1)) pl = PL_DEEP;
+                    for (int k = 1; k < 16; k++) {
+                        f32 rk = powf(0.84f, (f32)k);
+                        if (fabsf(d - rk) * R < 0.55f && ((lx + ly) & 1) == 0 && a > 0.12f)
+                            pl = a > 0.7f ? PL_CITYH : (a > 0.4f ? PL_CITY : PL_COOLM);
+                    }
+                }
+                if (pl >= 0) p[y * iw + x] = PAL[pl];
+            }
+        if (beyondTex[L].id) UnloadTexture(beyondTex[L]);
+        beyondTex[L] = LoadTextureFromImage(im);
+        UnloadImage(im);
+    }
+}
+
 static void Beyond(void) {
     int gx0, gy, w, h;
     if (!OpeningBox(F_GRILLE, &gx0, &gy, &w, &h)) return;
-    if (camX + GW < gx0 - 32 || camX > gx0 + w + 32 || camY + GH < gy - 32 || camY > gy + h + 32) return;
+    if (camX + GW <= gx0 || camX >= gx0 + w || camY + GH <= gy || camY >= gy + h) return;
+    if (!beyondTex[0].id) BeyondBuild(w, h);
     clipR = w * 0.5f + 1; clipX = gx0 + w * 0.5f; clipY = gy + h * 0.5f;
-    Place((f32)gx0, (f32)gy, 2 * SW * TS, SH * TS, 0.45f, &OX, &OY);
-    // the light, strongest low and in the middle: it comes from further in, under the water.
-    // Bring a lamp near and they put it out.
-    f32 lit = 1.0f - HallDouse();
-    for (int y = -8; y < h + 8; y++)
-        for (int x = -12; x < w + 12; x++) {
-            f32 dy = (f32)y / h, dx = fabsf((x - w * 0.5f) / (w * 0.6f));
-            f32 a = (0.25f + 0.75f * dy) * (1.0f - dx * dx) * lit;
-            if (a > 0) Glow(x, y, a * 1.1f);
-        }
-    // the far wall of that hall: a colonnade, black against the glow
-    for (int k = 0; k < 6; k++) {
-        int x = -6 + k * (w + 12) / 5;
-        Rect(x, -8, 5, h + 16, PL_DEEP);
-    }
+    // composed for the view halfway between the keeper's two screens
+    Place((f32)gx0, (f32)gy, SW * TS, SH * TS * 0.5f, 0.45f, &OX, &OY);
+    int L = (int)lroundf((1.0f - HallDouse()) * (BEYOND_LEVELS - 1));
+    if (beyondTex[L].id) DrawTexture(beyondTex[L], OX - BM, OY - BM, WHITE);
     // the tall ones: three, at different depths, the nearest largest; heads long, shoulders
-    // narrow, arms down. One of them is always a step nearer than you remember.
-    static const int TX[3] = { 30, 68, 98 }, TH[3] = { 44, 58, 38 };
+    // narrow, arms down. They stand where the keeper does not hide them. One of them is
+    // always a step nearer than you remember.
+    static const int TX[3] = { 78, 280, 104 }, TH[3] = { 46, 40, 30 };
     for (int i = 0; i < 3; i++) {
-        int x = TX[i] * w / 120, H = TH[i] + (i == 0 ? HallNearer() * 6 : 0), foot = h - 18 - i * 3 + (i == 0 ? HallNearer() * 3 : 0), top = foot - H;
+        int x = TX[i], H = TH[i] + (i == 0 ? HallNearer() * 6 : 0), foot = h - 62 - i * 5 + (i == 0 ? HallNearer() * 3 : 0), top = foot - H;
         int hw = 3 + H / 30;
         Rect(x - hw, top + H / 5, hw * 2, H - H / 5, PL_VOID);            // body
         Rect(x - hw - 1, top + H / 5 + 2, 1, H / 2, PL_VOID);              // arm
         Rect(x + hw, top + H / 5 + 2, 1, H / 2, PL_VOID);
         Rect(x - hw / 2 - 1, top + H / 5 - 3, hw + 2, 4, PL_VOID);         // neck
-        for (int r = 0; r < H / 5 + 2; r++) {                                                         // the long head, tipped forward
+        for (int r = 0; r < H / 5 + 2; r++) {                               // the long head, tipped forward
             int hwid = (int)(hw * 0.9f * sinf(3.1416f * (r + 0.5f) / (H / 5 + 2))) + 1;
             Rect(x - hwid - r / 4, top - 2 + r, hwid * 2, 1, PL_VOID);
         }

@@ -29,9 +29,11 @@ extern const int VEINS_ARCHIVE_LEN;
 static Texture2D wallTex, glowTex;
 static Color *px;                       // the picture, while the stone is painted into it
 static f32 glowTile[RH][RW];            // how much of each tile the archive's own light covers, 0..1
+static f32 glowTileW[RH][RW];           // and how much of it is amber: the rock's seams, not their glass
 static u8 *glowAt;                      // per room px, whether its own light shows there (not behind stone
                                         // or the colossus): a pulse shows only where its vein does
 f32 BackdropGlow(int tx, int ty) { return (tx < 0 || tx >= RW || ty < 0 || ty >= RH) ? 0 : glowTile[ty][tx]; }
+f32 BackdropGlowWarm(int tx, int ty) { return (tx < 0 || tx >= RW || ty < 0 || ty >= RH) ? 0 : glowTileW[ty][tx]; }
 
 static const Feature *Find(int kind) {
     for (int i = 0; ROOM_FEATURES[i].kind != F_NONE; i++)
@@ -180,6 +182,7 @@ void BackdropInit(void) {
     px = 0;
     // its own light: none of it through the stone in front, and what is left seeds the bake
     memset(glowTile, 0, sizeof glowTile);
+    memset(glowTileW, 0, sizeof glowTileW);
     if (!glowAt) glowAt = (u8 *)calloc(PW * PH, 1);
     memset(glowAt, 0, PW * PH);
     Image g = LoadImageFromMemory(".png", ART_ARCHIVE_GLOW, ART_ARCHIVE_GLOW_LEN);
@@ -190,7 +193,9 @@ void BackdropInit(void) {
             if (!gc[y * g.width + x].a) continue;
             if (Hidden(x, y)) { gc[y * g.width + x] = BLANK; continue; }
             glowAt[y * PW + x] = 1;
-            if (glowTile[y / TS][x / TS] < 1) glowTile[y / TS][x / TS] += 1.0f / 12.0f;
+            Color q = gc[y * g.width + x];
+            f32 (*t)[RW] = q.r > q.b ? glowTileW : glowTile;
+            if (t[y / TS][x / TS] < 1) t[y / TS][x / TS] += 1.0f / 12.0f;
         }
     if (glowTex.id) UnloadTexture(glowTex);
     glowTex = LoadTextureFromImage(g);
@@ -223,5 +228,5 @@ void BackdropLights(void) {
     // the door is a cell awake: its lens lights its own blades from within, their colour
     LightAddPointCool(104.0f, 88.0f, 9.5f, 0.75f + 0.08f * sinf(frameNo * 0.021f));
     // the keeper's eye lights a little of the face round it
-    LightAddPointCool(440.0f, 55.0f, 3.5f, 0.5f);
+    LightAddPointCool(440.0f, 55.0f, 2.5f, 0.4f);
 }

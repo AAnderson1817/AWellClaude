@@ -10,7 +10,7 @@ import os, subprocess, sys
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SPOTS = {'A': (7, 13), 'B': (46, 13), 'C': (95, 13), 'D': (22, 34), 'E': (43, 34), 'F': (98, 33)}
+SPOTS = {'A': (17, 16), 'B': (62, 13), 'C': (103, 19), 'D': (16, 37), 'E': (48, 37), 'F': (101, 32)}
 
 def shoot(out, frame, extra):
     os.makedirs(out, exist_ok=True)

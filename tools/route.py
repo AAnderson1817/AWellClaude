@@ -13,7 +13,7 @@ def onto(rows, row, cols, room=0):
     return any(r["ground"] and round((r["y"] + 11) / 8) == row
                and (int(r["x"] // 8) in cols or int((r["x"] + 5) // 8) in cols) for r in rows)
 
-# From floating in the basin to the first tread of the giant stair: swim, then a surface
+# From floating in the basin up onto the floor at one of its ends: swim, then a surface
 # jump. The search varies how long you swim and how long you hold the jump.
 def water_to(key, at, row, cols):
     for pre in range(10, 160, 10):
@@ -21,20 +21,6 @@ def water_to(key, at, row, cols):
             plan = "-:90,%s:%d,%sJ:%d,%s:6,-:60" % (key, pre, key, hold, key)
             if onto(run(plan, at=at), row, cols): return "from the water: " + plan
     return None
-
-# Walking the top: from the passage over the fallen rock, along the gallery -- over the shelf where the arm comes
-# up through it -- to the far end of the sill, never off row 14.
-def the_long_walk():
-    rows = run("R:900", at=(35, 13))
-    upto = [r for r in rows if r["x"] < 108 * 8]
-    ok = len(upto) < len(rows) and all(r["ground"] and round((r["y"] + 11) / 8) == 14 for r in upto[2:])
-    return "walked to col 108 without leaving row 14 (%d frames)" % len(upto) if ok else None
-
-# The drop: off the end of the step, into the chasm, down to the undercroft's floor.
-def the_chasm():
-    e = run("R:30,-:200", at=(22, 20))[-1]
-    return "fell to row %d at col %d" % (round((e["y"] + 11) / 8), e["x"] // 8) \
-        if e["ground"] and round((e["y"] + 11) / 8) == 35 else None
 
 # Starting over, from the worst place: on the basin floor, holding the stone that put you
 # there. And the two small ones: the stone goes home; let go early and nothing happens.
@@ -58,8 +44,8 @@ def reset_let_go_early_does_nothing():
         if e["hold"] == 2 and abs(e["x"] - a["x"]) < 0.5 and e["fade"] == 0 \
         and max(r["fade"] for r in rows) > 0.3 else None
 
-START = (12, 20)         # the tile you stand in at the start
-STONE = (42, 34)         # where the basin's stone lies
+START = (16, 37)         # the tile you stand in at the start: the door's foot
+STONE = (47, 37)         # where the basin's stone lies, on the paving
 
 RESET = [
  ("X0 hold R on the basin floor, heavy",        reset_from_the_deep),
@@ -70,30 +56,38 @@ RESET = [
 # (name, start cols, start row (the row you stand IN), target row (the tile stood ON),
 #  target cols, direction)
 ROUTE = [
- ("T0 the door's foot -> over the chasm",     range(19, 24), 20, 21, range(27, 29), +1),
- ("T0b and back over it",                     range(27, 29), 20, 21, range(19, 24), -1),
- ("R1 the far side -> the fallen rock",       range(27, 29), 20, 18, range(29, 32), +1),
- ("R2 fallen rock  -> fallen rock",           range(29, 32), 17, 16, range(32, 34), +1),
- ("R3 fallen rock  -> the passage",           range(32, 34), 15, 14, range(34, 40), +1),
- ("T1 the long walk, passage to sill",        the_long_walk),
- ("T2 the chasm, down to the undercroft",     the_chasm),
- ("U1 hall floor   -> the low corbel",        range(40, 46), 34, 32, range(41, 45),  0),
- ("U2 low corbel   -> the planks",            range(41, 45), 31, 29, range(36, 40), -1),
- ("U3 the planks   -> the back of the hand",  range(36, 40), 28, 26, range(40, 46), +1),
- ("U4 the hand     -> the forearm's band",    range(40, 46), 25, 24, range(46, 50), +1),
- ("U5 band         -> band",                  range(46, 50), 23, 22, range(50, 54), +1),
- ("U6 band         -> the elbow",             range(50, 54), 21, 20, range(54, 58), +1),
- ("U7 the elbow    -> the armlet",            range(54, 58), 19, 17, range(57, 61), +1),
- ("U8 the armlet   -> the gallery, through",  range(57, 61), 16, 14, range(56, 61),  0),
- ("U9 the elbow    -> the lap",               range(54, 58), 19, 25, range(60, 73), +1),
- ("S0 the basin    -> the first tread",       lambda: water_to("R", (92, 37), 34, range(97, 100))),
- ("S1 tread        -> tread",                 range(97, 100), 33, 31, range(100, 103), +1),
- ("S2 tread        -> tread",                 range(100, 103), 30, 28, range(103, 106), +1),
- ("S3 tread        -> tread",                 range(103, 106), 27, 25, range(106, 109), +1),
- ("S4 tread        -> tread",                 range(106, 109), 24, 22, range(109, 112), +1),
- ("S5 tread        -> tread",                 range(109, 112), 21, 19, range(112, 115), +1),
- ("S6 tread        -> the top tread",         range(112, 115), 18, 16, range(115, 119), +1),
- ("S7 the top tread -> the sill's end",       range(115, 119), 15, 14, range(106, 112), -1),
+ # the door: the hunters' planks up its ring to its crown, and on up the rock to the flue's ledge
+ ("D1 the door's foot -> the first plank",   range(26, 31), 37, 35, range(31, 34), +1),
+ ("D2 plank        -> plank",                range(31, 34), 34, 32, range(30, 33),  0),
+ ("D3 plank        -> plank",                range(30, 33), 31, 29, range(29, 32), -1),
+ ("D4 plank        -> plank",                range(29, 32), 28, 26, range(28, 31), -1),
+ ("D5 plank        -> plank",                range(28, 31), 25, 23, range(26, 29), -1),
+ ("D6 plank        -> plank",                range(26, 29), 22, 20, range(23, 26), -1),
+ ("D7 plank        -> the door's crown",     range(23, 26), 19, 17, range(14, 21), -1),
+ ("D8 the crown    -> plank",                range(14, 21), 16, 14, range(9, 12),  -1),
+ ("D9 plank        -> plank",                range(9, 12),  13, 11, range(5, 8),   -1),
+ ("D10 plank       -> the flue's ledge",     range(5, 8),   10,  8, range(1, 5),   -1),
+ # the keeper: up to its hand, along its arm, to its shoulder; the lap from the elbow
+ ("U0 the paving   -> the plank",            range(40, 47), 37, 35, range(42, 46),  0),
+ ("U1 the plank    -> the corbel",           range(42, 46), 34, 32, range(41, 45),  0),
+ ("U2 the corbel   -> the hunters' planks",  range(41, 45), 31, 29, range(36, 40), -1),
+ ("U3 the planks   -> the back of the hand", range(36, 40), 28, 26, range(40, 46), +1),
+ ("U4 the hand     -> the forearm's band",   range(40, 46), 25, 24, range(46, 50), +1),
+ ("U5 band         -> band",                 range(46, 50), 23, 22, range(50, 54), +1),
+ ("U6 band         -> the elbow",            range(50, 54), 21, 20, range(54, 58), +1),
+ ("U7 the elbow    -> the armlet",           range(54, 58), 19, 17, range(57, 61), +1),
+ ("U8 the armlet   -> the shoulder",         range(57, 61), 16, 14, range(60, 65), +1),
+ ("U9 the elbow    -> the lap",              range(54, 58), 19, 25, range(60, 73), +1),
+ # the stair: up its two files of treads to the window's lip
+ ("S0 the floor    -> the first tread",      range(100, 108), 37, 35, range(108, 111), +1),
+ ("S1 tread        -> tread",                range(108, 111), 34, 32, range(112, 115), +1),
+ ("S2 tread        -> tread",                range(112, 115), 31, 29, range(108, 111), -1),
+ ("S3 tread        -> tread",                range(108, 111), 28, 26, range(112, 115), +1),
+ ("S4 tread        -> the top tread",        range(112, 115), 25, 23, range(108, 111), -1),
+ ("S5 the top tread -> the window's lip",    range(108, 111), 22, 20, range(100, 108), -1),
+ # out of the water at either end
+ ("W0 the basin    -> the floor, far end",   lambda: water_to("R", (92, 38), 38, range(97, 101))),
+ ("W1 the basin    -> the paving",           lambda: water_to("L", (54, 38), 38, range(45, 50))),
 ]
 
 def check(h):

@@ -75,19 +75,22 @@ different people, and the player joins them up (LORE.md section 6 still holds).
 - The great window looks out on more archive, not a city: stacks of lit cells to the
   horizon.
 
-## The six bays
+## The hall: one cell
 
-| screen | bay | what it is |
-|---|---|---|
-| A | intake | the door, the largest cell, framed by the first ribs; the forecourt walls are seed drawers; the prints are you being entered |
-| B | the keeper | the colossus, seated in a cell like every other, hand out to receive; the mural is the index |
-| C | the stacks window | the view out is the archive itself |
-| D | seed vault | cold drawers floor to roof; the hunters camp here, out of the draft |
-| E | the living garden | the basin and its terraces under grown light |
-| F | the heart | the fireguard is the grate over the warm core; the giant stair is terraced beds |
+The six screens are not six bays. The user asked for one composition, so the hall is built
+on principle 4 taken all the way: **the hall is itself a cell.**
 
-Built: all six, as one picture (`tools/art/archive.py`); A first, as the proof of the
-language. How each bay reads is in `claude/ANTECHAMBER.md`. Three cells at the
-building's own scale stand on the hall's wall -- the keeper's, the window's, the heart's --
-and the window's looks out on more of the same: a hall of stacks under ring after ring of
-ribs, ending far off at another cell, awake.
+| part of a cell | in the hall |
+|---|---|
+| lens | the heart: the round grate at the centre, awake, green light beyond it going in ring after ring; the keeper sits before it, a silhouette on its light, hand out toward the door |
+| iris | drawn all the way back, into five spokes: ribs along radii from the heart's ring to the rim, each carrying its vein in to the heart |
+| ring | the rim: a circle through all six screens where the archive is cut into the mountain; raw rock outside it, the collection inside it, seed drawers in its outermost band |
+| on the ring | the door (low left, where you wake) and the window (high right, open on more of the archive), at the two ends of one diameter through the heart |
+
+Door, heart, window lie on one line: in low at the left, past the keeper, up and out at the
+right. The gradient runs by radius: awake near the heart, asleep further out, dark at the
+rim. How each screen reads is in `claude/ANTECHAMBER.md`; the picture is
+`tools/art/archive.py`.
+
+The first build had six bays, one per screen, each with its own set piece; it read as six
+rooms, and a walkway crossed the keeper at the neck. This replaced it.
