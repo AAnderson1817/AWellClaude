@@ -171,7 +171,7 @@ static const char *COMP_BODY =
 "  w *= k; c *= k;\n"
 "  vec3 warm = vec3(1.0, 0.62, 0.28), cool = vec3(0.32, 1.0, 0.84);\n"   // saturated: the light has a colour
 "  float I = w + c; vec3 tint = I > 0.001 ? (warm * w + cool * c) / I : warm;\n"
-"  float th = alb.a < 0.998 ? 0.0 : bayer(p) - 0.5;\n"      // no dither on drawn things: a clean edge
+"  float th = alb.a < 0.998 ? 0.0 : bayer(floor(rp)) - 0.5;\n"   // no dither on drawn things: a clean edge. Held to the room, not the screen, so it does not crawl when the view moves
 "  I = max(I - 0.06, 0.0) * 1.15;\n"                         // below a floor, dark is black, not noise
 "  float Iq = floor(I * uBands + 0.5 + th * 0.7) / uBands;\n"    // hard bands; dither only across each edge
 "  float Rl = max(rw + rc - 0.12, 0.0) * 1.4; vec3 rt = (rw + rc) > 0.001 ? (warm * rw + cool * rc) / (rw + rc) : warm;\n"

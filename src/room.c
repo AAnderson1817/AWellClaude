@@ -478,25 +478,50 @@ void RoomLoad(void) {
 void RoomRelight(void) { LightBake(); }
 
 // ---------------------------------------------------------------- the camera
-// The room is six screens. The view is always exactly one of them, composed as a screen
-// (L11), and when your centre leaves it the view slides to the next: a third of a second,
-// eased at both ends, and the world keeps running under it. It never follows you inside a
-// screen. Going back needs a little more than crossing the line -- a jump that pokes over
-// the top edge and comes down again, or a step back and forth at a side, must not slide the
-// view there and back.
+// Two ways to look at a room bigger than a screen, and C switches between them to compare.
+//
+// Following (the default): the view goes with you. Across, it keeps a little ahead of the
+// way you are running -- you see the next thing before you reach it -- with a small dead
+// zone so a step back and forth does not rock it. Up and down, it does not follow a jump:
+// it moves when you land somewhere higher or lower, or when you fall far enough to leave
+// the frame. It never shows past the room's edges. Everything that draws takes the view
+// in whole pixels.
+//
+// Screen by screen (L11 as first amended): the view is always exactly one of the six
+// screens, and when your centre leaves it the view slides to the next -- a third of a
+// second, eased at both ends, the world running under it. Going back needs a little more
+// than crossing the line, so a jump that pokes over the top edge does not slide the view
+// there and back.
 #define SCR_W (SW * TS)
 #define SCR_H (SH * TS)
 #define HYST_X 5.0f         // px past a side edge before the view goes
 #define HYST_UP 18.0f       // px past the top edge: more, because jumps go up and come back
 #define HYST_DN 2.0f
 #define SLIDE_T 22          // frames
+#define LOOK 34.0f          // how far ahead of you the view runs
+#define DEAD 10.0f          // px either side of where it wants to be that it lets be
+#define STAND 0.66f         // where the ground you stand on sits in the view, top to bottom
+#define TOP_KEEP 26.0f      // px of view kept above you before it follows you up
+#define LOW_KEEP 34.0f      // and below you, before it follows you down
 f32 camX, camY;
+int camFollow = 1;
 static int scrX, scrY, slideT;
 static f32 fromX, fromY;
+static f32 fx, fy, look, standY;         // the following view, before whole pixels
 
 static int ClampI(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
+static f32 ClampF(f32 v, f32 lo, f32 hi) { return v < lo ? lo : v > hi ? hi : v; }
+static f32 MaxX(void) { return (f32)(RW * TS - SCR_W); }
+static f32 MaxY(void) { return (f32)(RH * TS - SCR_H); }
 
-void CameraInit(void) {
+static void FollowSnap(void) {
+    f32 cx = player.x + player.w * 0.5f;
+    look = 0; standY = player.y + player.h;
+    fx = ClampF(cx - SCR_W * 0.5f, 0, MaxX());
+    fy = ClampF(standY - SCR_H * STAND, 0, MaxY());
+    camX = roundf(fx); camY = roundf(fy);
+}
+static void ScreenSnap(void) {
     f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
     scrX = ClampI((int)floorf(cx / SCR_W), 0, RW / SW - 1);
     scrY = ClampI((int)floorf(cy / SCR_H), 0, RH / SH - 1);
@@ -504,7 +529,35 @@ void CameraInit(void) {
     slideT = 0;
 }
 
-void CameraStep(void) {
+void CameraInit(void) { if (camFollow) FollowSnap(); else ScreenSnap(); }
+
+// Switch the way of looking, without a jump: each picks up from where the view is now.
+void CameraToggle(void) {
+    camFollow = !camFollow;
+    if (camFollow) { fx = camX; fy = camY; standY = player.y + player.h; look = 0; return; }
+    f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
+    scrX = ClampI((int)floorf(cx / SCR_W), 0, RW / SW - 1);
+    scrY = ClampI((int)floorf(cy / SCR_H), 0, RH / SH - 1);
+    fromX = camX; fromY = camY; slideT = SLIDE_T;
+}
+
+static void FollowStep(void) {
+    f32 cx = player.x + player.w * 0.5f, top = player.y, feet = player.y + player.h;
+    // across: a little ahead of where you are going; it keeps the lead when you stop
+    if (fabsf(player.vx) > 0.4f) look += ((player.vx > 0 ? LOOK : -LOOK) - look) * 0.035f;
+    f32 err = (cx + look - SCR_W * 0.5f) - fx;
+    if (fabsf(err) > DEAD) fx += (err - (err > 0 ? DEAD : -DEAD)) * 0.14f;
+    fx = ClampF(fx, 0, MaxX());
+    // up and down: to the ground you stand on, not to the top of every jump
+    if (player.onGround) standY = feet;
+    f32 ty = standY - SCR_H * STAND, rate = 0.08f;
+    if (top < ty + TOP_KEEP) { ty = top - TOP_KEEP; rate = 0.18f; }                       // gone up past it
+    if (feet > ty + SCR_H - LOW_KEEP) { ty = feet - (SCR_H - LOW_KEEP); rate = 0.22f; }  // falling out of it
+    fy += (ClampF(ty, 0, MaxY()) - fy) * rate;
+    camX = roundf(fx); camY = roundf(fy);
+}
+
+static void ScreenStep(void) {
     f32 cx = player.x + player.w * 0.5f, cy = player.y + player.h * 0.5f;
     int sx = scrX, sy = scrY;
     if (cx < sx * SCR_W - HYST_X) sx--;
@@ -524,6 +577,8 @@ void CameraStep(void) {
         camX = fromX + (tx - fromX) * e; camY = fromY + (ty - fromY) * e;
     } else { camX = tx; camY = ty; }
 }
+
+void CameraStep(void) { if (camFollow) FollowStep(); else ScreenStep(); }
 
 // Whole pixels, always: a view between pixels would shimmer every edge in the room.
 void WorldBegin(void) {

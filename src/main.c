@@ -227,6 +227,7 @@ static void Frame(void) {
     if (!planLen && !wanderSeed) {
         if (IsKeyPressed(KEY_L)) dbgLabels = !dbgLabels;
         if (IsKeyPressed(KEY_V)) lookNew = !lookNew;    // the old look, for comparing
+        if (IsKeyPressed(KEY_C)) CameraToggle();        // following, or screen by screen
     }
     if (dbgFixedStep) {
         Sim();
@@ -332,6 +333,8 @@ int main(int argc, char **argv) {
             wanderSeed = atoi(argv[++i]); dbgFixedStep = 1; noDraw = 1;
         } else if (!strcmp(argv[i], "--room") && i + 1 < argc) {
             startRoom = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "--camera") && i + 1 < argc) {
+            camFollow = strcmp(argv[++i], "screens") != 0;   // follow (the default), or screens
         } else if (!strcmp(argv[i], "--lamp") && i + 1 < argc) {
             lampRoom = atoi(strtok(argv[++i], ","));
             char *t = strtok(NULL, ","); if (t) lampTx = atoi(t);

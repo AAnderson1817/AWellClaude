@@ -5,23 +5,36 @@ behind you. The lore is `claude/LORE.md` (the city is cold and cannot make fire;
 is its hearth; you are the fire). This file is where things are and why they are there.
 Geometry lives in `tools/antechamber.py`, which writes `src/antechamber.c`.
 
-## Size, and the camera (L11, amended)
+## Size, and the camera (L11, amended, and under trial)
 
 120 x 44 tiles: three screens across, two down. The user asked for one giant room that
 is larger than a screen, where running to the edge brings more of it into the same
-window. That conflicts with L11 as written (one room is one screen, the camera locks),
-so the law was amended rather than quietly broken:
+window. That conflicted with L11 as written (one room is one screen, the camera locks),
+so the law was amended rather than quietly broken -- and then, when the slide between
+screens read as entering a new room inside the same one, a following camera was put on
+trial beside it. C switches between the two; the following one is the default.
 
-- The view is always exactly one screen of the room, composed as a screen.
-- When your centre crosses a screen's edge, the view **slides** to the next screen in 22
-  frames, eased at both ends; the world keeps running under it. It never follows you
-  inside a screen and never scrolls continuously.
-- Going back needs a little more than crossing the line (5 px at the sides, 18 px at the
-  top), so a jump that pokes over the top edge and comes down does not slide the view up
-  and back.
+**Following** (`CameraStep`, `src/room.c`):
+- Across, the view keeps about 34 px ahead of the way you are running, so you see the
+  next thing before you reach it; it keeps that lead when you stop, and a 10 px dead zone
+  means a step back and forth does not rock it.
+- Up and down, it does not follow a jump. It settles to the ground you last stood on,
+  with that ground two-thirds of the way down the view (more of the room above you than
+  below: the climbs go up). It follows you up only if you rise to within 26 px of the
+  view's top, and down if you fall to within 34 px of its bottom.
+- It never shows past the room's edges, and everything draws from it in whole pixels.
+  The composite's dither is held to the room, not the screen, so shading does not crawl
+  as the view moves.
+- The view past the parapet (the multiplane) moves with every step now, not only during
+  a slide.
 
-The locked frame's reading instruction survives: every screen still invites you to read
-the whole composition. What changes is that the composition continues past its edges.
+**Screen by screen** (L11 as first amended): the view is always exactly one screen of the
+room, composed as a screen. When your centre crosses a screen's edge the view slides to
+the next in 22 frames, eased at both ends, the world running under it; going back needs
+a little more than crossing the line (5 px at the sides, 18 px at the top).
+
+The tools shoot the six screens with the camera screen by screen (`tools/screens.py`
+passes `--camera screens`); `tools/slide.py` records whichever the game is set to.
 
 ## The six screens: a balcony on the archive
 

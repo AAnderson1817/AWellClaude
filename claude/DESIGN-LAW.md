@@ -63,6 +63,11 @@ a 320×180 frame.
 screen. The view is still always exactly one screen, composed as one, and never follows
 the player inside it; crossing a screen's edge slides the view to the next screen and
 stops. Continuous scrolling stays forbidden. See `claude/ANTECHAMBER.md`.
+*Under trial at the user's direction (the antechamber, one large space):* the view
+follows the player inside a room -- leading the way they run, holding still through
+jumps, moving when they land higher or lower, never showing past the room's edges, in
+whole pixels -- and a cut or a slide is kept for real thresholds between areas. C
+switches to screen by screen to compare; the user decides which stays.
 
 **L12 — The unifying test.** "I like to try to guide the player into thinking they
 fully understand something, and then reveal that they don't." Apply this to verbs, to

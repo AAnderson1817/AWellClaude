@@ -97,6 +97,8 @@ void RoomEnter(int idx);
 extern f32 camX, camY;      // room px of the view's top-left
 void CameraInit(void);      // snap to wherever you are
 void CameraStep(void);
+void CameraToggle(void);    // C: following you, or screen by screen
+extern int camFollow;       // 1: the view follows you; 0: one screen at a time
 void WorldBegin(void);      // draw in room coordinates through the camera
 void WorldEnd(void);
 void RoomDraw(void);

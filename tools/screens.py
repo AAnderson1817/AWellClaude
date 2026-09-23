@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""A picture of every screen of the room, as the game draws it, stitched 3 x 2.
+"""A picture of every screen of the room, as the game draws it, stitched 3 x 2 (with the
+camera screen by screen, so each is exactly one of the six).
 
     tools/screens.py OUTDIR [frame] [extra game args...]
 
@@ -18,7 +19,7 @@ def shoot(out, frame, extra):
         d = os.path.join(out, 'tmp_' + k)
         os.makedirs(d, exist_ok=True)
         cmd = [os.path.join(ROOT, 'build', 'game'), '--at', '%d,%d' % (tx, ty), '--shots', str(frame),
-               '--out', d, '--scale', '1', '--mute'] + extra
+               '--out', d, '--scale', '1', '--mute', '--camera', 'screens'] + extra
         for attempt in range(2):
             r = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, env=dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':99')))
             if r.returncode == 0: break
